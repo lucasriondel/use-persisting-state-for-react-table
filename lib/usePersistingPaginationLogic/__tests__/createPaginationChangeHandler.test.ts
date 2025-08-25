@@ -747,7 +747,9 @@ describe("createPaginationChangeHandler", () => {
 
       handler(updaterFn, currentTableState);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(capturedState!).toBe(currentTableState);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(capturedState!).toEqual({ pageIndex: 10, pageSize: 100 });
     });
 

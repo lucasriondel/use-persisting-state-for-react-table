@@ -23,14 +23,16 @@ export function persistInitialSorting(
 
     if (!col || !dir) {
       const firstSort = initialSorting[0];
-      const patch = {
-        [columnKey]: firstSort.id,
-        [directionKey]: firstSort.desc ? "desc" : "asc",
-      };
-      if (target === "url") {
-        urlBucketApi.patch(patch);
-      } else {
-        localBucketApi.patch(patch);
+      if (firstSort) {
+        const patch = {
+          [columnKey]: firstSort.id,
+          [directionKey]: firstSort.desc ? "desc" : "asc",
+        };
+        if (target === "url") {
+          urlBucketApi.patch(patch);
+        } else {
+          localBucketApi.patch(patch);
+        }
       }
     }
   }

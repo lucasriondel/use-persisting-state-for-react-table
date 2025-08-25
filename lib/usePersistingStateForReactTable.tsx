@@ -108,7 +108,7 @@ declare module "@tanstack/react-table" {
 
 export interface PersistingTableOptions<TData extends RowData>
   extends Pick<TableOptions<TData>, "columns"> {
-  initialState?: Partial<NonNullable<TableOptions<TData>["state"]>>;
+  initialState?: TableOptions<TData>["state"];
   persistence?: {
     urlNamespace?: string;
     localStorageKey?: string;
@@ -169,19 +169,16 @@ export function usePersistingStateForReactTable<TData extends RowData>(
 
   type TableState = NonNullable<TableOptions<TData>["state"]>;
   const initialState: TableState = {
-    columnVisibility: (initialColumnVisibilityState ||
+    columnVisibility:
+      initialColumnVisibilityState ||
       options.initialState?.columnVisibility ||
-      {}) as TableState["columnVisibility"],
-    columnFilters: (initialColumnFiltersState ||
-      options.initialState?.columnFilters ||
-      []) as TableState["columnFilters"],
+      {},
+    columnFilters:
+      initialColumnFiltersState || options.initialState?.columnFilters || [],
     globalFilter: initialGlobalFilterState,
-    rowSelection: (initialRowSelectionState ||
-      options.initialState?.rowSelection ||
-      {}) as TableState["rowSelection"],
-    sorting: (initialSortingState ||
-      options.initialState?.sorting ||
-      []) as TableState["sorting"],
+    rowSelection:
+      initialRowSelectionState || options.initialState?.rowSelection || {},
+    sorting: initialSortingState || options.initialState?.sorting || [],
     pagination: initialPaginationState,
   };
 

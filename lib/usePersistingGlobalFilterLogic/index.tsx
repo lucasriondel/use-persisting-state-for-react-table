@@ -22,7 +22,9 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
   const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
     {},
     {
-      namespace: options.persistence?.urlNamespace,
+      ...(options.persistence?.urlNamespace && {
+        namespace: options.persistence.urlNamespace,
+      }),
       history: "replace",
       debounceMs: 200,
     }
@@ -44,7 +46,7 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
       key,
       urlBucket,
       localBucket,
-      options.initialState?.globalFilter
+      options.initialState?.globalFilter as string | undefined
     );
   }, [
     shouldPersist,
@@ -75,7 +77,7 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
         localBucket,
         urlBucketApi,
         localBucketApi,
-        options.initialState?.globalFilter
+        options.initialState?.globalFilter as string | undefined
       );
       initialStatePersisted.current = true;
     }

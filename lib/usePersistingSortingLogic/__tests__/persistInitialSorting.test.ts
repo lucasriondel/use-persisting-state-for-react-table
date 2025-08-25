@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
-import { UrlApiActions } from "../../useUrlState";
-import { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
+import { UrlApiActions } from "use-url-state-reacthook";
+import { describe, expect, it, Mock, vi } from "vitest";
 import { persistInitialSorting } from "../persistInitialSorting";
 
 describe("persistInitialSorting", () => {
@@ -770,7 +770,7 @@ describe("persistInitialSorting", () => {
       ];
 
       testCases.forEach(({ desc, expected }) => {
-        (urlBucketApi.patch as any).mockClear();
+        (urlBucketApi.patch as Mock).mockClear();
         persistInitialSorting(
           true,
           "url",

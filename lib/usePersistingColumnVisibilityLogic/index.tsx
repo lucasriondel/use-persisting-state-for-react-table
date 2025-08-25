@@ -20,7 +20,9 @@ export function usePersistingColumnVisibilityLogic<TData extends RowData>(
   const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
     {},
     {
-      namespace: options.persistence?.urlNamespace,
+      ...(options.persistence?.urlNamespace && {
+        namespace: options.persistence.urlNamespace,
+      }),
       history: "replace",
       debounceMs: 0,
     }

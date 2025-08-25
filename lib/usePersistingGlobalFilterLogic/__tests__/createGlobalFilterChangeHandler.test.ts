@@ -108,6 +108,7 @@ describe("createGlobalFilterChangeHandler", () => {
 
       handler(updaterFn, currentState);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(capturedState!).toBe(currentState);
       expect(currentState).toBe("immutable state"); // unchanged
     });

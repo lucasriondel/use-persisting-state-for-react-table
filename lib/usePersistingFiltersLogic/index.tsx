@@ -1,7 +1,7 @@
 import { useLocalStorageState } from "@lucasriondel/use-local-storage-reacthook";
 import { ColumnDef, RowData } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef } from "react";
-import { useUrlState } from "use-url-state-reacthook";
+import { Codec, useUrlState } from "use-url-state-reacthook";
 import { getColumnIdentifier } from "../getColumnIdentifier";
 import { PersistingTableOptions } from "../usePersistingStateForReactTable";
 
@@ -32,8 +32,13 @@ export function usePersistingFiltersLogic<TData extends RowData>(
   const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
     {},
     {
-      codecs: urlCodecs,
-      namespace: options.persistence?.urlNamespace,
+      codecs: urlCodecs as Partial<{
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        [x: string]: Codec<{}>;
+      }>,
+      ...(options.persistence?.urlNamespace && {
+        namespace: options.persistence.urlNamespace,
+      }),
       history: "replace",
       debounceMs: 0,
     }

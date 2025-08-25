@@ -38,7 +38,9 @@ export function usePersistingPaginationLogic<TData extends RowData>(
   const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
     {},
     {
-      namespace: options.persistence?.urlNamespace,
+      ...(options.persistence?.urlNamespace && {
+        namespace: options.persistence.urlNamespace,
+      }),
       history: "replace",
       debounceMs: 0,
     }
@@ -81,9 +83,9 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     return createPaginationChangeHandler(
       shouldPersistPageIndex,
       shouldPersistPageSize,
-      pageIndexTarget,
+      pageIndexTarget ?? "url",
       pageIndexKey,
-      pageSizeTarget,
+      pageSizeTarget ?? "url",
       pageSizeKey,
       urlBucketApi,
       localBucketApi
@@ -107,8 +109,8 @@ export function usePersistingPaginationLogic<TData extends RowData>(
       persistInitialPagination(
         shouldPersistPageIndex,
         shouldPersistPageSize,
-        pageIndexTarget,
-        pageSizeTarget,
+        pageIndexTarget ?? "url",
+        pageSizeTarget ?? "url",
         pageIndexKey,
         pageSizeKey,
         urlBucket,

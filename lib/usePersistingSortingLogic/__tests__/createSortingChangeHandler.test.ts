@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, Mock, vi } from "vitest";
 import { UrlApiActions } from "../../useUrlState";
 import { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
 import { createSortingChangeHandler } from "../createSortingChangeHandler";
@@ -326,7 +326,7 @@ describe("createSortingChangeHandler", () => {
       ];
 
       testCases.forEach(({ desc, expected }) => {
-        (mockApi.patch as any).mockClear();
+        (mockApi.patch as Mock).mockClear();
         handler([{ id: "test", desc }], []);
         expect(mockApi.patch).toHaveBeenCalledWith({
           sortColumn: "test",
