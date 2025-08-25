@@ -10,10 +10,7 @@ export function createGlobalFilterChangeHandler(
 ) {
   return (updater: Updater<string>, currentTableState: string) => {
     const prev = currentTableState;
-    const next =
-      typeof updater === "function"
-        ? (updater as (old: string) => string)(prev)
-        : (updater as string);
+    const next = typeof updater === "function" ? updater(prev) : updater;
 
     // If the value is empty, remove the key from the bucket
     // If the value has content, update the bucket

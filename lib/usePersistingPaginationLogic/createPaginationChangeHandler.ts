@@ -19,8 +19,8 @@ export function createPaginationChangeHandler(
     const prev = currentTableState;
     const next =
       typeof updater === "function"
-        ? (updater as (old: PaginationState) => PaginationState)(prev)
-        : (updater as PaginationState);
+        ? updater(prev)
+        : updater;
 
     if (shouldPersistPageIndex && next.pageIndex !== undefined) {
       if (pageIndexTarget === "url") {

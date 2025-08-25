@@ -1,5 +1,4 @@
 import { ColumnDef, RowData } from "@tanstack/react-table";
-import { ColumnDefMaybeGroup } from "./types";
 
 export function flattenColumns<TData extends RowData>(
   cols: Array<ColumnDef<TData, unknown>>
@@ -7,8 +6,10 @@ export function flattenColumns<TData extends RowData>(
   const out: Array<ColumnDef<TData, unknown>> = [];
   for (const c of cols) {
     out.push(c);
-    const children = (c as ColumnDefMaybeGroup<TData>).columns;
-    if (children && children.length) out.push(...flattenColumns(children));
+    // Check if this column has children columns
+    if ("columns" in c && Array.isArray(c.columns) && c.columns.length > 0) {
+      out.push(...flattenColumns(c.columns));
+    }
   }
   return out;
 }

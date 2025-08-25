@@ -101,7 +101,7 @@ describe("createSortingChangeHandler", () => {
         "sortDirection"
       );
       const currentState = [{ id: "name", desc: false }];
-      const updater = vi.fn((old) => [{ id: "age", desc: true }]);
+      const updater = vi.fn(() => [{ id: "age", desc: true }]);
 
       handler(updater, currentState);
 

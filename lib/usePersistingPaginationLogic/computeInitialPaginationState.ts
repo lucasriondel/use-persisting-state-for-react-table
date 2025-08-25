@@ -10,7 +10,7 @@ export function computeInitialPaginationState(
   urlBucket: Record<string, unknown>,
   localBucket: Record<string, unknown>,
   initialState?: PaginationState
-): PaginationState | undefined {
+): PaginationState {
   const base: PaginationState = initialState ?? {
     pageIndex: 0,
     pageSize: 10,
@@ -23,7 +23,7 @@ export function computeInitialPaginationState(
         ? urlBucket[pageIndexKey]
         : localBucket[pageIndexKey];
     if (typeof raw === "number") {
-      nextVal.pageIndex = raw as number;
+      nextVal.pageIndex = raw;
       changed = true;
     }
   }
@@ -33,7 +33,7 @@ export function computeInitialPaginationState(
         ? urlBucket[pageSizeKey]
         : localBucket[pageSizeKey];
     if (typeof raw === "number") {
-      nextVal.pageSize = raw as number;
+      nextVal.pageSize = raw;
       changed = true;
     }
   }

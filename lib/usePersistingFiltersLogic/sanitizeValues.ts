@@ -102,7 +102,8 @@ export function sanitizeDateRangeValue(
 
   // Handle both array format [start, end] and object format {from, to}
   if (Array.isArray(value) && value.length === 2) {
-    [startValue, endValue] = value;
+    startValue = value[0];
+    endValue = value[1];
   } else if (typeof value === "object" && value !== null) {
     const obj = value as Record<string, unknown>;
     startValue = obj.from;
@@ -111,7 +112,8 @@ export function sanitizeDateRangeValue(
     return undefined;
   }
 
-  let [start, end] = [toDate(startValue), toDate(endValue)];
+  let start = toDate(startValue);
+  let end = toDate(endValue);
   if (start === null && end === null) return undefined;
 
   const min = cfg.fromDate;
@@ -133,7 +135,8 @@ export function sanitizeNumberRangeValue(
   value: unknown
 ): [number, number] | undefined {
   if (!Array.isArray(value) || value.length !== 2) return undefined;
-  const [a, b] = value;
+  const a: unknown = value[0];
+  const b: unknown = value[1];
   const toNum = (v: unknown): number | undefined => {
     if (typeof v === "number" && Number.isFinite(v)) return v;
     if (typeof v === "string") {
@@ -166,7 +169,7 @@ export function sanitizeNumberRangeValue(
 export function sanitizeValue(
   filterMeta: FiltersMeta,
   value: unknown
-): unknown | undefined {
+): unknown {
   switch (filterMeta.variant) {
     case "multiSelect":
       return sanitizeMultiSelectValue(filterMeta, value);

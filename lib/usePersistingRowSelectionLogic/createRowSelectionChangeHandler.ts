@@ -1,12 +1,9 @@
 import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { RowSelectionState, Updater } from "@tanstack/react-table";
-import { UrlApiActions } from "use-url-state-reacthook";
 
 export function createRowSelectionChangeHandler(
   key: string,
-  bucketApi:
-    | LocalStorageApiActions<Record<string, unknown>>
-    | UrlApiActions<Record<string, unknown>>
+  bucketApi: LocalStorageApiActions<Record<string, unknown>>
 ) {
   return (
     updater: Updater<RowSelectionState>,
@@ -16,8 +13,8 @@ export function createRowSelectionChangeHandler(
     const prev = currentTableState;
     const next =
       typeof updater === "function"
-        ? (updater as (old: RowSelectionState) => RowSelectionState)(prev)
-        : (updater as RowSelectionState);
+        ? updater(prev)
+        : updater;
 
     // Filter out false values to only keep selected rows
     const selectedOnly = Object.fromEntries(

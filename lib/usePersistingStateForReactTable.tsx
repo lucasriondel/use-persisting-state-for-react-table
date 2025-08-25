@@ -67,9 +67,7 @@ declare module "@tanstack/react-table" {
     endMonth?: Date; // latest navigable month
     fromDate?: Date; // earliest selectable date
     toDate?: Date; // latest selectable date
-    disabled?:
-      | import("react-day-picker").Matcher
-      | import("react-day-picker").Matcher[]; // disable specific days
+    disabled?: unknown; // DayPicker matcher type - can be customized when needed
     captionLayout?: "label" | "dropdown";
   };
   export type DateRangeMeta = BaseFilterMeta & {
@@ -81,9 +79,7 @@ declare module "@tanstack/react-table" {
     endMonth?: Date; // latest navigable month
     fromDate?: Date; // earliest selectable date
     toDate?: Date; // latest selectable date
-    disabled?:
-      | import("react-day-picker").Matcher
-      | import("react-day-picker").Matcher[]; // disable specific days
+    disabled?: unknown; // DayPicker matcher type - can be customized when needed
     // Range length constraints in days; mapped to DayPicker's min/max when mode="range"
     rangeMinDays?: number;
     rangeMaxDays?: number;
@@ -179,20 +175,14 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     columnFilters: (initialColumnFiltersState ||
       options.initialState?.columnFilters ||
       []) as TableState["columnFilters"],
-    globalFilter: (initialGlobalFilterState ??
-      options.initialState?.globalFilter ??
-      "") as TableState["globalFilter"],
+    globalFilter: initialGlobalFilterState,
     rowSelection: (initialRowSelectionState ||
       options.initialState?.rowSelection ||
       {}) as TableState["rowSelection"],
     sorting: (initialSortingState ||
       options.initialState?.sorting ||
       []) as TableState["sorting"],
-    pagination: (initialPaginationState ||
-      options.initialState?.pagination || {
-        pageIndex: 0,
-        pageSize: 10,
-      }) as TableState["pagination"],
+    pagination: initialPaginationState,
   };
 
   return {
