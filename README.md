@@ -1,408 +1,659 @@
-# 💾 useLocalStorageState
+# 📊 usePersistingStateForReactTable
 
-A powerful React hook for managing state that's automatically persisted to localStorage. Perfect for maintaining user preferences, form data, and application settings across browser sessions with automatic synchronization and data migration support.
+A powerful React hook for managing TanStack Table state with automatic persistence across page reloads and browser sessions. Seamlessly persist table configurations including pagination, sorting, filtering, column visibility, and row selection using URL parameters or localStorage with full TypeScript support.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue.svg)](https://www.typescriptlang.org/)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![React](https://img.shields.io/badge/react-%3E%3D16.8.0-blue.svg)](https://reactjs.org/)
+[![TanStack Table](https://img.shields.io/badge/TanStack%20Table-v8-orange.svg)](https://tanstack.com/table)
 
 ## ✨ Features
 
-- 🎯 **Type-safe** - Full TypeScript support with generic types
-- 💾 **Automatic localStorage sync** - State changes are persisted instantly
-- 🔄 **Cross-tab synchronization** - Share state changes across browser tabs
-- 🛡️ **Validation** - Built-in sanitization and validation hooks
-- 📦 **Custom serialization** - Define custom codecs for complex data types
-- 🔄 **Data migration** - Handle schema changes with version migration
-- ⚡ **Performance optimized** - Efficient serialization and change detection
-- 🪶 **Lightweight** - Zero dependencies (except React peer dependency)
+- 🎯 **Type-safe** - Full TypeScript support with generic types for table data
+- 🔄 **Automatic persistence** - State changes are persisted instantly to URL or localStorage
+- 📋 **Complete table state** - Handles pagination, sorting, filters, column visibility, global filter, and row selection
+- 🌐 **Flexible storage** - Choose URL parameters or localStorage for each state aspect
+- 🚀 **Optimistic updates** - Support for async filter validation with optimistic update
+- 📦 **Custom filter codecs** - Define custom serialization for complex filter types
+- 🎨 **Filter variants** - Built-in support for text, select, date, number, and range filters
+- ⚡ **Performance optimized** - Efficient state management with minimal re-renders
+- 🪶 **Lightweight** - Minimal dependencies focused on React Table integration
 
 ## 📦 Installation
 
 ```bash
 # Using npm
-npm install @lucasriondel/use-local-storage-reacthook
+npm install use-persisting-state-for-react-table
 
 # Using yarn
-yarn add @lucasriondel/use-local-storage-reacthook
+yarn add use-persisting-state-for-react-table
 
 # Using pnpm
-pnpm add @lucasriondel/use-local-storage-reacthook
+pnpm add use-persisting-state-for-react-table
+```
+
+### Peer Dependencies
+
+This hook requires the following peer dependencies:
+
+```bash
+npm install @tanstack/react-table react react-dom
 ```
 
 ## 🚀 Quick Start
 
 ```tsx
-import { useLocalStorageState } from "@lucasriondel/use-local-storage-reacthook";
+import { usePersistingStateForReactTable } from "use-persisting-state-for-react-table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  ColumnDef,
+} from "@tanstack/react-table";
 
-function UserPreferences() {
-  const [settings, settingsApi] = useLocalStorageState(
-    {
-      theme: "light",
-      language: "en",
-      notifications: true,
+interface User {
+  id: string;
+  name: string;
+  role: string;
+  status: "active" | "inactive";
+}
+
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    meta: {
+      filter: {
+        variant: "select",
+        persistenceStorage: "url",
+        options: [
+          { value: "admin", label: "Admin" },
+          { value: "user", label: "User" },
+          { value: "guest", label: "Guest" },
+        ],
+      },
     },
-    { key: "user-preferences" }
-  );
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+  },
+];
 
-  return (
-    <div>
-      <select
-        value={settings.theme}
-        onChange={(e) => settingsApi.set("theme", e.target.value)}
-      >
-        <option value="light">Light Theme</option>
-        <option value="dark">Dark Theme</option>
-      </select>
+function UsersTable() {
+  const { initialState, handlers, resetPagination } =
+    usePersistingStateForReactTable({
+      columns,
+      persistence: {
+        urlNamespace: "users-table",
+        pagination: {
+          pageIndex: { persistenceStorage: "url" },
+          pageSize: { persistenceStorage: "url" },
+        },
+        sorting: { persistenceStorage: "url" },
+        globalFilter: { persistenceStorage: "url", key: "search" },
+        columnVisibility: { persistenceStorage: "localStorage" },
+      },
+    });
 
-      <select
-        value={settings.language}
-        onChange={(e) => settingsApi.set("language", e.target.value)}
-      >
-        <option value="en">English</option>
-        <option value="fr">French</option>
-        <option value="es">Spanish</option>
-      </select>
+  const [data, setData] = useState<User[]>([]);
 
-      <label>
-        <input
-          type="checkbox"
-          checked={settings.notifications}
-          onChange={(e) => settingsApi.set("notifications", e.target.checked)}
-        />
-        Enable Notifications
-      </label>
-    </div>
-  );
+  const table = useReactTable({
+    data,
+    columns,
+    state: initialState,
+    onPaginationChange: handlers.onPaginationChange,
+    onSortingChange: handlers.onSortingChange,
+    onColumnFiltersChange: handlers.onColumnFiltersChange,
+    onColumnVisibilityChange: handlers.onColumnVisibilityChange,
+    onGlobalFilterChange: handlers.onGlobalFilterChange,
+    onRowSelectionChange: handlers.onRowSelectionChange,
+    getCoreRowModel: getCoreRowModel(),
+    // ... other table configuration
+  });
+
+  return <div>{/* Your table UI */}</div>;
 }
 ```
 
-Your settings will automatically persist across browser sessions!
+Your table state will automatically persist across page reloads!
 
 ## 📚 API Reference
 
-### `useLocalStorageState(defaults, options)`
+### `usePersistingStateForReactTable(options)`
 
-Returns a tuple `[state, api]` where:
+Returns an object with `{ initialState, handlers, resetPagination }`:
 
-- `state`: The current state object
-- `api`: Object with methods to manipulate the state
+- `initialState`: Complete initial state object for React Table
+- `handlers`: Event handlers for table state changes
+- `resetPagination`: Function to reset pagination to initial state
 
 #### Parameters
 
-| Parameter  | Type                                       | Description                  |
-| ---------- | ------------------------------------------ | ---------------------------- |
-| `defaults` | `DeepPartial<T> \| (() => DeepPartial<T>)` | Default values for the state |
-| `options`  | `LocalStorageStateOptions<T>`              | Configuration options        |
+| Parameter | Type                            | Description                                 |
+| --------- | ------------------------------- | ------------------------------------------- |
+| `options` | `PersistingTableOptions<TData>` | Configuration options for table persistence |
 
 #### Options
 
-| Option           | Type                                               | Default     | Description                                       |
-| ---------------- | -------------------------------------------------- | ----------- | ------------------------------------------------- |
-| `key`            | `string`                                           | Required    | The localStorage key to store data under          |
-| `codecs`         | `Partial<{ [K in keyof T]: Codec<T[K]> }>`         | `{}`        | Custom serialization for specific properties      |
-| `sanitize`       | `(draft: DeepPartial<T>) => DeepPartial<T>`        | `undefined` | Validation/sanitization function                  |
-| `onChange`       | `(state: T, meta) => void`                         | `undefined` | Callback fired on state changes                   |
-| `syncAcrossTabs` | `boolean`                                          | `true`      | Sync state changes across browser tabs            |
-| `version`        | `number`                                           | `undefined` | Version number for data migration                 |
-| `migrate`        | `(stored: unknown, version: number) => Partial<T>` | `undefined` | Function to migrate old data when version changes |
+| Option         | Type                 | Default  | Description                                  |
+| -------------- | -------------------- | -------- | -------------------------------------------- |
+| `columns`      | `ColumnDef<TData>[]` | Required | Array of column definitions                  |
+| `initialState` | `TableState<TData>`  | `{}`     | Initial state values for table features      |
+| `persistence`  | `PersistenceConfig`  | `{}`     | Configuration for state persistence behavior |
 
-#### API Methods
+#### Persistence Configuration
 
-| Method     | Signature                                            | Description                                    |
-| ---------- | ---------------------------------------------------- | ---------------------------------------------- |
-| `setState` | `(updater: T \| (prev: T) => T) => void`             | Replace entire state                           |
-| `get`      | `(key: keyof T) => T[key] \| undefined`              | Get value of specific property                 |
-| `set`      | `(key: keyof T, value: T[key] \| undefined) => void` | Set specific property (or delete if undefined) |
-| `patch`    | `(partial: DeepPartial<T>) => void`                  | Merge partial changes                          |
-| `remove`   | `(...keys: (keyof T)[]) => void`                     | Remove one or more properties                  |
-| `clear`    | `() => void`                                         | Clear all data from localStorage               |
+| Option             | Type                 | Default        | Description                                     |
+| ------------------ | -------------------- | -------------- | ----------------------------------------------- |
+| `urlNamespace`     | `string`             | `undefined`    | Namespace for URL parameters to avoid conflicts |
+| `localStorageKey`  | `string`             | `"data-table"` | Key for localStorage persistence                |
+| `pagination`       | `PaginationConfig`   | URL storage    | Pagination persistence settings                 |
+| `sorting`          | `SortingConfig`      | URL storage    | Sorting state persistence                       |
+| `columnVisibility` | `VisibilityConfig`   | localStorage   | Column visibility persistence                   |
+| `globalFilter`     | `GlobalFilterConfig` | URL storage    | Global filter persistence                       |
+| `rowSelection`     | `RowSelectionConfig` | Disabled       | Row selection persistence                       |
+| `filters`          | `FiltersConfig`      | `{}`           | Column filters configuration                    |
+
+#### Return Object
+
+| Property          | Type                | Description                      |
+| ----------------- | ------------------- | -------------------------------- |
+| `initialState`    | `TableState<TData>` | Initial state for React Table    |
+| `handlers`        | `TableHandlers`     | Event handlers for state changes |
+| `resetPagination` | `() => void`        | Function to reset pagination     |
+
+#### Handlers
+
+| Handler                    | Signature                 | Description                      |
+| -------------------------- | ------------------------- | -------------------------------- |
+| `onColumnFiltersChange`    | `(updater) => void`       | Handle column filter changes     |
+| `onPaginationChange`       | `(updater) => void`       | Handle pagination changes        |
+| `onSortingChange`          | `(updater) => void`       | Handle sorting changes           |
+| `onColumnVisibilityChange` | `(updater) => void`       | Handle column visibility changes |
+| `onGlobalFilterChange`     | `(value: string) => void` | Handle global filter changes     |
+| `onRowSelectionChange`     | `(updater) => void`       | Handle row selection changes     |
 
 ## 🎯 Examples
 
-### Basic Usage
+### Basic Usage with URL Persistence
 
 ```tsx
-import { useLocalStorageState } from "use-local-storage-reacthook";
+import { usePersistingStateForReactTable } from "use-persisting-state-for-react-table";
+import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 
-function App() {
-  const [profile, profileApi] = useLocalStorageState(
-    { name: "", age: 0 },
-    { key: "user-profile" }
-  );
-
-  return (
-    <div>
-      <input
-        value={profile.name}
-        onChange={(e) => profileApi.set("name", e.target.value)}
-        placeholder="Enter your name"
-      />
-      <input
-        type="number"
-        value={profile.age}
-        onChange={(e) => profileApi.set("age", parseInt(e.target.value) || 0)}
-        placeholder="Enter your age"
-      />
-      <button onClick={() => profileApi.clear()}>Clear Profile</button>
-    </div>
-  );
-}
-```
-
-### With Custom Serialization
-
-```tsx
-interface AppSettings {
-  tags: string[];
-  lastLoginDate: Date;
-  preferences: { theme: string; lang: string };
-}
-
-const [settings, settingsApi] = useLocalStorageState<AppSettings>(
-  {
-    tags: [],
-    lastLoginDate: new Date(),
-    preferences: { theme: "light", lang: "en" },
-  },
-  {
-    key: "app-settings",
-    codecs: {
-      tags: {
-        parse: (str) => str.split(",").filter(Boolean),
-        format: (tags) => tags.join(","),
+function BasicTable() {
+  const { initialState, handlers } = usePersistingStateForReactTable({
+    columns,
+    persistence: {
+      urlNamespace: "products",
+      pagination: {
+        pageIndex: { persistenceStorage: "url", key: "page" },
+        pageSize: { persistenceStorage: "url", key: "size" },
       },
-      lastLoginDate: {
-        parse: (str) => new Date(str),
-        format: (date) => date.toISOString(),
-      },
+      sorting: { persistenceStorage: "url" },
+      globalFilter: { persistenceStorage: "url", key: "search" },
     },
-  }
-);
+  });
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: initialState,
+    ...handlers,
+    getCoreRowModel: getCoreRowModel(),
+  });
+}
 ```
 
-### With Validation and Change Tracking
+### Advanced Usage with Manual State Management
 
 ```tsx
-const [userPrefs, prefsApi] = useLocalStorageState(
-  {
-    theme: "light",
-    fontSize: 16,
-    language: "en",
-  },
-  {
-    key: "user-preferences",
-    sanitize: (draft) => ({
-      theme: ["light", "dark"].includes(draft.theme) ? draft.theme : "light",
-      fontSize: Math.max(12, Math.min(24, draft.fontSize || 16)),
-      language: ["en", "fr", "es"].includes(draft.language)
-        ? draft.language
-        : "en",
+function AdvancedTable() {
+  const { initialState, handlers, resetPagination } =
+    usePersistingStateForReactTable({
+      columns,
+      initialState: {
+        pagination: { pageIndex: 3, pageSize: 10 },
+        sorting: [{ id: "name", desc: false }],
+        columnFilters: [{ id: "role", value: ["admin"] }],
+        columnVisibility: { role: false, status: false },
+      },
+      persistence: {
+        filters: { optimisticAsync: true },
+        pagination: {
+          pageIndex: { persistenceStorage: "url" },
+          pageSize: { persistenceStorage: "url" },
+        },
+        sorting: { persistenceStorage: "url" },
+        columnVisibility: { persistenceStorage: "localStorage" },
+        globalFilter: { persistenceStorage: "url", key: "search" },
+        rowSelection: { persistenceStorage: "url" },
+      },
+    });
+
+  // Manual state management for server-side operations
+  const [pagination, setPagination] = useState(initialState.pagination);
+  const [sorting, setSorting] = useState(initialState.sorting);
+  const [columnFilters, setColumnFilters] = useState(
+    initialState.columnFilters
+  );
+  const [columnVisibility, setColumnVisibility] = useState(
+    initialState.columnVisibility
+  );
+  const [globalFilter, setGlobalFilter] = useState(initialState.globalFilter);
+  const [rowSelection, setRowSelection] = useState(initialState.rowSelection);
+
+  // API request configuration
+  const apiRequest = useMemo(
+    () => ({
+      pagination,
+      sorting,
+      filters: columnFilters,
+      globalFilter,
     }),
-    onChange: (newState, { source }) => {
-      console.log(`Preferences updated from ${source}:`, newState);
-      // Send analytics, trigger theme updates, etc.
-    },
-  }
-);
-```
-
-### Multiple Hook Instances with Different Keys
-
-```tsx
-function Dashboard() {
-  // User filters stored under 'user-filters' key
-  const [userFilters, userApi] = useLocalStorageState(
-    {
-      role: "all",
-      department: "all",
-    },
-    { key: "user-filters" }
+    [pagination, sorting, columnFilters, globalFilter]
   );
 
-  // Product filters stored under 'product-filters' key
-  const [productFilters, productApi] = useLocalStorageState(
-    {
-      category: "all",
-      inStock: true,
-    },
-    { key: "product-filters" }
-  );
+  // Server-side data fetching
+  const { data: apiResponse, isLoading } = useQuery({
+    queryKey: ["users", apiRequest],
+    queryFn: () => fetchUsers(apiRequest),
+  });
 
-  // Each hook manages its own localStorage entry independently
-  // localStorage: { "user-filters": {...}, "product-filters": {...} }
+  const table = useReactTable({
+    data: apiResponse?.data || [],
+    columns,
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
+    rowCount: apiResponse?.pageCount,
+    state: {
+      pagination,
+      sorting,
+      columnFilters,
+      columnVisibility,
+      globalFilter,
+      rowSelection,
+    },
+    onPaginationChange: (updater) => {
+      handlers.onPaginationChange(updater, pagination);
+      setPagination(updater);
+    },
+    onSortingChange: (updater) => {
+      handlers.onSortingChange(updater, sorting);
+      setSorting(updater);
+    },
+    onColumnFiltersChange: (updater) => {
+      handlers.onColumnFiltersChange(updater, columnFilters);
+      setColumnFilters(updater);
+      resetPagination(pagination, setPagination);
+    },
+    onColumnVisibilityChange: (updater) => {
+      handlers.onColumnVisibilityChange(updater, columnVisibility);
+      setColumnVisibility(updater);
+    },
+    onGlobalFilterChange: (updater) => {
+      handlers.onGlobalFilterChange(updater, globalFilter);
+      setGlobalFilter(updater);
+      resetPagination(pagination, setPagination);
+    },
+    onRowSelectionChange: (updater) => {
+      handlers.onRowSelectionChange(updater, rowSelection);
+      setRowSelection(updater);
+    },
+    getCoreRowModel: getCoreRowModel(),
+  });
 }
 ```
 
-### Complex State Management with Data Migration
+### Mixed Storage Strategy
 
 ```tsx
-interface AppState {
-  filters: {
-    search: string;
-    category: string[];
-    priceRange: [number, number];
-  };
-  view: "grid" | "list";
-  sort: { field: string; direction: "asc" | "desc" };
-}
-
-const [appState, api] = useLocalStorageState<AppState>(
-  {
-    filters: {
-      search: "",
-      category: [],
-      priceRange: [0, 1000],
+// Store user preferences in localStorage, but keep filters/search in URL for sharing
+const { initialState, handlers } = usePersistingStateForReactTable({
+  columns,
+  persistence: {
+    localStorageKey: "my-app-table-settings",
+    columnVisibility: { persistenceStorage: "localStorage" },
+    pagination: {
+      pageIndex: { persistenceStorage: "url" },
+      pageSize: { persistenceStorage: "localStorage" }, // Remember user's preferred page size
     },
-    view: "grid",
-    sort: { field: "name", direction: "asc" },
-  },
-  {
-    key: "app-state",
-    version: 2,
-    migrate: (stored, version) => {
-      if (version < 2) {
-        // Migrate from v1: add new priceRange field
-        const oldState = stored as any;
-        return {
-          ...oldState,
-          filters: {
-            ...oldState.filters,
-            priceRange: [0, 1000], // Add default price range
-          },
-        };
-      }
-      return stored as Partial<AppState>;
-    },
-  }
-);
-
-// Update nested properties
-api.patch({
-  filters: {
-    ...appState.filters,
-    search: "new search term",
+    sorting: { persistenceStorage: "url" }, // Shareable via URL
+    globalFilter: { persistenceStorage: "url" }, // Shareable via URL
+    filters: { optimisticAsync: true }, // Individual filter storage defined in column meta
   },
 });
+```
 
-// Toggle sort direction
-api.set("sort", {
-  ...appState.sort,
-  direction: appState.sort.direction === "asc" ? "desc" : "asc",
-});
+### Custom Filter Variants with Persistence
+
+```tsx
+const columns: ColumnDef<Product>[] = [
+  {
+    accessorKey: "name",
+    header: "Product Name",
+    meta: {
+      filter: {
+        variant: "text",
+        persistenceStorage: "url",
+        key: "product-name",
+      },
+    },
+  },
+  {
+    accessorKey: "category",
+    header: "Category",
+    meta: {
+      filter: {
+        variant: "multiSelect",
+        persistenceStorage: "localStorage",
+        key: "categories",
+        options: [
+          { value: "electronics", label: "Electronics" },
+          { value: "clothing", label: "Clothing" },
+          { value: "books", label: "Books" },
+        ],
+      },
+    },
+  },
+  {
+    accessorKey: "price",
+    header: "Price",
+    meta: {
+      filter: {
+        variant: "numberRange",
+        persistenceStorage: "url",
+        min: 0,
+        max: 1000,
+        step: 10,
+      },
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created Date",
+    meta: {
+      filter: {
+        variant: "dateRange",
+        persistenceStorage: "url",
+        fromDate: new Date(2020, 0, 1),
+        toDate: new Date(),
+      },
+    },
+  },
+];
+```
+
+### Custom Serialization for Complex Filters
+
+```tsx
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: "tags",
+    header: "Tags",
+    meta: {
+      filter: {
+        variant: "multiSelect",
+        persistenceStorage: "url",
+        codec: {
+          // Custom URL serialization for array of tags
+          parse: (str: string) => str.split(",").filter(Boolean),
+          format: (tags: string[]) => tags.join(","),
+        },
+        options: tagOptions,
+      },
+    },
+  },
+  {
+    accessorKey: "preferences",
+    header: "User Preferences",
+    meta: {
+      filter: {
+        variant: "text",
+        persistenceStorage: "localStorage",
+        codec: {
+          // Store complex objects in localStorage
+          parse: (str: string) => JSON.parse(str),
+          format: (obj: any) => JSON.stringify(obj),
+        },
+      },
+    },
+  },
+];
 ```
 
 ## 🔧 Advanced Configuration
 
-### Cross-Tab Synchronization
+### Optimistic Async Filters
+
+Enable optimistic updates for filters that trigger async operations:
 
 ```tsx
-// Enable cross-tab sync (default)
-const [state, api] = useLocalStorageState(defaults, {
-  key: "shared-state",
-  syncAcrossTabs: true,
+const { initialState, handlers } = usePersistingStateForReactTable({
+  columns,
+  persistence: {
+    filters: {
+      optimisticAsync: true, // Enable optimistic updates
+    },
+    // ... other persistence config
+  },
 });
 
-// Disable cross-tab sync for performance or privacy
-const [state, api] = useLocalStorageState(defaults, {
-  key: "local-only-state",
-  syncAcrossTabs: false,
+// Filters will update UI immediately while API requests are in flight
+```
+
+### URL Namespacing
+
+Prevent URL parameter conflicts when using multiple tables:
+
+```tsx
+// Users table
+const usersTable = usePersistingStateForReactTable({
+  columns: userColumns,
+  persistence: {
+    urlNamespace: "users",
+    // Results in URL params like: ?users-page=1&users-search=john
+  },
+});
+
+// Products table
+const productsTable = usePersistingStateForReactTable({
+  columns: productColumns,
+  persistence: {
+    urlNamespace: "products",
+    // Results in URL params like: ?products-page=1&products-category=electronics
+  },
 });
 ```
 
-### Data Migration Between Versions
+### Custom Storage Keys
+
+Customize storage keys for better organization:
 
 ```tsx
-const [config, configApi] = useLocalStorageState(
-  { apiUrl: "https://api.example.com", timeout: 5000 },
-  {
-    key: "app-config",
-    version: 3,
-    migrate: (stored, currentVersion) => {
-      const data = stored as any;
-
-      if (currentVersion < 2) {
-        // v1 -> v2: rename 'endpoint' to 'apiUrl'
-        data.apiUrl = data.endpoint;
-        delete data.endpoint;
-      }
-
-      if (currentVersion < 3) {
-        // v2 -> v3: add timeout field
-        data.timeout = data.timeout || 5000;
-      }
-
-      return data;
+const { initialState, handlers } = usePersistingStateForReactTable({
+  columns,
+  persistence: {
+    localStorageKey: "admin-dashboard-table", // Custom localStorage key
+    columnVisibility: {
+      persistenceStorage: "localStorage",
+      key: "column-prefs", // Custom key within localStorage object
     },
-  }
-);
+    globalFilter: {
+      persistenceStorage: "url",
+      key: "q", // Short URL parameter for search
+    },
+    pagination: {
+      pageIndex: {
+        persistenceStorage: "url",
+        key: "p", // Short URL parameter for page
+      },
+      pageSize: {
+        persistenceStorage: "localStorage",
+        key: "page-size",
+      },
+    },
+  },
+});
 ```
 
-### Error Handling and Validation
+## 🎨 Filter Variants
+
+The hook supports multiple built-in filter variants with automatic persistence:
+
+### Text Filter
 
 ```tsx
-const [userInput, inputApi] = useLocalStorageState(
-  { email: "", age: 0 },
-  {
-    key: "user-input",
-    sanitize: (draft) => {
-      // Validate and sanitize data from localStorage
-      const email = typeof draft.email === "string" ? draft.email : "";
-      const age =
-        typeof draft.age === "number" && draft.age >= 0 ? draft.age : 0;
+meta: {
+  filter: {
+    variant: "text",
+    persistenceStorage: "url",
+    key: "search-term",
+  },
+}
+```
 
-      return { email, age };
-    },
-    onChange: (newState, { source }) => {
-      if (source === "external") {
-        console.log("State updated from another tab:", newState);
-      }
-    },
-  }
-);
+### Select Filter
+
+```tsx
+meta: {
+  filter: {
+    variant: "select",
+    persistenceStorage: "url",
+    options: [
+      { value: "active", label: "Active", count: 42 },
+      { value: "inactive", label: "Inactive", count: 8, disabled: true },
+    ],
+  },
+}
+```
+
+### Multi-Select Filter
+
+```tsx
+meta: {
+  filter: {
+    variant: "multiSelect",
+    persistenceStorage: "localStorage",
+    options: categoryOptions,
+  },
+}
+```
+
+### Date Filter
+
+```tsx
+meta: {
+  filter: {
+    variant: "date",
+    persistenceStorage: "url",
+    fromDate: new Date(2020, 0, 1),
+    toDate: new Date(),
+    captionLayout: "dropdown",
+  },
+}
+```
+
+### Date Range Filter
+
+```tsx
+meta: {
+  filter: {
+    variant: "dateRange",
+    persistenceStorage: "url",
+    rangeMinDays: 1,
+    rangeMaxDays: 365,
+  },
+}
+```
+
+### Number Filter
+
+```tsx
+meta: {
+  filter: {
+    variant: "number",
+    persistenceStorage: "url",
+  },
+}
+```
+
+### Number Range Filter
+
+```tsx
+meta: {
+  filter: {
+    variant: "numberRange",
+    persistenceStorage: "url",
+    min: 0,
+    max: 1000,
+    step: 50,
+    orientation: "horizontal",
+  },
+}
 ```
 
 ## 📝 TypeScript Support
 
-The hook is fully typed and provides excellent TypeScript integration:
+The hook provides full TypeScript support with generic types:
 
 ```tsx
-interface UserProfile {
+interface User {
+  id: string;
   name: string;
-  roles: ("admin" | "user" | "guest")[];
+  email: string;
+  role: "admin" | "user" | "guest";
   isActive: boolean;
-  metadata?: { lastLogin: Date };
+  createdAt: Date;
 }
 
-// Full type safety
-const [profile, profileApi] = useLocalStorageState<UserProfile>(
-  {
-    name: "",
-    roles: [],
-    isActive: true,
+// Full type safety for table data
+const { initialState, handlers } = usePersistingStateForReactTable<User>({
+  columns: userColumns,
+  initialState: {
+    sorting: [{ id: "name", desc: false }], // ✅ Valid column ID
+    columnFilters: [{ id: "role", value: "admin" }], // ✅ Valid
+    pagination: { pageIndex: 0, pageSize: 25 }, // ✅ Valid
   },
-  { key: "user-profile" }
-);
+  persistence: {
+    columnVisibility: { persistenceStorage: "localStorage" }, // ✅ Valid
+  },
+});
 
-// TypeScript knows the exact shape
-profileApi.set("name", "john"); // ✅ Valid
-profileApi.set("roles", ["admin", "user"]); // ✅ Valid
-profileApi.set("invalidProp", "value"); // ❌ TypeScript error
-
-// Partial updates are also type-safe
-profileApi.patch({
-  name: "jane",
-  isActive: false,
-}); // ✅ Valid
-
-profileApi.patch({
-  invalidField: true,
-}); // ❌ TypeScript error
+// TypeScript will catch errors
+const invalidConfig = usePersistingStateForReactTable<User>({
+  columns: userColumns,
+  initialState: {
+    sorting: [{ id: "invalidColumn", desc: false }], // ❌ TypeScript error
+    pagination: { pageIndex: "invalid", pageSize: 25 }, // ❌ TypeScript error
+  },
+});
 ```
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/lucasriondel/use-persisting-state-for-react-table.git
+
+# Install dependencies
+pnpm install
+
+# Run tests
+pnpm test
+
+# Build the package
+pnpm build
+```
 
 ## 📄 License
 
@@ -410,9 +661,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Inspired by the need for better localStorage state management in React applications
-- Built with TypeScript for maximum developer experience
-- Designed to handle complex state persistence scenarios with ease
+- Built on top of [TanStack Table](https://tanstack.com/table) for powerful table functionality
+- Uses [use-url-state-reacthook](https://github.com/lucasriondel/use-url-state-reacthook) for URL state management
+- Uses [@lucasriondel/use-local-storage-reacthook](https://github.com/lucasriondel/use-local-storage-reacthook) for localStorage persistence
+- Inspired by the need for better table state persistence in React applications
+- Designed to handle complex table scenarios with ease
 - Supports modern React patterns and best practices
 
 ---
