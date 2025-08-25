@@ -1,6 +1,8 @@
+import { PersistenceStorage } from "../types";
+
 export function computeInitialGlobalFilterState(
   shouldPersist: boolean,
-  target: "url" | "localStorage" | undefined,
+  target: PersistenceStorage | undefined,
   key: string,
   urlBucket: Record<string, unknown>,
   localBucket: Record<string, unknown>,

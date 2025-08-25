@@ -1,10 +1,11 @@
 import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { VisibilityState } from "@tanstack/react-table";
 import { UrlApiActions } from "use-url-state-reacthook";
+import { PersistenceStorage } from "../types";
 
 export function persistInitialColumnVisibility(
   shouldPersist: boolean,
-  target: "url" | "localStorage" | undefined,
+  target: PersistenceStorage | undefined,
   key: string,
   urlBucket: Record<string, unknown>,
   localBucket: Record<string, unknown>,

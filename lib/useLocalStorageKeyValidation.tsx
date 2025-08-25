@@ -1,5 +1,6 @@
 import { ColumnDef, RowData } from "@tanstack/react-table";
 import { useEffect, useMemo } from "react";
+import { PersistenceStorage } from "./types";
 import { PersistingTableOptions } from "./usePersistingStateForReactTable";
 
 type ColumnDefMaybeGroup<TData extends RowData> = ColumnDef<TData, unknown> & {
@@ -12,11 +13,15 @@ export function useLocalStorageKeyValidation<TData extends RowData>(
   const hasLocalStoragePersistence = useMemo(() => {
     // Check direct persistence settings
     const directPersistence =
-      options.persistence?.pagination?.pageIndex?.persistenceStorage === "localStorage" ||
-      options.persistence?.pagination?.pageSize?.persistenceStorage === "localStorage" ||
+      options.persistence?.pagination?.pageIndex?.persistenceStorage ===
+        "localStorage" ||
+      options.persistence?.pagination?.pageSize?.persistenceStorage ===
+        "localStorage" ||
       options.persistence?.sorting?.persistenceStorage === "localStorage" ||
-      options.persistence?.columnVisibility?.persistenceStorage === "localStorage" ||
-      options.persistence?.globalFilter?.persistenceStorage === "localStorage" ||
+      options.persistence?.columnVisibility?.persistenceStorage ===
+        "localStorage" ||
+      options.persistence?.globalFilter?.persistenceStorage ===
+        "localStorage" ||
       options.persistence?.rowSelection?.persistenceStorage === "localStorage";
 
     // Check column filter persistence
@@ -33,14 +38,14 @@ export function useLocalStorageKeyValidation<TData extends RowData>(
     };
 
     const columnFilterPersistence = options.columns
-      ? flattenColumns(options.columns).some(
-          (c) => {
-            const meta = (c as ColumnDef<TData, unknown> & {
-              meta?: { filter?: { persistenceStorage?: string } };
-            }).meta;
-            return meta?.filter?.persistenceStorage === "localStorage";
-          }
-        )
+      ? flattenColumns(options.columns).some((c) => {
+          const meta = (
+            c as ColumnDef<TData, unknown> & {
+              meta?: { filter?: { persistenceStorage?: PersistenceStorage } };
+            }
+          ).meta;
+          return meta?.filter?.persistenceStorage === "localStorage";
+        })
       : false;
 
     return directPersistence || columnFilterPersistence;

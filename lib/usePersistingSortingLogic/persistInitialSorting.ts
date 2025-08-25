@@ -1,10 +1,11 @@
 import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { SortingState } from "@tanstack/react-table";
 import { UrlApiActions } from "use-url-state-reacthook";
+import { PersistenceStorage } from "../types";
 
 export function persistInitialSorting(
   shouldPersist: boolean,
-  target: "url" | "localStorage" | undefined,
+  target: PersistenceStorage | undefined,
   columnKey: string,
   directionKey: string,
   urlBucket: Record<string, unknown>,

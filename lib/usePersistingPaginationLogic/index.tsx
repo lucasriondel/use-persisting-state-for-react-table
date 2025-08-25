@@ -11,15 +11,17 @@ import { persistInitialPagination } from "./persistInitialPagination";
 
 // Internal utilities - not exported to reduce API surface
 
+import { PersistenceStorage } from "../types";
+
 export function usePersistingPaginationLogic<TData extends RowData>(
   options: PersistingTableOptions<TData> & {
     persistence?: {
       pagination?: {
         pageIndex?: {
-          persistenceStorage: "url" | "localStorage";
+          persistenceStorage: PersistenceStorage;
           key?: string;
         };
-        pageSize?: { persistenceStorage: "url" | "localStorage"; key?: string };
+        pageSize?: { persistenceStorage: PersistenceStorage; key?: string };
       };
     };
   }

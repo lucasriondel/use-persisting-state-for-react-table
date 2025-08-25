@@ -1,9 +1,10 @@
 import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { UrlApiActions } from "use-url-state-reacthook";
+import { PersistenceStorage } from "../types";
 
 export function persistInitialGlobalFilter(
   shouldPersist: boolean,
-  target: "url" | "localStorage" | undefined,
+  target: PersistenceStorage | undefined,
   key: string,
   urlBucket: Record<string, unknown>,
   localBucket: Record<string, unknown>,

@@ -1,10 +1,11 @@
 import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { RowSelectionState } from "@tanstack/react-table";
 import { UrlApiActions } from "use-url-state-reacthook";
+import { PersistenceStorage } from "../types";
 
 export function persistInitialRowSelection(
   shouldPersist: boolean,
-  target: "url" | "localStorage" | undefined,
+  target: PersistenceStorage | undefined,
   key: string,
   urlBucket: Record<string, unknown>,
   localBucket: Record<string, unknown>,

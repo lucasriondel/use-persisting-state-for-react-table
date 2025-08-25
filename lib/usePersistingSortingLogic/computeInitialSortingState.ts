@@ -1,8 +1,9 @@
 import { SortingState } from "@tanstack/react-table";
+import { PersistenceStorage } from "../types";
 
 export function computeInitialSortingState(
   shouldPersist: boolean,
-  target: "url" | "localStorage" | undefined,
+  target: PersistenceStorage | undefined,
   columnKey: string,
   directionKey: string,
   urlBucket: Record<string, unknown>,

@@ -1,12 +1,13 @@
 import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { PaginationState } from "@tanstack/react-table";
 import { UrlApiActions } from "use-url-state-reacthook";
+import { PersistenceStorage } from "../types";
 
 export function persistInitialPagination(
   shouldPersistPageIndex: boolean,
   shouldPersistPageSize: boolean,
-  pageIndexTarget: "url" | "localStorage" | undefined,
-  pageSizeTarget: "url" | "localStorage" | undefined,
+  pageIndexTarget: PersistenceStorage | undefined,
+  pageSizeTarget: PersistenceStorage | undefined,
   pageIndexKey: string,
   pageSizeKey: string,
   urlBucket: Record<string, unknown>,
