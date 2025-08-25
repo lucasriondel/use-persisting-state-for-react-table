@@ -1,0 +1,26 @@
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
+import { Updater } from "@tanstack/react-table";
+import { UrlApiActions } from "use-url-state-reacthook";
+
+export function createGlobalFilterChangeHandler(
+  key: string,
+  bucketApi:
+    | LocalStorageApiActions<Record<string, unknown>>
+    | UrlApiActions<Record<string, unknown>>
+) {
+  return (updater: Updater<string>, currentTableState: string) => {
+    const prev = currentTableState;
+    const next =
+      typeof updater === "function"
+        ? (updater as (old: string) => string)(prev)
+        : (updater as string);
+
+    // If the value is empty, remove the key from the bucket
+    // If the value has content, update the bucket
+    if (!next || next.trim() === "") {
+      bucketApi.remove(key);
+    } else {
+      bucketApi.patch({ [key]: next });
+    }
+  };
+}
