@@ -1,14 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  sanitizeDateRangeValue,
+  sanitizeDateValue,
   sanitizeMultiSelectValue,
+  sanitizeNumberRangeValue,
+  sanitizeNumberValue,
   sanitizeSelectValue,
   sanitizeTextValue,
-  sanitizeNumberValue,
-  sanitizeDateValue,
-  sanitizeDateRangeValue,
-  sanitizeNumberRangeValue,
   sanitizeValue,
 } from "../sanitizeValues";
+
+import {
+  FiltersMeta,
+  MultiSelectMeta,
+  SelectMeta,
+} from "@tanstack/react-table";
+import type { FilterVariant } from "../../usePersistingStateForReactTable";
 
 describe("sanitizeMultiSelectValue", () => {
   const basicConfig = {
@@ -21,7 +28,11 @@ describe("sanitizeMultiSelectValue", () => {
   };
 
   it("filters array values to only allowed options", () => {
-    const result = sanitizeMultiSelectValue(basicConfig, ["opt1", "opt3", "invalid"]);
+    const result = sanitizeMultiSelectValue(basicConfig, [
+      "opt1",
+      "opt3",
+      "invalid",
+    ]);
     expect(result).toEqual(["opt1", "opt3"]);
   });
 
@@ -31,13 +42,14 @@ describe("sanitizeMultiSelectValue", () => {
   });
 
   it("converts number to string and validates", () => {
+    // @ts-expect-error - this is normal, we're testing the type coercion
     const configWithNumbers = {
       variant: "multiSelect" as const,
       options: [
         { label: "One", value: 1 },
         { label: "Two", value: 2 },
       ],
-    };
+    } as MultiSelectMeta;
     const result = sanitizeMultiSelectValue(configWithNumbers, [1, 3]);
     expect(result).toEqual(["1"]);
   });
@@ -55,7 +67,10 @@ describe("sanitizeMultiSelectValue", () => {
   });
 
   it("returns undefined for empty filtered array", () => {
-    const result = sanitizeMultiSelectValue(basicConfig, ["invalid1", "invalid2"]);
+    const result = sanitizeMultiSelectValue(basicConfig, [
+      "invalid1",
+      "invalid2",
+    ]);
     expect(result).toBeUndefined();
   });
 
@@ -71,7 +86,11 @@ describe("sanitizeMultiSelectValue", () => {
   });
 
   it("handles config with undefined options", () => {
-    const undefinedConfig = { variant: "multiSelect" as const, options: undefined };
+    // @ts-expect-error - this is normal, we're testing the type coercion
+    const undefinedConfig = {
+      variant: "multiSelect" as const,
+      options: undefined,
+    } as MultiSelectMeta;
     const result = sanitizeMultiSelectValue(undefinedConfig, ["test"]);
     expect(result).toEqual(["test"]);
   });
@@ -98,19 +117,21 @@ describe("sanitizeSelectValue", () => {
   });
 
   it("converts number to string if valid", () => {
+    // @ts-expect-error - this is normal, we're testing the type coercion
     const configWithNumbers = {
       variant: "select" as const,
       options: [{ label: "One", value: 1 }],
-    };
+    } as SelectMeta;
     const result = sanitizeSelectValue(configWithNumbers, 1);
     expect(result).toBe("1");
   });
 
   it("converts boolean to string if valid", () => {
+    // @ts-expect-error - this is normal, we're testing the type coercion
     const configWithBooleans = {
       variant: "select" as const,
       options: [{ label: "True", value: true }],
-    };
+    } as SelectMeta;
     const result = sanitizeSelectValue(configWithBooleans, true);
     expect(result).toBe("true");
   });
@@ -275,14 +296,23 @@ describe("sanitizeDateRangeValue", () => {
   it("handles object format {from, to}", () => {
     const start = new Date("2022-01-01");
     const end = new Date("2022-12-31");
-    const result = sanitizeDateRangeValue(basicConfig, { from: start, to: end });
+    const result = sanitizeDateRangeValue(basicConfig, {
+      from: start,
+      to: end,
+    });
     expect(result).toEqual([start, end]);
   });
 
   it("handles mixed null values", () => {
     const date = new Date("2022-06-15");
-    expect(sanitizeDateRangeValue(basicConfig, [null, date])).toEqual([null, date]);
-    expect(sanitizeDateRangeValue(basicConfig, [date, null])).toEqual([date, null]);
+    expect(sanitizeDateRangeValue(basicConfig, [null, date])).toEqual([
+      null,
+      date,
+    ]);
+    expect(sanitizeDateRangeValue(basicConfig, [date, null])).toEqual([
+      date,
+      null,
+    ]);
   });
 
   it("returns undefined for both null values", () => {
@@ -300,16 +330,16 @@ describe("sanitizeDateRangeValue", () => {
   it("clamps dates to bounds", () => {
     const result = sanitizeDateRangeValue(configWithBounds, [
       new Date("2019-01-01"),
-      new Date("2026-01-01")
+      new Date("2026-01-01"),
     ]);
-    expect(result).toEqual([
-      new Date("2020-01-01"),
-      new Date("2025-12-31")
-    ]);
+    expect(result).toEqual([new Date("2020-01-01"), new Date("2025-12-31")]);
   });
 
   it("converts string dates", () => {
-    const result = sanitizeDateRangeValue(basicConfig, ["2022-01-01", "2022-12-31"]);
+    const result = sanitizeDateRangeValue(basicConfig, [
+      "2022-01-01",
+      "2022-12-31",
+    ]);
     expect(result).toEqual([new Date("2022-01-01"), new Date("2022-12-31")]);
   });
 
@@ -321,7 +351,10 @@ describe("sanitizeDateRangeValue", () => {
   });
 
   it("handles invalid dates in range", () => {
-    const result = sanitizeDateRangeValue(basicConfig, ["invalid", "2022-01-01"]);
+    const result = sanitizeDateRangeValue(basicConfig, [
+      "invalid",
+      "2022-01-01",
+    ]);
     expect(result).toEqual([null, new Date("2022-01-01")]);
   });
 });
@@ -373,8 +406,12 @@ describe("sanitizeNumberRangeValue", () => {
 
   it("returns undefined for invalid numbers", () => {
     expect(sanitizeNumberRangeValue(basicConfig, [NaN, 10])).toBeUndefined();
-    expect(sanitizeNumberRangeValue(basicConfig, [10, Infinity])).toBeUndefined();
-    expect(sanitizeNumberRangeValue(basicConfig, ["abc", "def"])).toBeUndefined();
+    expect(
+      sanitizeNumberRangeValue(basicConfig, [10, Infinity])
+    ).toBeUndefined();
+    expect(
+      sanitizeNumberRangeValue(basicConfig, ["abc", "def"])
+    ).toBeUndefined();
   });
 });
 
@@ -430,14 +467,14 @@ describe("sanitizeValue", () => {
   });
 
   it("returns value as-is for unknown variants", () => {
-    const filterMeta = { variant: "unknown" as any };
+    const filterMeta = { variant: "unknown" as FilterVariant } as FiltersMeta;
     const value = { custom: "data" };
     const result = sanitizeValue(filterMeta, value);
     expect(result).toBe(value);
   });
 
   it("handles undefined variant", () => {
-    const filterMeta = {} as any;
+    const filterMeta = {} as FiltersMeta;
     const value = "test";
     const result = sanitizeValue(filterMeta, value);
     expect(result).toBe(value);

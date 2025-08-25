@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { ColumnDef } from "@tanstack/react-table";
+import { describe, expect, it } from "vitest";
 import { buildUrlCodecs } from "../buildUrlCodecs";
 
 interface TestData {
@@ -484,7 +484,9 @@ describe("buildUrlCodecs", () => {
 
       const result = buildUrlCodecs(columns);
       expect(result.complex).toBe(complexCodec);
-      expect((result.complex as any).metadata).toEqual({ type: "complex" });
+      expect((result.complex as typeof complexCodec).metadata).toEqual({
+        type: "complex",
+      });
     });
   });
 });

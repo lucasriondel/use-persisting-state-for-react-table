@@ -20,7 +20,7 @@ export type FilterVariant =
 declare module "@tanstack/react-table" {
   interface BaseFilterMeta {
     key?: string;
-    isLoading: boolean;
+    isLoading?: boolean;
     persistenceStorage?: "url" | "localStorage";
     variant: FilterVariant;
   }

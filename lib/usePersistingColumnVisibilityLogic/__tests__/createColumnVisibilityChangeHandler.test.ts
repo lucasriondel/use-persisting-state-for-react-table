@@ -288,7 +288,9 @@ describe("createColumnVisibilityChangeHandler", () => {
 
       handler(updaterFn, currentState);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(capturedState!).toBe(currentState);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       expect(capturedState!).toEqual({ col1: true, col2: false });
     });
   });

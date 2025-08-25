@@ -32,7 +32,7 @@ describe("computeInitialGlobalFilterState", () => {
         localBucket
       );
 
-      expect(result).toBeUndefined();
+      expect(result).toBe("");
     });
 
     it("ignores bucket data even if present", () => {
@@ -107,7 +107,7 @@ describe("computeInitialGlobalFilterState", () => {
         expect(result).toBe(initialState);
       });
 
-      it("returns undefined when both URL bucket and initialState are missing", () => {
+      it("returns empty string when both URL bucket and initialState are missing", () => {
         const urlBucket = {};
         const localBucket = { globalFilter: "local search" };
 
@@ -119,14 +119,14 @@ describe("computeInitialGlobalFilterState", () => {
           localBucket
         );
 
-        expect(result).toBeUndefined();
+        expect(result).toBe("");
       });
 
       it("uses custom key to fetch from URL bucket", () => {
         const persistedSearch = "custom search";
-        const urlBucket = { 
+        const urlBucket = {
           customSearchKey: persistedSearch,
-          globalFilter: "default search"
+          globalFilter: "default search",
         };
         const localBucket = {};
 
@@ -215,9 +215,9 @@ describe("computeInitialGlobalFilterState", () => {
       it("uses custom key to fetch from localStorage bucket", () => {
         const persistedSearch = "custom local search";
         const urlBucket = {};
-        const localBucket = { 
+        const localBucket = {
           customLocalKey: persistedSearch,
-          globalFilter: "default search"
+          globalFilter: "default search",
         };
 
         const result = computeInitialGlobalFilterState(
