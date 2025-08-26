@@ -1,6 +1,7 @@
 import { RowData, TableOptions } from "@tanstack/react-table";
 import { Codec } from "use-url-state-reacthook";
 import { PersistenceStorage } from "./types";
+import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
 import { useLocalStorageKeyValidation } from "./useLocalStorageKeyValidation";
 import { usePersistingColumnVisibilityLogic } from "./usePersistingColumnVisibilityLogic";
 import { usePersistingFiltersLogic } from "./usePersistingFiltersLogic";
@@ -317,6 +318,13 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     sorting: initialSortingState || options.initialState?.sorting || [],
     pagination: initialPaginationState,
   };
+
+  useAsyncFiltersManager({
+    columns: options.columns,
+    urlNamespace: options.persistence?.urlNamespace,
+    localStorageKey: options.persistence?.localStorageKey,
+    setColumnFilters: () => {},
+  });
 
   return {
     initialState,
