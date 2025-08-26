@@ -1,29 +1,28 @@
-import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
+import { ColumnFiltersState, RowData } from "@tanstack/react-table";
 import { useEffect } from "react";
 import { getColumnIdentifier } from "./getColumnIdentifier";
-import { MultiSelectMeta, SelectMeta } from "./types";
+import { MultiSelectMeta, PersistingTableOptions, SelectMeta } from "./types";
 import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
 import { sanitizeValue } from "./usePersistingFiltersLogic/sanitizeValues";
 import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
 
-interface UseAsyncFiltersManagerProps<TData extends RowData> {
-  columns: ColumnDef<TData>[];
-  urlNamespace: string | undefined;
-  localStorageKey: string | undefined;
-  setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
+interface UseAsyncFiltersManagerProps<TData extends RowData>
+  extends PersistingTableOptions<TData> {
+  setColumnFilters: React.Dispatch<
+    React.SetStateAction<ColumnFiltersState | undefined>
+  >;
 }
 
 export function useAsyncFiltersManager<TData extends RowData>({
   columns,
-  urlNamespace,
-  localStorageKey,
-}: //   setColumnFilters,
-UseAsyncFiltersManagerProps<TData>) {
+  persistence,
+  setColumnFilters,
+}: UseAsyncFiltersManagerProps<TData>) {
   const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
     useFilterBuckets({
       columns,
-      urlNamespace: urlNamespace,
-      localStorageKey: localStorageKey,
+      urlNamespace: persistence?.urlNamespace,
+      localStorageKey: persistence?.localStorageKey,
     });
 
   useEffect(() => {
@@ -44,7 +43,17 @@ UseAsyncFiltersManagerProps<TData>) {
           filterMeta.variant === "multiSelect") &&
         (filterMeta as SelectMeta | MultiSelectMeta).isLoading === false
       ) {
-        const key = filterMeta.key ?? getColumnIdentifier(col);
+        // Use the filter key if available, otherwise try to get column identifier
+        let key: string | undefined = filterMeta.key;
+
+        if (!key) {
+          try {
+            key = getColumnIdentifier(col);
+          } catch {
+            continue;
+          }
+        }
+
         if (!key) continue;
 
         const raw =
@@ -63,11 +72,56 @@ UseAsyncFiltersManagerProps<TData>) {
       }
     }
 
-    console.log({ urlPatch, localPatch });
-
     if (!hasAnyPatch) return;
 
-    if (Object.keys(urlPatch).length > 0) urlBucketApi.patch(urlPatch);
-    if (Object.keys(localPatch).length > 0) localBucketApi.patch(localPatch);
+    // Update the state with the new filter values
+    const stateUpdates: ColumnFiltersState = [];
+
+    // Process URL patches
+    if (Object.keys(urlPatch).length > 0) {
+      urlBucketApi.patch(urlPatch);
+
+      // Convert URL patches to ColumnFiltersState format
+      for (const [key, value] of Object.entries(urlPatch)) {
+        if (value !== undefined) {
+          stateUpdates.push({ id: key, value });
+        } else {
+          // undefined means remove this filter from state
+          stateUpdates.push({ id: key, value: undefined });
+        }
+      }
+    }
+
+    // Process local storage patches
+    if (Object.keys(localPatch).length > 0) {
+      localBucketApi.patch(localPatch);
+
+      // Convert local storage patches to ColumnFiltersState format
+      for (const [key, value] of Object.entries(localPatch)) {
+        if (value !== undefined) {
+          stateUpdates.push({ id: key, value });
+        } else {
+          // undefined means remove this filter from state
+          stateUpdates.push({ id: key, value: undefined });
+        }
+      }
+    }
+
+    // Update the column filters state if we have any updates
+    if (stateUpdates.length > 0) {
+      setColumnFilters((prevFilters) => {
+        // Handle case where prevFilters might be undefined
+        const currentFilters = prevFilters || [];
+        // Remove existing filters that are being updated
+        const filtered = currentFilters.filter(
+          (filter) => !stateUpdates.some((update) => update.id === filter.id)
+        );
+        // Add the new filter values, filtering out undefined values (removals)
+        const newFilters = stateUpdates.filter(
+          (update) => update.value !== undefined
+        );
+        return [...filtered, ...newFilters];
+      });
+    }
   }, [columns, urlBucket, localBucket, urlBucketApi, localBucketApi]);
 }
