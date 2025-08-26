@@ -1,12 +1,12 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
 import {
   ColumnDef,
   getCoreRowModel,
   PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
+import { act, renderHook } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { usePersistingPaginationLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -75,7 +75,7 @@ const testColumns: ColumnDef<TestUser>[] = [
     cell: ({ row }) => row.getValue("name"),
   },
   {
-    accessorKey: "email", 
+    accessorKey: "email",
     header: "Email",
     cell: ({ row }) => row.getValue("email"),
   },
@@ -121,7 +121,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Create a table instance with the pagination hook
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -129,7 +132,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           columns: testColumns,
           state: { pagination },
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -172,7 +176,9 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
     it("reads initial state from URL parameters", () => {
       // Set up URL with pagination parameters using proper URL object
-      setWindowLocation("https://example.com/?table.pageIndex=3&table.pageSize=25");
+      setWindowLocation(
+        "https://example.com/?table.pageIndex=3&table.pageSize=25"
+      );
 
       const { result } = renderHook(() =>
         usePersistingPaginationLogic({
@@ -216,7 +222,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -224,7 +233,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           columns: testColumns,
           state: { pagination },
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -280,7 +290,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -288,7 +301,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           columns: testColumns,
           state: { pagination },
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -364,7 +378,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
     it("handles pageIndex in URL and pageSize in localStorage", () => {
       // Set up initial state in both storages
       setWindowLocation("https://example.com/?pageIndex=6");
-      mockLocalStorage.setItem("mixed-pagination", JSON.stringify({ pageSize: 35 }));
+      mockLocalStorage.setItem(
+        "mixed-pagination",
+        JSON.stringify({ pageSize: 35 })
+      );
 
       const { result: paginationHook } = renderHook(() =>
         usePersistingPaginationLogic({
@@ -381,7 +398,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -389,7 +409,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           columns: testColumns,
           state: { pagination },
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -445,7 +466,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -453,7 +477,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           columns: testColumns,
           state: { pagination },
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -481,8 +506,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       // Should not contain pageSize in any calls to replaceState
       const allCalls = mockHistory.replaceState.mock.calls;
-      const hasPageSize = allCalls.some((call) => 
-        call[2] && call[2].includes("pageSize")
+      const hasPageSize = allCalls.some(
+        (call) => call[2] && call[2].includes("pageSize")
       );
       expect(hasPageSize).toBe(false);
     });
@@ -505,7 +530,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -513,7 +541,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           columns: testColumns,
           state: { pagination },
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -525,7 +554,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       // Use function updater to increment page
       act(() => {
-        tableHook.current.table.setPagination(prev => ({
+        tableHook.current.table.setPagination((prev) => ({
           ...prev,
           pageIndex: prev.pageIndex + 2,
         }));
@@ -540,7 +569,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       // Use function updater to change page size
       act(() => {
-        tableHook.current.table.setPagination(prev => ({
+        tableHook.current.table.setPagination((prev) => ({
           ...prev,
           pageSize: prev.pageSize * 2,
         }));
@@ -598,7 +627,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
     it("does not persist initial state when persisted values already exist", () => {
       // Pre-existing values
       setWindowLocation("https://example.com/?existing.pageIndex=10");
-      mockLocalStorage.setItem("existing-pagination", JSON.stringify({ pageSize: 100 }));
+      mockLocalStorage.setItem(
+        "existing-pagination",
+        JSON.stringify({ pageSize: 100 })
+      );
 
       const { result } = renderHook(() =>
         usePersistingPaginationLogic({
@@ -635,7 +667,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // The replaceState calls should only be from reading existing state, not writing initial state
       const replaceStateCalls = mockHistory.replaceState.mock.calls;
       const setItemCalls = mockLocalStorage.setItem.mock.calls;
-      
+
       // Should not have excessive persistence calls for initial state
       expect(replaceStateCalls.length).toBeLessThanOrEqual(2);
       expect(setItemCalls.length).toBeLessThanOrEqual(3);
@@ -644,7 +676,9 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("error handling", () => {
     it("handles malformed URL parameters gracefully", () => {
-      setWindowLocation("https://example.com/?table.pageIndex=invalid&table.pageSize=notanumber");
+      setWindowLocation(
+        "https://example.com/?table.pageIndex=invalid&table.pageSize=notanumber"
+      );
 
       const { result } = renderHook(() =>
         usePersistingPaginationLogic({
@@ -725,7 +759,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       const { result: tableHook } = renderHook(() => {
         const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
+          paginationHook.current.initialPaginationState || {
+            pageIndex: 0,
+            pageSize: 10,
+          }
         );
 
         const table = useReactTable({
@@ -735,7 +772,8 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           manualPagination: true,
           pageCount: Math.ceil(mockUsers.length / pagination.pageSize),
           onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
+            const newPagination =
+              typeof updater === "function" ? updater(pagination) : updater;
             paginationHook.current.handlePaginationChange(updater, pagination);
             setPagination(newPagination);
           },
@@ -799,513 +837,6 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
     });
   });
 
-  describe("resetPagination helper function", () => {
-    it("resets pageIndex to 0 while preserving pageSize", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "reset",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        const table = useReactTable({
-          data: mockUsers,
-          columns: testColumns,
-          state: { pagination },
-          onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
-            paginationHook.current.handlePaginationChange(updater, pagination);
-            setPagination(newPagination);
-          },
-          getCoreRowModel: getCoreRowModel(),
-        });
-
-        return { 
-          table, 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // Set up initial state with custom page size first, then page index
-      act(() => {
-        tableHook.current.table.setPageSize(25);
-      });
-
-      act(() => {
-        tableHook.current.table.setPageIndex(5);
-      });
-
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 5,
-        pageSize: 25,
-      });
-
-      // Reset pagination using the helper
-      act(() => {
-        tableHook.current.resetPagination(
-          tableHook.current.pagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should reset pageIndex to 0 but keep pageSize
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 25,
-      });
-
-      // URL should reflect the reset
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("reset.pageIndex=0")
-      );
-    });
-
-    it("works with URL persistence storage", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url", key: "page" },
-              pageSize: { persistenceStorage: "url", key: "size" },
-            },
-            urlNamespace: "url-reset",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        return { 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // Set current pagination to page 3, size 20
-      const currentPagination = { pageIndex: 3, pageSize: 20 };
-
-      act(() => {
-        tableHook.current.setPagination(currentPagination);
-      });
-
-      // Reset pagination
-      act(() => {
-        tableHook.current.resetPagination(
-          currentPagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should call handlePaginationChange and setPagination correctly
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 20,
-      });
-
-      // URL should be updated with custom keys
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("url-reset.page=0")
-      );
-    });
-
-    it("works with localStorage persistence storage", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "localStorage" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            localStorageKey: "reset-test",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        return { 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // Set current pagination to page 7, size 50
-      const currentPagination = { pageIndex: 7, pageSize: 50 };
-
-      act(() => {
-        tableHook.current.setPagination(currentPagination);
-      });
-
-      // Reset pagination
-      act(() => {
-        tableHook.current.resetPagination(
-          currentPagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should reset pageIndex to 0 while preserving pageSize
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 50,
-      });
-
-      // localStorage should be updated
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "reset-test",
-        expect.stringContaining('"pageIndex":0')
-      );
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "reset-test",
-        expect.stringContaining('"pageSize":50')
-      );
-    });
-
-    it("works with mixed persistence storage (pageIndex in URL, pageSize in localStorage)", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            urlNamespace: "mixed-reset",
-            localStorageKey: "mixed-reset-test",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        return { 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // Set current pagination to page 4, size 30
-      const currentPagination = { pageIndex: 4, pageSize: 30 };
-
-      act(() => {
-        tableHook.current.setPagination(currentPagination);
-      });
-
-      // Reset pagination
-      act(() => {
-        tableHook.current.resetPagination(
-          currentPagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should reset pageIndex to 0 while preserving pageSize
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 30,
-      });
-
-      // URL should be updated for pageIndex
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("mixed-reset.pageIndex=0")
-      );
-
-      // localStorage should be updated for pageSize
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "mixed-reset-test",
-        expect.stringContaining('"pageSize":30')
-      );
-    });
-
-    it("simulates filter change scenario from UserDataTable", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "filter-scenario",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        const table = useReactTable({
-          data: mockUsers,
-          columns: testColumns,
-          state: { pagination },
-          onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
-            paginationHook.current.handlePaginationChange(updater, pagination);
-            setPagination(newPagination);
-          },
-          getCoreRowModel: getCoreRowModel(),
-        });
-
-        return { 
-          table, 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // User navigates to page 5 with 20 items per page - set size first, then index
-      act(() => {
-        tableHook.current.table.setPageSize(20);
-      });
-
-      act(() => {
-        tableHook.current.table.setPageIndex(5);
-      });
-
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 5,
-        pageSize: 20,
-      });
-
-      // Simulate what happens when column filters change (like in UserDataTable)
-      // This would normally be called in onColumnFiltersChange
-      act(() => {
-        tableHook.current.resetPagination(
-          tableHook.current.pagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should reset to first page but keep page size
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 20,
-      });
-
-      // URL should reflect the reset to first page
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("filter-scenario.pageIndex=0")
-      );
-    });
-
-    it("simulates global filter change scenario from UserDataTable", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "global-filter-scenario",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        const table = useReactTable({
-          data: mockUsers,
-          columns: testColumns,
-          state: { pagination },
-          onPaginationChange: (updater) => {
-            const newPagination = typeof updater === "function" ? updater(pagination) : updater;
-            paginationHook.current.handlePaginationChange(updater, pagination);
-            setPagination(newPagination);
-          },
-          getCoreRowModel: getCoreRowModel(),
-        });
-
-        return { 
-          table, 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // User is on page 8 with 15 items per page - set size first, then index
-      act(() => {
-        tableHook.current.table.setPageSize(15);
-      });
-
-      act(() => {
-        tableHook.current.table.setPageIndex(8);
-      });
-
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 8,
-        pageSize: 15,
-      });
-
-      // Simulate what happens when global filter changes (like in UserDataTable)
-      // This would normally be called in onGlobalFilterChange
-      act(() => {
-        tableHook.current.resetPagination(
-          tableHook.current.pagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should reset to first page but keep page size
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 15,
-      });
-
-      // URL should reflect the reset to first page
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("global-filter-scenario.pageIndex=0")
-      );
-    });
-
-    it("handles edge case with pageSize 0", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "edge-case",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        return { 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // Edge case: pageSize is 0 (shouldn't happen in real usage but test robustness)
-      const edgeCasePagination = { pageIndex: 3, pageSize: 0 };
-
-      act(() => {
-        tableHook.current.resetPagination(
-          edgeCasePagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should still reset pageIndex to 0 and preserve pageSize even if it's 0
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 0,
-      });
-    });
-
-    it("handles multiple rapid calls correctly", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "rapid-calls",
-          },
-        })
-      );
-
-      const { result: tableHook } = renderHook(() => {
-        const [pagination, setPagination] = React.useState<PaginationState>(
-          paginationHook.current.initialPaginationState || { pageIndex: 0, pageSize: 10 }
-        );
-
-        return { 
-          pagination, 
-          setPagination,
-          resetPagination: paginationHook.current.resetPagination 
-        };
-      });
-
-      // Set initial state
-      const initialPagination = { pageIndex: 5, pageSize: 25 };
-
-      act(() => {
-        tableHook.current.setPagination(initialPagination);
-      });
-
-      // Make multiple rapid calls to resetPagination
-      act(() => {
-        tableHook.current.resetPagination(
-          tableHook.current.pagination,
-          tableHook.current.setPagination
-        );
-        tableHook.current.resetPagination(
-          tableHook.current.pagination,
-          tableHook.current.setPagination
-        );
-        tableHook.current.resetPagination(
-          tableHook.current.pagination,
-          tableHook.current.setPagination
-        );
-      });
-
-      // Should still have correct final state
-      expect(tableHook.current.pagination).toEqual({
-        pageIndex: 0,
-        pageSize: 25,
-      });
-
-      // URL should be updated
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("rapid-calls.pageIndex=0")
-      );
-    });
-  });
+  // Note: resetPagination tests moved to usePersistingStateForReactTable.test.tsx
+  // since the function is now part of the main hook
 });

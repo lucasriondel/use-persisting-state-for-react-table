@@ -1,5 +1,5 @@
 import { useLocalStorageState } from "@lucasriondel/use-local-storage-reacthook";
-import { PaginationState, RowData } from "@tanstack/react-table";
+import { RowData } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef } from "react";
 import { useUrlState } from "use-url-state-reacthook";
 import { PersistingTableOptions } from "../usePersistingStateForReactTable";
@@ -137,17 +137,8 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     options.initialState?.pagination,
   ]);
 
-  const resetPagination = (pagination: PaginationState) => {
-    const paginationDefault = {
-      pageIndex: 0,
-      pageSize: pagination.pageSize,
-    };
-    handlePaginationChange(paginationDefault, pagination);
-  };
-
   return {
     handlePaginationChange,
     initialPaginationState,
-    resetPagination,
   };
 }

@@ -238,11 +238,8 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const { handleColumnFiltersChange, initialColumnFiltersState } =
     usePersistingFiltersLogic(validOptions);
 
-  const {
-    handlePaginationChange,
-    initialPaginationState,
-    resetPagination: resetPaginationLogic,
-  } = usePersistingPaginationLogic(validOptions);
+  const { handlePaginationChange, initialPaginationState } =
+    usePersistingPaginationLogic(validOptions);
 
   const { handleSortingChange, initialSortingState } =
     usePersistingSortingLogic(validOptions);
@@ -275,7 +272,6 @@ export function usePersistingStateForReactTable<TData extends RowData>(
 
   const [state, dispatch] = useReducer(tableStateReducer, initialState);
 
-  // Extract individual state pieces for convenience
   const {
     pagination,
     sorting,
@@ -287,8 +283,12 @@ export function usePersistingStateForReactTable<TData extends RowData>(
 
   const resetPagination = useCallback(() => {
     dispatch({ type: "RESET_PAGINATION" });
-    resetPaginationLogic(pagination);
-  }, [pagination, resetPaginationLogic]);
+    const resetPaginationState = {
+      pageIndex: 0,
+      pageSize: pagination.pageSize,
+    };
+    handlePaginationChange?.(resetPaginationState, pagination);
+  }, [pagination, handlePaginationChange]);
 
   const setPagination = useCallback(
     (updater: Updater<PaginationState>) => {

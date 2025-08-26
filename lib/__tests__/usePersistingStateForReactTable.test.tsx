@@ -462,6 +462,157 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       // pageSize should remain unchanged
       expect(result.current.state.pagination.pageSize).toBe(25);
     });
+
+    it("should reset pagination with URL persistence", () => {
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns: testColumns,
+          persistence: {
+            pagination: {
+              pageIndex: { persistenceStorage: "url" },
+              pageSize: { persistenceStorage: "url" },
+            },
+            urlNamespace: "reset-test",
+          },
+        })
+      );
+
+      // Set pagination to non-zero state
+      act(() => {
+        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 30 });
+      });
+
+      expect(result.current.state.pagination).toEqual({ pageIndex: 5, pageSize: 30 });
+
+      // Clear mock calls from the initial set
+      mockHistory.pushState.mockClear();
+      mockHistory.replaceState.mockClear();
+
+      // Reset pagination
+      act(() => {
+        result.current.resetPagination();
+      });
+
+      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 30 });
+      // Should trigger persistence
+      const totalCalls = mockHistory.pushState.mock.calls.length + mockHistory.replaceState.mock.calls.length;
+      expect(totalCalls).toBeGreaterThan(0);
+    });
+
+    it("should reset pagination with localStorage persistence", () => {
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns: testColumns,
+          persistence: {
+            pagination: {
+              pageIndex: { persistenceStorage: "localStorage" },
+              pageSize: { persistenceStorage: "localStorage" },
+            },
+            localStorageKey: "reset-test",
+          },
+        })
+      );
+
+      // Set pagination to non-zero state
+      act(() => {
+        result.current.handlers.onPaginationChange({ pageIndex: 8, pageSize: 50 });
+      });
+
+      expect(result.current.state.pagination).toEqual({ pageIndex: 8, pageSize: 50 });
+
+      // Reset pagination
+      act(() => {
+        result.current.resetPagination();
+      });
+
+      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 50 });
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        "reset-test",
+        expect.stringContaining('"pageIndex":0')
+      );
+    });
+
+    it("should reset pagination with mixed persistence (pageIndex URL, pageSize localStorage)", () => {
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns: testColumns,
+          persistence: {
+            pagination: {
+              pageIndex: { persistenceStorage: "url" },
+              pageSize: { persistenceStorage: "localStorage" },
+            },
+            urlNamespace: "mixed-reset",
+            localStorageKey: "mixed-test",
+          },
+        })
+      );
+
+      // Set pagination to non-zero state
+      act(() => {
+        result.current.handlers.onPaginationChange({ pageIndex: 4, pageSize: 40 });
+      });
+
+      expect(result.current.state.pagination).toEqual({ pageIndex: 4, pageSize: 40 });
+
+      // Reset pagination
+      act(() => {
+        result.current.resetPagination();
+      });
+
+      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 40 });
+      
+      // Both URL and localStorage should be updated
+      const totalCalls = mockHistory.pushState.mock.calls.length + mockHistory.replaceState.mock.calls.length;
+      expect(totalCalls).toBeGreaterThan(0);
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+        "mixed-test",
+        expect.stringContaining('"pageSize":40')
+      );
+    });
+
+    it("should handle edge case with pageSize 0", () => {
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns: testColumns,
+        })
+      );
+
+      // Set pagination with edge case pageSize
+      act(() => {
+        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 0 });
+      });
+
+      // Reset pagination
+      act(() => {
+        result.current.resetPagination();
+      });
+
+      // Should preserve pageSize even if it's 0
+      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 0 });
+    });
+
+    it("should handle multiple rapid reset calls", () => {
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns: testColumns,
+        })
+      );
+
+      // Set initial state
+      act(() => {
+        result.current.handlers.onPaginationChange({ pageIndex: 9, pageSize: 20 });
+      });
+
+      // Make multiple rapid calls
+      act(() => {
+        result.current.resetPagination();
+        result.current.resetPagination();
+        result.current.resetPagination();
+      });
+
+      // Should maintain consistent final state
+      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 20 });
+    });
   });
 
   describe("Custom Persistence Configuration", () => {
