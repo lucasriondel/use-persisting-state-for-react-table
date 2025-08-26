@@ -137,16 +137,12 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     options.initialState?.pagination,
   ]);
 
-  const resetPagination = (
-    pagination: PaginationState,
-    setPagination: (pagination: PaginationState) => void
-  ) => {
+  const resetPagination = (pagination: PaginationState) => {
     const paginationDefault = {
       pageIndex: 0,
       pageSize: pagination.pageSize,
     };
     handlePaginationChange(paginationDefault, pagination);
-    setPagination(paginationDefault);
   };
 
   return {

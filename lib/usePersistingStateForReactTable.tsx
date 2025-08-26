@@ -8,7 +8,8 @@ import {
   Updater,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useCallback, useState } from "react";
+import { useCallback, useReducer } from "react";
+import { TableState, tableStateReducer } from "./tableStateReducer";
 import { PersistenceStorage } from "./types";
 import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
 import { useLocalStorageKeyValidation } from "./useLocalStorageKeyValidation";
@@ -255,33 +256,44 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const { handleRowSelectionChange, initialRowSelectionState } =
     usePersistingRowSelectionLogic(validOptions);
 
-  const [pagination, setPaginationState] = useState(initialPaginationState);
-  const [sorting, setSortingState] = useState(
-    initialSortingState || validOptions.initialState?.sorting || []
-  );
-  const [columnFilters, setColumnFiltersState] = useState(
-    initialColumnFiltersState || validOptions.initialState?.columnFilters || []
-  );
-  const [columnVisibility, setColumnVisibilityState] = useState(
-    initialColumnVisibilityState ||
+  // Initialize the state for the reducer
+  const initialState: TableState = {
+    pagination: initialPaginationState,
+    sorting: initialSortingState || validOptions.initialState?.sorting || [],
+    columnFilters:
+      initialColumnFiltersState ||
+      validOptions.initialState?.columnFilters ||
+      [],
+    columnVisibility:
+      initialColumnVisibilityState ||
       validOptions.initialState?.columnVisibility ||
-      {}
-  );
-  const [globalFilter, setGlobalFilterState] = useState(
-    initialGlobalFilterState
-  );
-  const [rowSelection, setRowSelectionState] = useState(
-    initialRowSelectionState || validOptions.initialState?.rowSelection || {}
-  );
+      {},
+    globalFilter: initialGlobalFilterState,
+    rowSelection:
+      initialRowSelectionState || validOptions.initialState?.rowSelection || {},
+  };
+
+  const [state, dispatch] = useReducer(tableStateReducer, initialState);
+
+  // Extract individual state pieces for convenience
+  const {
+    pagination,
+    sorting,
+    columnFilters,
+    columnVisibility,
+    globalFilter,
+    rowSelection,
+  } = state;
 
   const resetPagination = useCallback(() => {
-    resetPaginationLogic(pagination, setPaginationState);
-  }, [pagination, setPaginationState]);
+    dispatch({ type: "RESET_PAGINATION" });
+    resetPaginationLogic(pagination);
+  }, [pagination, resetPaginationLogic]);
 
   const setPagination = useCallback(
     (updater: Updater<PaginationState>) => {
       handlePaginationChange?.(updater, pagination);
-      setPaginationState(updater);
+      dispatch({ type: "SET_PAGINATION", updater });
     },
     [pagination, handlePaginationChange]
   );
@@ -289,7 +301,7 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const setSorting = useCallback(
     (updater: Updater<SortingState>) => {
       handleSortingChange?.(updater, sorting);
-      setSortingState(updater);
+      dispatch({ type: "SET_SORTING", updater });
     },
     [sorting, handleSortingChange]
   );
@@ -297,7 +309,7 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const setColumnFilters = useCallback(
     (updater: Updater<ColumnFiltersState>) => {
       handleColumnFiltersChange?.(updater, columnFilters);
-      setColumnFiltersState(updater);
+      dispatch({ type: "SET_COLUMN_FILTERS", updater });
       if (automaticPageReset) {
         resetPagination();
       }
@@ -313,32 +325,41 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const setColumnVisibility = useCallback(
     (updater: Updater<VisibilityState>) => {
       handleColumnVisibilityChange?.(updater, columnVisibility);
-      setColumnVisibilityState(updater);
+      dispatch({ type: "SET_COLUMN_VISIBILITY", updater });
     },
-    []
+    [columnVisibility, handleColumnVisibilityChange]
   );
 
   const setGlobalFilter = useCallback(
     (updater: string) => {
       handleGlobalFilterChange?.(updater, globalFilter);
-      setGlobalFilterState(updater);
+      dispatch({ type: "SET_GLOBAL_FILTER", updater });
       if (automaticPageReset) {
         resetPagination();
       }
     },
-    [automaticPageReset, resetPagination]
+    [
+      globalFilter,
+      handleGlobalFilterChange,
+      automaticPageReset,
+      resetPagination,
+    ]
   );
 
-  const setRowSelection = useCallback((updater: Updater<RowSelectionState>) => {
-    handleRowSelectionChange?.(updater, rowSelection);
-    setRowSelectionState(updater);
-  }, []);
+  const setRowSelection = useCallback(
+    (updater: Updater<RowSelectionState>) => {
+      handleRowSelectionChange?.(updater, rowSelection);
+      dispatch({ type: "SET_ROW_SELECTION", updater });
+    },
+    [rowSelection, handleRowSelectionChange]
+  );
 
   useAsyncFiltersManager({
     columns: validOptions.columns,
     urlNamespace: validOptions.persistence?.urlNamespace,
     localStorageKey: validOptions.persistence?.localStorageKey,
-    setColumnFilters: setColumnFiltersState,
+    setColumnFilters: (updater) =>
+      dispatch({ type: "SET_COLUMN_FILTERS", updater }),
   });
 
   return {
