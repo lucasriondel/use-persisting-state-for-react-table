@@ -131,27 +131,76 @@ Returns an object with state values, their setters, and utility functions:
 | --------- | ------------------------------- | ------------------------------------------- |
 | `options` | `PersistingTableOptions<TData>` | Configuration options for table persistence |
 
-#### Options
+#### Main Options
 
-| Option         | Type                 | Default  | Description                                  |
-| -------------- | -------------------- | -------- | -------------------------------------------- |
-| `columns`      | `ColumnDef<TData>[]` | Required | Array of column definitions                  |
-| `initialState` | `TableState<TData>`  | `{}`     | Initial state values for table features      |
-| `persistence`  | `PersistenceConfig`  | `{}`     | Configuration for state persistence behavior |
+| Option               | Type                 | Default | Description                                                            |
+| -------------------- | -------------------- | ------- | ---------------------------------------------------------------------- |
+| `columns`            | `ColumnDef<TData>[]` | -       | Array of column definitions for the table                              |
+| `automaticPageReset` | `boolean`            | `true`  | Automatically resets page index to 0 when filters/global filter change |
+| `initialState`       | `InitialState`       | `{}`    | Initial state values for table features                                |
+| `persistence`        | `PersistenceConfig`  | `{}`    | Configuration for state persistence behavior                           |
+
+#### Initial State Configuration
+
+| Option             | Type                                    | Default                        | Description                          |
+| ------------------ | --------------------------------------- | ------------------------------ | ------------------------------------ |
+| `columnVisibility` | `Record<string, boolean>`               | `{}`                           | Initial visibility state for columns |
+| `columnFilters`    | `Array<{id: string, value: any}>`       | `[]`                           | Initial column filter values         |
+| `globalFilter`     | `string`                                | `""`                           | Initial global filter value          |
+| `rowSelection`     | `Record<string, boolean>`               | `{}`                           | Initial row selection state          |
+| `sorting`          | `Array<{id: string, desc: boolean}>`    | `[]`                           | Initial sorting configuration        |
+| `pagination`       | `{pageIndex: number, pageSize: number}` | `{pageIndex: 0, pageSize: 10}` | Initial pagination state             |
 
 #### Persistence Configuration
 
-| Option                    | Type                 | Default        | Description                                                                      |
-| ------------------------- | -------------------- | -------------- | -------------------------------------------------------------------------------- |
-| `urlNamespace`            | `string`             | `undefined`    | Namespace for URL parameters to avoid conflicts                                  |
-| `localStorageKey`         | `string`             | `"data-table"` | Key for localStorage persistence                                                 |
-| `pagination`              | `PaginationConfig`   | Disabled       | Pagination persistence settings                                                  |
-| `sorting`                 | `SortingConfig`      | Disabled       | Sorting state persistence                                                        |
-| `columnVisibility`        | `VisibilityConfig`   | Disabled       | Column visibility persistence                                                    |
-| `globalFilter`            | `GlobalFilterConfig` | Disabled       | Global filter persistence                                                        |
-| `rowSelection`            | `RowSelectionConfig` | Disabled       | Row selection persistence                                                        |
-| `automaticPageReset`      | `boolean`            | `false`        | Automatically resets the page index to 0 when changing filters or global filters |
-| `filters.optimisticAsync` | `boolean`            | `true`         | See the Optimisic async section                                                  |
+| Option                    | Type                 | Default        | Description                                            |
+| ------------------------- | -------------------- | -------------- | ------------------------------------------------------ |
+| `urlNamespace`            | `string`             | `undefined`    | Namespace prefix for URL parameters to avoid conflicts |
+| `localStorageKey`         | `string`             | `"data-table"` | Key for localStorage persistence                       |
+| `pagination`              | `PaginationConfig`   | Disabled       | Pagination persistence settings                        |
+| `sorting`                 | `SortingConfig`      | Disabled       | Sorting state persistence                              |
+| `columnVisibility`        | `VisibilityConfig`   | Disabled       | Column visibility persistence                          |
+| `globalFilter`            | `GlobalFilterConfig` | Disabled       | Global filter persistence                              |
+| `rowSelection`            | `RowSelectionConfig` | Disabled       | Row selection persistence                              |
+| `filters.optimisticAsync` | `boolean`            | `false`        | Enable optimistic updates for async filter validation  |
+
+#### PaginationConfig
+
+| Option                         | Type                      | Default       | Description                             |
+| ------------------------------ | ------------------------- | ------------- | --------------------------------------- |
+| `pageIndex.persistenceStorage` | `"url" \| "localStorage"` | Required      | Where to persist the current page index |
+| `pageIndex.key`                | `string`                  | `"pageIndex"` | Key name for pageIndex persistence      |
+| `pageSize.persistenceStorage`  | `"url" \| "localStorage"` | Required      | Where to persist the page size          |
+| `pageSize.key`                 | `string`                  | `"pageSize"`  | Key name for pageSize persistence       |
+
+#### SortingConfig
+
+| Option                | Type                      | Default              | Description                       |
+| --------------------- | ------------------------- | -------------------- | --------------------------------- |
+| `persistenceStorage`  | `"url" \| "localStorage"` | Required             | Where to persist sorting state    |
+| `sortingColumnKey`    | `string`                  | `"sortingColumn"`    | Key name for the sorted column ID |
+| `sortingDirectionKey` | `string`                  | `"sortingDirection"` | Key name for the sort direction   |
+
+#### VisibilityConfig
+
+| Option               | Type                      | Default              | Description                              |
+| -------------------- | ------------------------- | -------------------- | ---------------------------------------- |
+| `persistenceStorage` | `"url" \| "localStorage"` | Required             | Where to persist column visibility state |
+| `key`                | `string`                  | `"columnVisibility"` | Key name for persistence                 |
+
+#### GlobalFilterConfig
+
+| Option               | Type                      | Default          | Description                          |
+| -------------------- | ------------------------- | ---------------- | ------------------------------------ |
+| `persistenceStorage` | `"url" \| "localStorage"` | Required         | Where to persist global filter state |
+| `key`                | `string`                  | `"globalFilter"` | Key name for persistence             |
+
+#### RowSelectionConfig
+
+| Option               | Type                      | Default          | Description                          |
+| -------------------- | ------------------------- | ---------------- | ------------------------------------ |
+| `persistenceStorage` | `"url" \| "localStorage"` | Required         | Where to persist row selection state |
+| `key`                | `string`                  | `"rowSelection"` | Key name for persistence             |
 
 #### Return Object
 

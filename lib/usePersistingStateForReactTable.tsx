@@ -75,24 +75,37 @@ export interface PersistingTableOptions<TData extends RowData>
  * @param options.columns - Array of column definitions for the table
  * @param options.automaticPageReset - Whether to automatically reset pagination when filters change (defaults to true)
  * @param options.initialState - Optional initial state values for various table features
- * @param options.initialState.columnVisibility - Initial visibility state for columns
- * @param options.initialState.columnFilters - Initial column filter values
- * @param options.initialState.globalFilter - Initial global filter value
- * @param options.initialState.rowSelection - Initial row selection state
- * @param options.initialState.sorting - Initial sorting configuration
- * @param options.initialState.pagination - Initial pagination state
+ * @param options.initialState.columnVisibility - Initial visibility state for columns as Record<string, boolean>
+ * @param options.initialState.columnFilters - Initial column filter values as Array<{id: string, value: unknown}>
+ * @param options.initialState.globalFilter - Initial global filter value as string
+ * @param options.initialState.rowSelection - Initial row selection state as Record<string, boolean>
+ * @param options.initialState.sorting - Initial sorting configuration as Array<{id: string, desc: boolean}>
+ * @param options.initialState.pagination - Initial pagination state as {pageIndex: number, pageSize: number}
  * @param options.persistence - Configuration for state persistence behavior
- * @param options.persistence.urlNamespace - Namespace for URL parameters to avoid conflicts
+ * @param options.persistence.urlNamespace - Namespace prefix for URL parameters to avoid conflicts with other hooks
  * @param options.persistence.localStorageKey - Key for localStorage persistence (defaults to "data-table")
  * @param options.persistence.pagination - Pagination persistence configuration
  * @param options.persistence.pagination.pageIndex - Page index persistence settings
+ * @param options.persistence.pagination.pageIndex.persistenceStorage - Where to persist page index ("url" | "localStorage")
+ * @param options.persistence.pagination.pageIndex.key - Key name for page index persistence (defaults to "pageIndex")
  * @param options.persistence.pagination.pageSize - Page size persistence settings
+ * @param options.persistence.pagination.pageSize.persistenceStorage - Where to persist page size ("url" | "localStorage")
+ * @param options.persistence.pagination.pageSize.key - Key name for page size persistence (defaults to "pageSize")
  * @param options.persistence.sorting - Sorting state persistence configuration
+ * @param options.persistence.sorting.persistenceStorage - Where to persist sorting state ("url" | "localStorage")
+ * @param options.persistence.sorting.sortingColumnKey - Key name for sorted column ID (defaults to "sortingColumn")
+ * @param options.persistence.sorting.sortingDirectionKey - Key name for sort direction (defaults to "sortingDirection")
  * @param options.persistence.columnVisibility - Column visibility persistence configuration
+ * @param options.persistence.columnVisibility.persistenceStorage - Where to persist column visibility ("url" | "localStorage")
+ * @param options.persistence.columnVisibility.key - Key name for column visibility (defaults to "columnVisibility")
  * @param options.persistence.globalFilter - Global filter persistence configuration
+ * @param options.persistence.globalFilter.persistenceStorage - Where to persist global filter ("url" | "localStorage")
+ * @param options.persistence.globalFilter.key - Key name for global filter (defaults to "globalFilter")
  * @param options.persistence.rowSelection - Row selection persistence configuration
+ * @param options.persistence.rowSelection.persistenceStorage - Where to persist row selection ("url" | "localStorage")
+ * @param options.persistence.rowSelection.key - Key name for row selection (defaults to "rowSelection")
  * @param options.persistence.filters - Column filters persistence configuration
- * @param options.persistence.filters.optimisticAsync - Enable optimistic updates for async filters
+ * @param options.persistence.filters.optimisticAsync - Enable optimistic updates for async filter validation (defaults to false)
  *
  * @returns An object containing the table state, handlers for React Table integration, and utility functions
  * @returns returns.state - Object containing all current table state values
