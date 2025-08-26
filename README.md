@@ -84,21 +84,7 @@ const columns: ColumnDef<User>[] = [
 ];
 
 function UsersTable() {
-  const {
-    pagination,
-    setPagination,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    columnVisibility,
-    setColumnVisibility,
-    globalFilter,
-    setGlobalFilter,
-    rowSelection,
-    setRowSelection,
-    resetPagination,
-  } = usePersistingStateForReactTable({
+  const { state, handlers, resetPagination } = usePersistingStateForReactTable({
     columns,
     persistence: {
       urlNamespace: "users-table",
@@ -117,20 +103,8 @@ function UsersTable() {
   const table = useReactTable({
     data,
     columns,
-    state: {
-      pagination,
-      sorting,
-      columnFilters,
-      columnVisibility,
-      globalFilter,
-      rowSelection,
-    },
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
-    onRowSelectionChange: setRowSelection,
+    state,
+    ...handlers,
     getCoreRowModel: getCoreRowModel(),
     // ... other table configuration
   });
@@ -167,34 +141,37 @@ Returns an object with state values, their setters, and utility functions:
 
 #### Persistence Configuration
 
-| Option             | Type                 | Default        | Description                                     |
-| ------------------ | -------------------- | -------------- | ----------------------------------------------- |
-| `urlNamespace`     | `string`             | `undefined`    | Namespace for URL parameters to avoid conflicts |
-| `localStorageKey`  | `string`             | `"data-table"` | Key for localStorage persistence                |
-| `pagination`       | `PaginationConfig`   | URL storage    | Pagination persistence settings                 |
-| `sorting`          | `SortingConfig`      | URL storage    | Sorting state persistence                       |
-| `columnVisibility` | `VisibilityConfig`   | localStorage   | Column visibility persistence                   |
-| `globalFilter`     | `GlobalFilterConfig` | URL storage    | Global filter persistence                       |
-| `rowSelection`     | `RowSelectionConfig` | Disabled       | Row selection persistence                       |
-| `filters`          | `FiltersConfig`      | `{}`           | Column filters configuration                    |
+| Option                    | Type                 | Default        | Description                                                                      |
+| ------------------------- | -------------------- | -------------- | -------------------------------------------------------------------------------- |
+| `urlNamespace`            | `string`             | `undefined`    | Namespace for URL parameters to avoid conflicts                                  |
+| `localStorageKey`         | `string`             | `"data-table"` | Key for localStorage persistence                                                 |
+| `pagination`              | `PaginationConfig`   | Disabled       | Pagination persistence settings                                                  |
+| `sorting`                 | `SortingConfig`      | Disabled       | Sorting state persistence                                                        |
+| `columnVisibility`        | `VisibilityConfig`   | Disabled       | Column visibility persistence                                                    |
+| `globalFilter`            | `GlobalFilterConfig` | Disabled       | Global filter persistence                                                        |
+| `rowSelection`            | `RowSelectionConfig` | Disabled       | Row selection persistence                                                        |
+| `filters.optimisticAsync` | `boolean`            | `false`        | Automatically resets the page index to 0 when changing filters or global filters |
+| `automaticPageReset`      | `boolean`            | `true`         | See the Optimisic async section                                                  |
 
 #### Return Object
 
-| Property              | Type                        | Description                                             |
-| --------------------- | --------------------------- | ------------------------------------------------------- |
-| `pagination`          | `PaginationState`           | Current pagination state                                |
-| `setPagination`       | `(updater) => void`         | Setter for pagination with automatic persistence        |
-| `sorting`             | `SortingState`              | Current sorting state                                   |
-| `setSorting`          | `(updater) => void`         | Setter for sorting with automatic persistence           |
-| `columnFilters`       | `ColumnFiltersState`        | Current column filters state                            |
-| `setColumnFilters`    | `(updater) => void`         | Setter for column filters with automatic persistence    |
-| `columnVisibility`    | `VisibilityState`           | Current column visibility state                         |
-| `setColumnVisibility` | `(updater) => void`         | Setter for column visibility with automatic persistence |
-| `globalFilter`        | `string`                    | Current global filter state                             |
-| `setGlobalFilter`     | `(updater: string) => void` | Setter for global filter with automatic persistence     |
-| `rowSelection`        | `RowSelectionState`         | Current row selection state                             |
-| `setRowSelection`     | `(updater) => void`         | Setter for row selection with automatic persistence     |
-| `resetPagination`     | `() => void`                | Function to reset pagination to initial state           |
+| Property                            | Type                        | Description                                                           |
+| ----------------------------------- | --------------------------- | --------------------------------------------------------------------- |
+| `state`                             | `TableState`                | Object containing all current table state values                      |
+| `state.pagination`                  | `PaginationState`           | Current pagination state                                              |
+| `state.sorting`                     | `SortingState`              | Current sorting state                                                 |
+| `state.columnFilters`               | `ColumnFiltersState`        | Current column filters state                                          |
+| `state.columnVisibility`            | `VisibilityState`           | Current column visibility state                                       |
+| `state.globalFilter`                | `string`                    | Current global filter state                                           |
+| `state.rowSelection`                | `RowSelectionState`         | Current row selection state                                           |
+| `handlers`                          | `TableHandlers`             | Object containing handler functions for React Table                   |
+| `handlers.onPaginationChange`       | `(updater) => void`         | Handler for pagination changes with automatic persistence             |
+| `handlers.onSortingChange`          | `(updater) => void`         | Handler for sorting changes with automatic persistence                |
+| `handlers.onColumnFiltersChange`    | `(updater) => void`         | Handler for column filter changes with automatic persistence          |
+| `handlers.onColumnVisibilityChange` | `(updater) => void`         | Handler for column visibility changes with automatic persistence      |
+| `handlers.onGlobalFilterChange`     | `(updater: string) => void` | Handler for global filter changes with automatic persistence          |
+| `handlers.onRowSelectionChange`     | `(updater) => void`         | Handler for row selection changes with automatic persistence          |
+| `resetPagination`                   | `() => void`                | Function to reset pagination to first page while preserving page size |
 
 ## 🎯 Examples
 
@@ -205,20 +182,7 @@ import { usePersistingStateForReactTable } from "use-persisting-state-for-react-
 import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 
 function BasicTable() {
-  const {
-    pagination,
-    setPagination,
-    sorting,
-    setSorting,
-    columnFilters,
-    setColumnFilters,
-    columnVisibility,
-    setColumnVisibility,
-    globalFilter,
-    setGlobalFilter,
-    rowSelection,
-    setRowSelection,
-  } = usePersistingStateForReactTable({
+  const { state, handlers } = usePersistingStateForReactTable({
     columns,
     persistence: {
       urlNamespace: "products",
@@ -234,158 +198,11 @@ function BasicTable() {
   const table = useReactTable({
     data,
     columns,
-    state: {
-      pagination,
-      sorting,
-      columnFilters,
-      columnVisibility,
-      globalFilter,
-      rowSelection,
-    },
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
-    onRowSelectionChange: setRowSelection,
+    state,
+    ...handlers,
     getCoreRowModel: getCoreRowModel(),
   });
 }
-```
-
-### Advanced Usage with Manual State Management
-
-```tsx
-function AdvancedTable() {
-  const {
-    pagination: persistedPagination,
-    setPagination: setPersistedPagination,
-    sorting: persistedSorting,
-    setSorting: setPersistedSorting,
-    columnFilters: persistedColumnFilters,
-    setColumnFilters: setPersistedColumnFilters,
-    columnVisibility,
-    setColumnVisibility,
-    globalFilter: persistedGlobalFilter,
-    setGlobalFilter: setPersistedGlobalFilter,
-    rowSelection,
-    setRowSelection,
-    resetPagination,
-  } = usePersistingStateForReactTable({
-    columns,
-    initialState: {
-      pagination: { pageIndex: 3, pageSize: 10 },
-      sorting: [{ id: "name", desc: false }],
-      columnFilters: [{ id: "role", value: ["admin"] }],
-      columnVisibility: { role: false, status: false },
-    },
-    persistence: {
-      filters: { optimisticAsync: true },
-      pagination: {
-        pageIndex: { persistenceStorage: "url" },
-        pageSize: { persistenceStorage: "url" },
-      },
-      sorting: { persistenceStorage: "url" },
-      columnVisibility: { persistenceStorage: "localStorage" },
-      globalFilter: { persistenceStorage: "url", key: "search" },
-      rowSelection: { persistenceStorage: "url" },
-    },
-  });
-
-  // Manual state management for server-side operations
-  const [pagination, setPagination] = useState(persistedPagination);
-  const [sorting, setSorting] = useState(persistedSorting);
-  const [columnFilters, setColumnFilters] = useState(persistedColumnFilters);
-  const [globalFilter, setGlobalFilter] = useState(persistedGlobalFilter);
-
-  // API request configuration
-  const apiRequest = useMemo(
-    () => ({
-      pagination,
-      sorting,
-      filters: columnFilters,
-      globalFilter,
-    }),
-    [pagination, sorting, columnFilters, globalFilter]
-  );
-
-  // Server-side data fetching
-  const { data: apiResponse, isLoading } = useQuery({
-    queryKey: ["users", apiRequest],
-    queryFn: () => fetchUsers(apiRequest),
-  });
-
-  const table = useReactTable({
-    data: apiResponse?.data || [],
-    columns,
-    manualPagination: true,
-    manualSorting: true,
-    manualFiltering: true,
-    rowCount: apiResponse?.pageCount,
-    state: {
-      pagination,
-      sorting,
-      columnFilters,
-      columnVisibility,
-      globalFilter,
-      rowSelection,
-    },
-    onPaginationChange: (updater) => {
-      setPersistedPagination(updater);
-      setPagination(updater);
-    },
-    onSortingChange: (updater) => {
-      setPersistedSorting(updater);
-      setSorting(updater);
-    },
-    onColumnFiltersChange: (updater) => {
-      setPersistedColumnFilters(updater);
-      setColumnFilters(updater);
-      resetPagination();
-    },
-    onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: (updater) => {
-      setPersistedGlobalFilter(updater);
-      setGlobalFilter(updater);
-      resetPagination();
-    },
-    onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-  });
-}
-```
-
-### Mixed Storage Strategy
-
-```tsx
-// Store user preferences in localStorage, but keep filters/search in URL for sharing
-const {
-  pagination,
-  setPagination,
-  sorting,
-  setSorting,
-  columnFilters,
-  setColumnFilters,
-  columnVisibility,
-  setColumnVisibility,
-  globalFilter,
-  setGlobalFilter,
-  rowSelection,
-  setRowSelection,
-} = usePersistingStateForReactTable({
-  columns,
-  persistence: {
-    localStorageKey: "my-app-table-settings",
-    columnVisibility: { persistenceStorage: "localStorage" },
-    pagination: {
-      pageIndex: { persistenceStorage: "url" },
-      pageSize: { persistenceStorage: "localStorage" }, // Remember user's preferred page size
-    },
-    sorting: { persistenceStorage: "url" }, // Shareable via URL
-    globalFilter: { persistenceStorage: "url" }, // Shareable via URL
-    filters: { optimisticAsync: true }, // Individual filter storage defined in column meta
-  },
-});
 ```
 
 ### Custom Filter Variants with Persistence
@@ -487,16 +304,81 @@ const columns: ColumnDef<User>[] = [
 
 ## 🔧 Advanced Configuration
 
-### Optimistic Async Filters
+### Async Filters
 
-Enable optimistic updates for filters that trigger async operations:
+The hook provides a way to automatically validate filters values for `multi-select` or `select` variants based on values defined on the `columns` array. Those values can come asynchronously from an API and be validated after the first render:
 
 ```tsx
-const {
-  columnFilters,
-  setColumnFilters,
-  // ... other state and setters
-} = usePersistingStateForReactTable({
+  const { data: filtersFromApi, isLoading: isFiltersLoading } = useQuery({
+    queryKey: ["filters"],
+    queryFn: () => fetchFilters(),
+    enabled: true,
+  });
+
+  const columns: ColumnDef<User>[] = useMemo(
+    () => [
+      ...
+      {
+        accessorKey: "role",
+        id: "Role",
+        meta: {
+          filter: {
+            isLoading: isFiltersLoading,
+            variant: "multiSelect",
+            options: filtersFromApi?.roles
+            codec: {
+              parse: (value) => value.split(","),
+              format: (value: string[]) => value.join(",")
+            },
+            persistenceStorage: "url"
+          },
+        }
+      },
+      ...
+  , [filtersFromApi, filtersLoading])
+
+  const { state, handlers } = usePersistingStateForReactTable({
+    columns,
+    ...
+  });
+```
+
+If the API gives to us the roles `admin`, `user` and `manager` for example, and when loading the page we have this query param `?role=admin,WRONG-ROLE`, this is what's going to happen:
+
+#### First render
+
+```tsx
+  const { state, handlers } = usePersistingStateForReactTable({
+    columns,
+    ...
+  });
+
+  console.log({ columnFilters: state.columnFilters })
+  // {
+  //   "columnFilters": []
+  // }
+```
+
+#### After API has finished fetching
+
+```tsx
+console.log({ columnFilters: state.columnFilters });
+// {
+//   "columnFilters":
+//   [
+//       { "id": "role", "value": ["admin"] }
+//   ]
+// }
+
+// query params are now: `?role=admin`
+```
+
+#### With `optimisticAsync` = true
+
+Enable optimistic updates for filters that trigger async operations to trust the parameter we get first hand
+
+```tsx
+const { state, handlers } = usePersistingStateForReactTable({
   columns,
   persistence: {
     filters: {
@@ -506,7 +388,13 @@ const {
   },
 });
 
-// Filters will update UI immediately while API requests are in flight
+console.log({ columnFilters: state.columnFilters });
+// {
+//   "columnFilters":
+//   [
+//       { "id": "role", "value": ["admin", "WRONG-VALUE"] }
+//   ]
+// }
 ```
 
 ### URL Namespacing
@@ -538,12 +426,7 @@ const productsTableState = usePersistingStateForReactTable({
 Customize storage keys for better organization:
 
 ```tsx
-const {
-  pagination,
-  setPagination,
-  columnVisibility,
-  setColumnVisibility,
-  globalFilter,
+const { state, handlers } = usePersistingStateForReactTable({
   setGlobalFilter,
   // ... other state and setters
 } = usePersistingStateForReactTable({
@@ -668,6 +551,33 @@ meta: {
 }
 ```
 
+### Getting the meta properties
+
+You can access the meta properties you've defined for each filter in your component that will be using the `table` helper provided by Tanstack Table:
+
+```tsx
+interface Props<TData> {
+  table: Table<TData>;
+}
+
+export function Component<TData>({
+  table,
+}: Props<TData>) {
+  const columns = table.getAllColumns();
+
+  return (
+    <div>
+      {columns.filter((col) => col.getCanFilter())
+        .map((column) => {
+          const meta = column.columnDef.meta
+          return <div>{meta.filter.key} is of type {meta.filter.variant}</div>
+      })
+    </div>
+  )
+}
+
+```
+
 ## 📝 TypeScript Support
 
 The hook provides full TypeScript support with generic types:
@@ -683,12 +593,7 @@ interface User {
 }
 
 // Full type safety for table data
-const {
-  pagination,
-  setPagination,
-  sorting,
-  setSorting,
-  columnFilters,
+const { state, handlers } = usePersistingStateForReactTable({
   setColumnFilters,
   columnVisibility,
   setColumnVisibility,
