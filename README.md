@@ -84,33 +84,53 @@ const columns: ColumnDef<User>[] = [
 ];
 
 function UsersTable() {
-  const { initialState, handlers, resetPagination } =
-    usePersistingStateForReactTable({
-      columns,
-      persistence: {
-        urlNamespace: "users-table",
-        pagination: {
-          pageIndex: { persistenceStorage: "url" },
-          pageSize: { persistenceStorage: "url" },
-        },
-        sorting: { persistenceStorage: "url" },
-        globalFilter: { persistenceStorage: "url", key: "search" },
-        columnVisibility: { persistenceStorage: "localStorage" },
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    columnVisibility,
+    setColumnVisibility,
+    globalFilter,
+    setGlobalFilter,
+    rowSelection,
+    setRowSelection,
+    resetPagination,
+  } = usePersistingStateForReactTable({
+    columns,
+    persistence: {
+      urlNamespace: "users-table",
+      pagination: {
+        pageIndex: { persistenceStorage: "url" },
+        pageSize: { persistenceStorage: "url" },
       },
-    });
+      sorting: { persistenceStorage: "url" },
+      globalFilter: { persistenceStorage: "url", key: "search" },
+      columnVisibility: { persistenceStorage: "localStorage" },
+    },
+  });
 
   const [data, setData] = useState<User[]>([]);
 
   const table = useReactTable({
     data,
     columns,
-    state: initialState,
-    onPaginationChange: handlers.onPaginationChange,
-    onSortingChange: handlers.onSortingChange,
-    onColumnFiltersChange: handlers.onColumnFiltersChange,
-    onColumnVisibilityChange: handlers.onColumnVisibilityChange,
-    onGlobalFilterChange: handlers.onGlobalFilterChange,
-    onRowSelectionChange: handlers.onRowSelectionChange,
+    state: {
+      pagination,
+      sorting,
+      columnFilters,
+      columnVisibility,
+      globalFilter,
+      rowSelection,
+    },
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     // ... other table configuration
   });
@@ -125,11 +145,11 @@ Your table state will automatically persist across page reloads!
 
 ### `usePersistingStateForReactTable(options)`
 
-Returns an object with `{ initialState, handlers, resetPagination }`:
+Returns an object with state values, their setters, and utility functions:
 
-- `initialState`: Complete initial state object for React Table
-- `handlers`: Event handlers for table state changes
-- `resetPagination`: Function to reset pagination to initial state
+- State values: `pagination`, `sorting`, `columnFilters`, `columnVisibility`, `globalFilter`, `rowSelection`
+- State setters: `setPagination`, `setSorting`, `setColumnFilters`, `setColumnVisibility`, `setGlobalFilter`, `setRowSelection`
+- Utility functions: `resetPagination`
 
 #### Parameters
 
@@ -160,22 +180,21 @@ Returns an object with `{ initialState, handlers, resetPagination }`:
 
 #### Return Object
 
-| Property          | Type                | Description                      |
-| ----------------- | ------------------- | -------------------------------- |
-| `initialState`    | `TableState<TData>` | Initial state for React Table    |
-| `handlers`        | `TableHandlers`     | Event handlers for state changes |
-| `resetPagination` | `() => void`        | Function to reset pagination     |
-
-#### Handlers
-
-| Handler                    | Signature                 | Description                      |
-| -------------------------- | ------------------------- | -------------------------------- |
-| `onColumnFiltersChange`    | `(updater) => void`       | Handle column filter changes     |
-| `onPaginationChange`       | `(updater) => void`       | Handle pagination changes        |
-| `onSortingChange`          | `(updater) => void`       | Handle sorting changes           |
-| `onColumnVisibilityChange` | `(updater) => void`       | Handle column visibility changes |
-| `onGlobalFilterChange`     | `(value: string) => void` | Handle global filter changes     |
-| `onRowSelectionChange`     | `(updater) => void`       | Handle row selection changes     |
+| Property              | Type                        | Description                                             |
+| --------------------- | --------------------------- | ------------------------------------------------------- |
+| `pagination`          | `PaginationState`           | Current pagination state                                |
+| `setPagination`       | `(updater) => void`         | Setter for pagination with automatic persistence        |
+| `sorting`             | `SortingState`              | Current sorting state                                   |
+| `setSorting`          | `(updater) => void`         | Setter for sorting with automatic persistence           |
+| `columnFilters`       | `ColumnFiltersState`        | Current column filters state                            |
+| `setColumnFilters`    | `(updater) => void`         | Setter for column filters with automatic persistence    |
+| `columnVisibility`    | `VisibilityState`           | Current column visibility state                         |
+| `setColumnVisibility` | `(updater) => void`         | Setter for column visibility with automatic persistence |
+| `globalFilter`        | `string`                    | Current global filter state                             |
+| `setGlobalFilter`     | `(updater: string) => void` | Setter for global filter with automatic persistence     |
+| `rowSelection`        | `RowSelectionState`         | Current row selection state                             |
+| `setRowSelection`     | `(updater) => void`         | Setter for row selection with automatic persistence     |
+| `resetPagination`     | `() => void`                | Function to reset pagination to initial state           |
 
 ## 🎯 Examples
 
@@ -186,7 +205,20 @@ import { usePersistingStateForReactTable } from "use-persisting-state-for-react-
 import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 
 function BasicTable() {
-  const { initialState, handlers } = usePersistingStateForReactTable({
+  const {
+    pagination,
+    setPagination,
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    columnVisibility,
+    setColumnVisibility,
+    globalFilter,
+    setGlobalFilter,
+    rowSelection,
+    setRowSelection,
+  } = usePersistingStateForReactTable({
     columns,
     persistence: {
       urlNamespace: "products",
@@ -202,8 +234,20 @@ function BasicTable() {
   const table = useReactTable({
     data,
     columns,
-    state: initialState,
-    ...handlers,
+    state: {
+      pagination,
+      sorting,
+      columnFilters,
+      columnVisibility,
+      globalFilter,
+      rowSelection,
+    },
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
   });
 }
@@ -213,39 +257,46 @@ function BasicTable() {
 
 ```tsx
 function AdvancedTable() {
-  const { initialState, handlers, resetPagination } =
-    usePersistingStateForReactTable({
-      columns,
-      initialState: {
-        pagination: { pageIndex: 3, pageSize: 10 },
-        sorting: [{ id: "name", desc: false }],
-        columnFilters: [{ id: "role", value: ["admin"] }],
-        columnVisibility: { role: false, status: false },
+  const {
+    pagination: persistedPagination,
+    setPagination: setPersistedPagination,
+    sorting: persistedSorting,
+    setSorting: setPersistedSorting,
+    columnFilters: persistedColumnFilters,
+    setColumnFilters: setPersistedColumnFilters,
+    columnVisibility,
+    setColumnVisibility,
+    globalFilter: persistedGlobalFilter,
+    setGlobalFilter: setPersistedGlobalFilter,
+    rowSelection,
+    setRowSelection,
+    resetPagination,
+  } = usePersistingStateForReactTable({
+    columns,
+    initialState: {
+      pagination: { pageIndex: 3, pageSize: 10 },
+      sorting: [{ id: "name", desc: false }],
+      columnFilters: [{ id: "role", value: ["admin"] }],
+      columnVisibility: { role: false, status: false },
+    },
+    persistence: {
+      filters: { optimisticAsync: true },
+      pagination: {
+        pageIndex: { persistenceStorage: "url" },
+        pageSize: { persistenceStorage: "url" },
       },
-      persistence: {
-        filters: { optimisticAsync: true },
-        pagination: {
-          pageIndex: { persistenceStorage: "url" },
-          pageSize: { persistenceStorage: "url" },
-        },
-        sorting: { persistenceStorage: "url" },
-        columnVisibility: { persistenceStorage: "localStorage" },
-        globalFilter: { persistenceStorage: "url", key: "search" },
-        rowSelection: { persistenceStorage: "url" },
-      },
-    });
+      sorting: { persistenceStorage: "url" },
+      columnVisibility: { persistenceStorage: "localStorage" },
+      globalFilter: { persistenceStorage: "url", key: "search" },
+      rowSelection: { persistenceStorage: "url" },
+    },
+  });
 
   // Manual state management for server-side operations
-  const [pagination, setPagination] = useState(initialState.pagination);
-  const [sorting, setSorting] = useState(initialState.sorting);
-  const [columnFilters, setColumnFilters] = useState(
-    initialState.columnFilters
-  );
-  const [columnVisibility, setColumnVisibility] = useState(
-    initialState.columnVisibility
-  );
-  const [globalFilter, setGlobalFilter] = useState(initialState.globalFilter);
-  const [rowSelection, setRowSelection] = useState(initialState.rowSelection);
+  const [pagination, setPagination] = useState(persistedPagination);
+  const [sorting, setSorting] = useState(persistedSorting);
+  const [columnFilters, setColumnFilters] = useState(persistedColumnFilters);
+  const [globalFilter, setGlobalFilter] = useState(persistedGlobalFilter);
 
   // API request configuration
   const apiRequest = useMemo(
@@ -280,31 +331,25 @@ function AdvancedTable() {
       rowSelection,
     },
     onPaginationChange: (updater) => {
-      handlers.onPaginationChange(updater, pagination);
+      setPersistedPagination(updater);
       setPagination(updater);
     },
     onSortingChange: (updater) => {
-      handlers.onSortingChange(updater, sorting);
+      setPersistedSorting(updater);
       setSorting(updater);
     },
     onColumnFiltersChange: (updater) => {
-      handlers.onColumnFiltersChange(updater, columnFilters);
+      setPersistedColumnFilters(updater);
       setColumnFilters(updater);
-      resetPagination(pagination, setPagination);
+      resetPagination();
     },
-    onColumnVisibilityChange: (updater) => {
-      handlers.onColumnVisibilityChange(updater, columnVisibility);
-      setColumnVisibility(updater);
-    },
+    onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: (updater) => {
-      handlers.onGlobalFilterChange(updater, globalFilter);
+      setPersistedGlobalFilter(updater);
       setGlobalFilter(updater);
-      resetPagination(pagination, setPagination);
+      resetPagination();
     },
-    onRowSelectionChange: (updater) => {
-      handlers.onRowSelectionChange(updater, rowSelection);
-      setRowSelection(updater);
-    },
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
   });
 }
@@ -314,7 +359,20 @@ function AdvancedTable() {
 
 ```tsx
 // Store user preferences in localStorage, but keep filters/search in URL for sharing
-const { initialState, handlers } = usePersistingStateForReactTable({
+const {
+  pagination,
+  setPagination,
+  sorting,
+  setSorting,
+  columnFilters,
+  setColumnFilters,
+  columnVisibility,
+  setColumnVisibility,
+  globalFilter,
+  setGlobalFilter,
+  rowSelection,
+  setRowSelection,
+} = usePersistingStateForReactTable({
   columns,
   persistence: {
     localStorageKey: "my-app-table-settings",
@@ -434,7 +492,11 @@ const columns: ColumnDef<User>[] = [
 Enable optimistic updates for filters that trigger async operations:
 
 ```tsx
-const { initialState, handlers } = usePersistingStateForReactTable({
+const {
+  columnFilters,
+  setColumnFilters,
+  // ... other state and setters
+} = usePersistingStateForReactTable({
   columns,
   persistence: {
     filters: {
@@ -453,7 +515,7 @@ Prevent URL parameter conflicts when using multiple tables:
 
 ```tsx
 // Users table
-const usersTable = usePersistingStateForReactTable({
+const usersTableState = usePersistingStateForReactTable({
   columns: userColumns,
   persistence: {
     urlNamespace: "users",
@@ -462,7 +524,7 @@ const usersTable = usePersistingStateForReactTable({
 });
 
 // Products table
-const productsTable = usePersistingStateForReactTable({
+const productsTableState = usePersistingStateForReactTable({
   columns: productColumns,
   persistence: {
     urlNamespace: "products",
@@ -476,7 +538,15 @@ const productsTable = usePersistingStateForReactTable({
 Customize storage keys for better organization:
 
 ```tsx
-const { initialState, handlers } = usePersistingStateForReactTable({
+const {
+  pagination,
+  setPagination,
+  columnVisibility,
+  setColumnVisibility,
+  globalFilter,
+  setGlobalFilter,
+  // ... other state and setters
+} = usePersistingStateForReactTable({
   columns,
   persistence: {
     localStorageKey: "admin-dashboard-table", // Custom localStorage key
@@ -613,7 +683,16 @@ interface User {
 }
 
 // Full type safety for table data
-const { initialState, handlers } = usePersistingStateForReactTable<User>({
+const {
+  pagination,
+  setPagination,
+  sorting,
+  setSorting,
+  columnFilters,
+  setColumnFilters,
+  columnVisibility,
+  setColumnVisibility,
+} = usePersistingStateForReactTable<User>({
   columns: userColumns,
   initialState: {
     sorting: [{ id: "name", desc: false }], // ✅ Valid column ID

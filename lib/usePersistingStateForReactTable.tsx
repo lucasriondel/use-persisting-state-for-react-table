@@ -27,16 +27,16 @@ export interface PersistingTableOptions<TData extends RowData>
     localStorageKey?: string;
     pagination?: {
       pageIndex: {
-        persistenceStorage: PersistenceStorage; // default is url
+        persistenceStorage: PersistenceStorage;
         key?: string;
       };
       pageSize: {
-        persistenceStorage: PersistenceStorage; // default is url
+        persistenceStorage: PersistenceStorage;
         key?: string;
       };
     };
     sorting?: {
-      persistenceStorage: PersistenceStorage; // default is url
+      persistenceStorage: PersistenceStorage;
       sortingColumnKey?: string; // default "sortingColumn"
       sortingDirectionKey?: string; // default "sortingDirection"
     };
@@ -45,7 +45,7 @@ export interface PersistingTableOptions<TData extends RowData>
       key?: string;
     };
     globalFilter?: {
-      persistenceStorage: PersistenceStorage; // default is url
+      persistenceStorage: PersistenceStorage;
       key?: string;
     };
     rowSelection?: {
@@ -62,55 +62,69 @@ export interface PersistingTableOptions<TData extends RowData>
  * A comprehensive React hook for managing persisted state in React Table applications.
  *
  * This hook provides automatic persistence of table state across page reloads and navigation,
- * supporting both URL parameters and localStorage for different state aspects. It handles
+ * supporting both URL parameters and localStorage for different state aspects. It manages
  * column filters, pagination, sorting, column visibility, global filtering, and row selection
- * with configurable persistence strategies.
+ * with configurable persistence strategies, directly handling state internally and providing
+ * both current state values and their corresponding setter functions.
  *
  * @template TData - The type of data that will be displayed in the table rows
  *
- * @param unvalidatedOptions - Configuration object for the persisting table behavior
- * @param unvalidatedOptions.columns - Array of column definitions for the table
- * @param unvalidatedOptions.initialState - Optional initial state values for various table features
- * @param unvalidatedOptions.initialState.columnVisibility - Initial visibility state for columns
- * @param unvalidatedOptions.initialState.columnFilters - Initial column filter values
- * @param unvalidatedOptions.initialState.globalFilter - Initial global filter value
- * @param unvalidatedOptions.initialState.rowSelection - Initial row selection state
- * @param unvalidatedOptions.initialState.sorting - Initial sorting configuration
- * @param unvalidatedOptions.initialState.pagination - Initial pagination state
- * @param unvalidatedOptions.persistence - Configuration for state persistence behavior
- * @param unvalidatedOptions.persistence.urlNamespace - Namespace for URL parameters to avoid conflicts
- * @param unvalidatedOptions.persistence.localStorageKey - Key for localStorage persistence (defaults to "data-table")
- * @param unvalidatedOptions.persistence.pagination - Pagination persistence configuration
- * @param unvalidatedOptions.persistence.pagination.pageIndex - Page index persistence settings
- * @param unvalidatedOptions.persistence.pagination.pageSize - Page size persistence settings
- * @param unvalidatedOptions.persistence.sorting - Sorting state persistence configuration
- * @param unvalidatedOptions.persistence.columnVisibility - Column visibility persistence configuration
- * @param unvalidatedOptions.persistence.globalFilter - Global filter persistence configuration
- * @param unvalidatedOptions.persistence.rowSelection - Row selection persistence configuration
- * @param unvalidatedOptions.persistence.filters - Column filters persistence configuration
- * @param unvalidatedOptions.persistence.filters.optimisticAsync - Enable optimistic updates for async filters
+ * @param options - Configuration object for the persisting table behavior
+ * @param options.columns - Array of column definitions for the table
+ * @param options.automaticPageReset - Whether to automatically reset pagination when filters change (defaults to true)
+ * @param options.initialState - Optional initial state values for various table features
+ * @param options.initialState.columnVisibility - Initial visibility state for columns
+ * @param options.initialState.columnFilters - Initial column filter values
+ * @param options.initialState.globalFilter - Initial global filter value
+ * @param options.initialState.rowSelection - Initial row selection state
+ * @param options.initialState.sorting - Initial sorting configuration
+ * @param options.initialState.pagination - Initial pagination state
+ * @param options.persistence - Configuration for state persistence behavior
+ * @param options.persistence.urlNamespace - Namespace for URL parameters to avoid conflicts
+ * @param options.persistence.localStorageKey - Key for localStorage persistence (defaults to "data-table")
+ * @param options.persistence.pagination - Pagination persistence configuration
+ * @param options.persistence.pagination.pageIndex - Page index persistence settings
+ * @param options.persistence.pagination.pageSize - Page size persistence settings
+ * @param options.persistence.sorting - Sorting state persistence configuration
+ * @param options.persistence.columnVisibility - Column visibility persistence configuration
+ * @param options.persistence.globalFilter - Global filter persistence configuration
+ * @param options.persistence.rowSelection - Row selection persistence configuration
+ * @param options.persistence.filters - Column filters persistence configuration
+ * @param options.persistence.filters.optimisticAsync - Enable optimistic updates for async filters
  *
- * @returns An object containing the initial state, event handlers, and utility functions
- * @returns returns.initialState - Complete initial state object for React Table
- * @returns returns.initialState.columnVisibility - Initial column visibility state
- * @returns returns.initialState.columnFilters - Initial column filters state
- * @returns returns.initialState.globalFilter - Initial global filter value
- * @returns returns.initialState.rowSelection - Initial row selection state
- * @returns returns.initialState.sorting - Initial sorting state
- * @returns returns.initialState.pagination - Initial pagination state
- * @returns returns.handlers - Event handlers for table state changes
- * @returns returns.handlers.onColumnFiltersChange - Handler for column filter changes
- * @returns returns.handlers.onPaginationChange - Handler for pagination changes
- * @returns returns.handlers.onSortingChange - Handler for sorting changes
- * @returns returns.handlers.onColumnVisibilityChange - Handler for column visibility changes
- * @returns returns.handlers.onGlobalFilterChange - Handler for global filter changes
- * @returns returns.handlers.onRowSelectionChange - Handler for row selection changes
+ * @returns An object containing current state values, their setters, and utility functions
+ * @returns returns.pagination - Current pagination state
+ * @returns returns.setPagination - Setter function for pagination state with automatic persistence
+ * @returns returns.sorting - Current sorting state
+ * @returns returns.setSorting - Setter function for sorting state with automatic persistence
+ * @returns returns.columnFilters - Current column filters state
+ * @returns returns.setColumnFilters - Setter function for column filters state with automatic persistence and optional page reset
+ * @returns returns.columnVisibility - Current column visibility state
+ * @returns returns.setColumnVisibility - Setter function for column visibility state with automatic persistence
+ * @returns returns.globalFilter - Current global filter state
+ * @returns returns.setGlobalFilter - Setter function for global filter state with automatic persistence and optional page reset
+ * @returns returns.rowSelection - Current row selection state
+ * @returns returns.setRowSelection - Setter function for row selection state with automatic persistence
  * @returns returns.resetPagination - Function to reset pagination to initial state
  *
  * @example
  * ```tsx
  * // Basic usage with URL persistence for most features
- * const tableConfig = usePersistingStateForReactTable({
+ * const {
+ *   pagination,
+ *   setPagination,
+ *   sorting,
+ *   setSorting,
+ *   columnFilters,
+ *   setColumnFilters,
+ *   columnVisibility,
+ *   setColumnVisibility,
+ *   globalFilter,
+ *   setGlobalFilter,
+ *   rowSelection,
+ *   setRowSelection,
+ *   resetPagination
+ * } = usePersistingStateForReactTable({
  *   columns: columnDefinitions,
  *   persistence: {
  *     urlNamespace: 'users-table',
@@ -125,14 +139,21 @@ export interface PersistingTableOptions<TData extends RowData>
  *
  * const table = useReactTable({
  *   data,
- *   columns: tableConfig.columns,
- *   state: tableConfig.initialState,
- *   onColumnFiltersChange: tableConfig.handlers.onColumnFiltersChange,
- *   onPaginationChange: tableConfig.handlers.onPaginationChange,
- *   onSortingChange: tableConfig.handlers.onSortingChange,
- *   onColumnVisibilityChange: tableConfig.handlers.onColumnVisibilityChange,
- *   onGlobalFilterChange: tableConfig.handlers.onGlobalFilterChange,
- *   onRowSelectionChange: tableConfig.handlers.onRowSelectionChange,
+ *   columns: columnDefinitions,
+ *   state: {
+ *     pagination,
+ *     sorting,
+ *     columnFilters,
+ *     columnVisibility,
+ *     globalFilter,
+ *     rowSelection,
+ *   },
+ *   onPaginationChange: setPagination,
+ *   onSortingChange: setSorting,
+ *   onColumnFiltersChange: setColumnFilters,
+ *   onColumnVisibilityChange: setColumnVisibility,
+ *   onGlobalFilterChange: setGlobalFilter,
+ *   onRowSelectionChange: setRowSelection,
  *   getCoreRowModel: getCoreRowModel(),
  *   getFilteredRowModel: getFilteredRowModel(),
  *   getPaginationRowModel: getPaginationRowModel(),
@@ -143,7 +164,7 @@ export interface PersistingTableOptions<TData extends RowData>
  * @example
  * ```tsx
  * // Mixed persistence - some in localStorage, some in URL
- * const tableConfig = usePersistingStateForReactTable({
+ * const tableState = usePersistingStateForReactTable({
  *   columns: columnDefinitions,
  *   persistence: {
  *     localStorageKey: 'my-app-table-settings',
@@ -156,6 +177,8 @@ export interface PersistingTableOptions<TData extends RowData>
  *     globalFilter: { persistenceStorage: 'url' }
  *   }
  * });
+ *
+ * // Use tableState.pagination, tableState.setPagination, etc.
  * ```
  *
  * @example
@@ -179,12 +202,22 @@ export interface PersistingTableOptions<TData extends RowData>
  *   }
  * ];
  *
- * const tableConfig = usePersistingStateForReactTable({
+ * const {
+ *   columnFilters,
+ *   setColumnFilters,
+ *   resetPagination
+ * } = usePersistingStateForReactTable({
  *   columns,
  *   persistence: {
  *     localStorageKey: 'users-table-config'
  *   }
  * });
+ *
+ * // Manually trigger page reset when needed
+ * const handleFilterChange = (filters: ColumnFiltersState) => {
+ *   setColumnFilters(filters);
+ *   // Page reset happens automatically if automaticPageReset is true (default)
+ * };
  * ```
  *
  * @since 1.0.0
@@ -194,45 +227,50 @@ export interface PersistingTableOptions<TData extends RowData>
  * @see {@link FilterVariant} for available filter types
  */
 export function usePersistingStateForReactTable<TData extends RowData>(
-  unvalidatedOptions: PersistingTableOptions<TData>
+  options: PersistingTableOptions<TData>
 ) {
-  const options = useLocalStorageKeyValidation(unvalidatedOptions);
+  const validOptions = useLocalStorageKeyValidation(options);
+
+  const automaticPageReset = validOptions.automaticPageReset ?? true;
+
   const { handleColumnFiltersChange, initialColumnFiltersState } =
-    usePersistingFiltersLogic(options);
+    usePersistingFiltersLogic(validOptions);
 
   const {
     handlePaginationChange,
     initialPaginationState,
     resetPagination: resetPaginationLogic,
-  } = usePersistingPaginationLogic(options);
+  } = usePersistingPaginationLogic(validOptions);
 
   const { handleSortingChange, initialSortingState } =
-    usePersistingSortingLogic(options);
+    usePersistingSortingLogic(validOptions);
 
   const { handleColumnVisibilityChange, initialColumnVisibilityState } =
-    usePersistingColumnVisibilityLogic(options);
+    usePersistingColumnVisibilityLogic(validOptions);
 
   const { handleGlobalFilterChange, initialGlobalFilterState } =
-    usePersistingGlobalFilterLogic(options);
+    usePersistingGlobalFilterLogic(validOptions);
 
   const { handleRowSelectionChange, initialRowSelectionState } =
-    usePersistingRowSelectionLogic(options);
+    usePersistingRowSelectionLogic(validOptions);
 
   const [pagination, setPaginationState] = useState(initialPaginationState);
   const [sorting, setSortingState] = useState(
-    initialSortingState || options.initialState?.sorting || []
+    initialSortingState || validOptions.initialState?.sorting || []
   );
   const [columnFilters, setColumnFiltersState] = useState(
-    initialColumnFiltersState || options.initialState?.columnFilters || []
+    initialColumnFiltersState || validOptions.initialState?.columnFilters || []
   );
   const [columnVisibility, setColumnVisibilityState] = useState(
-    initialColumnVisibilityState || options.initialState?.columnVisibility || {}
+    initialColumnVisibilityState ||
+      validOptions.initialState?.columnVisibility ||
+      {}
   );
   const [globalFilter, setGlobalFilterState] = useState(
     initialGlobalFilterState
   );
   const [rowSelection, setRowSelectionState] = useState(
-    initialRowSelectionState || options.initialState?.rowSelection || {}
+    initialRowSelectionState || validOptions.initialState?.rowSelection || {}
   );
 
   const resetPagination = useCallback(() => {
@@ -253,11 +291,11 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     (updater: ColumnFiltersState) => {
       handleColumnFiltersChange?.(updater, columnFilters);
       setColumnFiltersState(updater);
-      if (options.automaticPageReset) {
+      if (automaticPageReset) {
         resetPagination();
       }
     },
-    [options.automaticPageReset, resetPagination]
+    [automaticPageReset, resetPagination]
   );
 
   const setColumnVisibility = useCallback((updater: VisibilityState) => {
@@ -269,11 +307,11 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     (updater: string) => {
       handleGlobalFilterChange?.(updater, globalFilter);
       setGlobalFilterState(updater);
-      if (options.automaticPageReset) {
+      if (automaticPageReset) {
         resetPagination();
       }
     },
-    [options.automaticPageReset, resetPagination]
+    [automaticPageReset, resetPagination]
   );
 
   const setRowSelection = useCallback((updater: RowSelectionState) => {
@@ -282,9 +320,9 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   }, []);
 
   useAsyncFiltersManager({
-    columns: options.columns,
-    urlNamespace: options.persistence?.urlNamespace,
-    localStorageKey: options.persistence?.localStorageKey,
+    columns: validOptions.columns,
+    urlNamespace: validOptions.persistence?.urlNamespace,
+    localStorageKey: validOptions.persistence?.localStorageKey,
     setColumnFilters: setColumnFiltersState,
   });
 
