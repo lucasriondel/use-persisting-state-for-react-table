@@ -150,8 +150,8 @@ Returns an object with state values, their setters, and utility functions:
 | `columnVisibility`        | `VisibilityConfig`   | Disabled       | Column visibility persistence                                                    |
 | `globalFilter`            | `GlobalFilterConfig` | Disabled       | Global filter persistence                                                        |
 | `rowSelection`            | `RowSelectionConfig` | Disabled       | Row selection persistence                                                        |
-| `filters.optimisticAsync` | `boolean`            | `false`        | Automatically resets the page index to 0 when changing filters or global filters |
-| `automaticPageReset`      | `boolean`            | `true`         | See the Optimisic async section                                                  |
+| `automaticPageReset`      | `boolean`            | `false`        | Automatically resets the page index to 0 when changing filters or global filters |
+| `filters.optimisticAsync` | `boolean`            | `true`         | See the Optimisic async section                                                  |
 
 #### Return Object
 
@@ -325,7 +325,7 @@ The hook provides a way to automatically validate filters values for `multi-sele
           filter: {
             isLoading: isFiltersLoading,
             variant: "multiSelect",
-            options: filtersFromApi?.roles
+            options: filtersFromApi?.roles,
             codec: {
               parse: (value) => value.split(","),
               format: (value: string[]) => value.join(",")

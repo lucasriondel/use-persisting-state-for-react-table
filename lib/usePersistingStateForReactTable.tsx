@@ -43,7 +43,7 @@ export interface PersistingTableOptions<TData extends RowData>
       sortingDirectionKey?: string; // default "sortingDirection"
     };
     columnVisibility?: {
-      persistenceStorage: PersistenceStorage; // default is localStorage
+      persistenceStorage: PersistenceStorage;
       key?: string;
     };
     globalFilter?: {
@@ -51,7 +51,7 @@ export interface PersistingTableOptions<TData extends RowData>
       key?: string;
     };
     rowSelection?: {
-      persistenceStorage: PersistenceStorage; // off by default
+      persistenceStorage: PersistenceStorage;
       key?: string;
     };
     filters?: {
