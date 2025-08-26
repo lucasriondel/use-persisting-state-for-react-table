@@ -6,13 +6,111 @@ import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
 import { sanitizeValue } from "./usePersistingFiltersLogic/sanitizeValues";
 import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
 
+/**
+ * Props for the useAsyncFiltersManager hook.
+ *
+ * @template TData - The type of data in your table rows
+ */
 interface UseAsyncFiltersManagerProps<TData extends RowData>
   extends PersistingTableOptions<TData> {
+  /** React state setter for updating column filters */
   setColumnFilters: React.Dispatch<
     React.SetStateAction<ColumnFiltersState | undefined>
   >;
 }
 
+/**
+ * A React hook that manages async filter validation and cleanup for persisted table state.
+ *
+ * This hook automatically validates persisted filter values against their current valid options
+ * when async data loading completes. It removes invalid filter values from both the persisted
+ * state (URL/localStorage) and the table's column filters state.
+ *
+ * **Use Case:** When you have select/multiSelect filters that load their options asynchronously,
+ * and users might have bookmarked URLs or have localStorage entries with filter values that
+ * are no longer valid (e.g., a role filter with `role=admin` but the API no longer returns
+ * "admin" as a valid option).
+ *
+ * **How it works:**
+ * 1. Monitors select/multiSelect filters with `isLoading: false`
+ * 2. Compares persisted values against current valid options
+ * 3. Sanitizes invalid values (removes non-existent options)
+ * 4. Updates both persisted storage and table state when differences are found
+ *
+ * @template TData - The type of data in your table rows
+ *
+ * @param options - Configuration options extending PersistingTableOptions
+ * @param options.columns - Column definitions with filter metadata
+ * @param options.persistence - Persistence configuration (URL namespace, localStorage key)
+ * @param options.setColumnFilters - React state setter for updating column filters
+ *
+ * @example
+ * ```tsx
+ * // In your table component
+ * const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+ *
+ * // Use the async filters manager
+ * useAsyncFiltersManager({
+ *   columns,
+ *   persistence: {
+ *     urlNamespace: 'table',
+ *     localStorageKey: 'user-table-filters'
+ *   },
+ *   setColumnFilters
+ * });
+ *
+ * // Column definition with async filter
+ * const columns: ColumnDef<User>[] = [
+ *   {
+ *     id: 'role',
+ *     accessorKey: 'role',
+ *     meta: {
+ *       filter: {
+ *         variant: 'multiSelect',
+ *         persistenceStorage: 'url',
+ *         key: 'role',
+ *         isLoading: false, // Set to false when options are loaded
+ *         options: [
+ *           { value: 'user', label: 'User' },
+ *           { value: 'moderator', label: 'Moderator' }
+ *           // Note: 'admin' option removed - will be cleaned up automatically
+ *         ]
+ *       }
+ *     }
+ *   }
+ * ];
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Handling async option loading
+ * const [roleOptions, setRoleOptions] = useState([]);
+ * const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+ *
+ * useEffect(() => {
+ *   fetchRoles().then(roles => {
+ *     setRoleOptions(roles);
+ *     setIsLoadingRoles(false); // This triggers validation
+ *   });
+ * }, []);
+ *
+ * const columns: ColumnDef<User>[] = [
+ *   {
+ *     meta: {
+ *       filter: {
+ *         variant: 'select',
+ *         persistenceStorage: 'url',
+ *         isLoading: isLoadingRoles, // Important: hook only runs when false
+ *         options: roleOptions
+ *       }
+ *     }
+ *   }
+ * ];
+ * ```
+ *
+ * @see {@link PersistingTableOptions} for persistence configuration options
+ * @see {@link SelectMeta} and {@link MultiSelectMeta} for filter metadata types
+ */
 export function useAsyncFiltersManager<TData extends RowData>({
   columns,
   persistence,
