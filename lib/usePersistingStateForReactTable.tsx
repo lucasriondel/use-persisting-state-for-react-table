@@ -363,24 +363,15 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   });
 
   return {
-    pagination,
-    setPagination,
-
-    sorting,
-    setSorting,
-
-    columnFilters,
-    setColumnFilters,
-
-    columnVisibility,
-    setColumnVisibility,
-
-    globalFilter,
-    setGlobalFilter,
-
-    rowSelection,
-    setRowSelection,
-
+    state,
+    handlers: {
+      onPaginationChange: setPagination,
+      onSortingChange: setSorting,
+      onColumnFiltersChange: setColumnFilters,
+      onColumnVisibilityChange: setColumnVisibility,
+      onGlobalFilterChange: setGlobalFilter,
+      onRowSelectionChange: setRowSelection,
+    },
     resetPagination,
   };
 }

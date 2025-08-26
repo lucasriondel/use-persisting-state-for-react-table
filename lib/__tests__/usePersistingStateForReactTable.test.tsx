@@ -157,20 +157,20 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       // Check that all state values are present
-      expect(result.current.pagination).toBeDefined();
-      expect(result.current.sorting).toBeDefined();
-      expect(result.current.columnFilters).toBeDefined();
-      expect(result.current.columnVisibility).toBeDefined();
-      expect(result.current.globalFilter).toBeDefined();
-      expect(result.current.rowSelection).toBeDefined();
+      expect(result.current.state.pagination).toBeDefined();
+      expect(result.current.state.sorting).toBeDefined();
+      expect(result.current.state.columnFilters).toBeDefined();
+      expect(result.current.state.columnVisibility).toBeDefined();
+      expect(result.current.state.globalFilter).toBeDefined();
+      expect(result.current.state.rowSelection).toBeDefined();
 
-      // Check that all setters are present and are functions
-      expect(typeof result.current.setPagination).toBe("function");
-      expect(typeof result.current.setSorting).toBe("function");
-      expect(typeof result.current.setColumnFilters).toBe("function");
-      expect(typeof result.current.setColumnVisibility).toBe("function");
-      expect(typeof result.current.setGlobalFilter).toBe("function");
-      expect(typeof result.current.setRowSelection).toBe("function");
+      // Check that all handlers are present and are functions
+      expect(typeof result.current.handlers.onPaginationChange).toBe("function");
+      expect(typeof result.current.handlers.onSortingChange).toBe("function");
+      expect(typeof result.current.handlers.onColumnFiltersChange).toBe("function");
+      expect(typeof result.current.handlers.onColumnVisibilityChange).toBe("function");
+      expect(typeof result.current.handlers.onGlobalFilterChange).toBe("function");
+      expect(typeof result.current.handlers.onRowSelectionChange).toBe("function");
       expect(typeof result.current.resetPagination).toBe("function");
     });
 
@@ -181,15 +181,15 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         })
       );
 
-      expect(result.current.pagination).toEqual({
+      expect(result.current.state.pagination).toEqual({
         pageIndex: 0,
         pageSize: 10,
       });
-      expect(result.current.sorting).toEqual([]);
-      expect(result.current.columnFilters).toEqual([]);
-      expect(result.current.columnVisibility).toEqual({});
-      expect(result.current.globalFilter).toBe("");
-      expect(result.current.rowSelection).toEqual({});
+      expect(result.current.state.sorting).toEqual([]);
+      expect(result.current.state.columnFilters).toEqual([]);
+      expect(result.current.state.columnVisibility).toEqual({});
+      expect(result.current.state.globalFilter).toBe("");
+      expect(result.current.state.rowSelection).toEqual({});
     });
 
     it("should initialize with provided initial state", () => {
@@ -209,14 +209,14 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         })
       );
 
-      expect(result.current.pagination).toEqual(initialState.pagination);
-      expect(result.current.sorting).toEqual(initialState.sorting);
-      expect(result.current.columnFilters).toEqual(initialState.columnFilters);
-      expect(result.current.columnVisibility).toEqual(
+      expect(result.current.state.pagination).toEqual(initialState.pagination);
+      expect(result.current.state.sorting).toEqual(initialState.sorting);
+      expect(result.current.state.columnFilters).toEqual(initialState.columnFilters);
+      expect(result.current.state.columnVisibility).toEqual(
         initialState.columnVisibility
       );
-      expect(result.current.globalFilter).toEqual(initialState.globalFilter);
-      expect(result.current.rowSelection).toEqual(initialState.rowSelection);
+      expect(result.current.state.globalFilter).toEqual(initialState.globalFilter);
+      expect(result.current.state.rowSelection).toEqual(initialState.rowSelection);
     });
   });
 
@@ -237,10 +237,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const newPagination: PaginationState = { pageIndex: 5, pageSize: 20 };
 
       act(() => {
-        result.current.setPagination(newPagination);
+        result.current.handlers.onPaginationChange(newPagination);
       });
 
-      expect(result.current.pagination).toEqual(newPagination);
+      expect(result.current.state.pagination).toEqual(newPagination);
       // Check that URL was updated (could be pushState or replaceState)
       expect(
         mockHistory.pushState.mock.calls.length +
@@ -261,10 +261,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const newSorting: SortingState = [{ id: "name", desc: true }];
 
       act(() => {
-        result.current.setSorting(newSorting);
+        result.current.handlers.onSortingChange(newSorting);
       });
 
-      expect(result.current.sorting).toEqual(newSorting);
+      expect(result.current.state.sorting).toEqual(newSorting);
       expect(
         mockHistory.pushState.mock.calls.length +
           mockHistory.replaceState.mock.calls.length
@@ -284,10 +284,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       ];
 
       act(() => {
-        result.current.setColumnFilters(newFilters);
+        result.current.handlers.onColumnFiltersChange(newFilters);
       });
 
-      expect(result.current.columnFilters).toEqual(newFilters);
+      expect(result.current.state.columnFilters).toEqual(newFilters);
     });
 
     it("should update column visibility state and persist to localStorage by default", () => {
@@ -300,10 +300,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const newVisibility: VisibilityState = { email: false, role: false };
 
       act(() => {
-        result.current.setColumnVisibility(newVisibility);
+        result.current.handlers.onColumnVisibilityChange(newVisibility);
       });
 
-      expect(result.current.columnVisibility).toEqual(newVisibility);
+      expect(result.current.state.columnVisibility).toEqual(newVisibility);
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
     });
 
@@ -318,10 +318,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setGlobalFilter("search term");
+        result.current.handlers.onGlobalFilterChange("search term");
       });
 
-      expect(result.current.globalFilter).toBe("search term");
+      expect(result.current.state.globalFilter).toBe("search term");
       // The hook should work regardless of whether actual URL persistence is triggered in test
     });
 
@@ -338,10 +338,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const newSelection: RowSelectionState = { "1": true, "3": true };
 
       act(() => {
-        result.current.setRowSelection(newSelection);
+        result.current.handlers.onRowSelectionChange(newSelection);
       });
 
-      expect(result.current.rowSelection).toEqual(newSelection);
+      expect(result.current.state.rowSelection).toEqual(newSelection);
       expect(
         mockHistory.pushState.mock.calls.length +
           mockHistory.replaceState.mock.calls.length
@@ -358,14 +358,14 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setPagination({ pageIndex: 3, pageSize: 15 });
-        result.current.setSorting([{ id: "name", desc: false }]);
-        result.current.setGlobalFilter("no persistence test");
+        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 15 });
+        result.current.handlers.onSortingChange([{ id: "name", desc: false }]);
+        result.current.handlers.onGlobalFilterChange("no persistence test");
       });
 
-      expect(result.current.pagination).toEqual({ pageIndex: 3, pageSize: 15 });
-      expect(result.current.sorting).toEqual([{ id: "name", desc: false }]);
-      expect(result.current.globalFilter).toBe("no persistence test");
+      expect(result.current.state.pagination).toEqual({ pageIndex: 3, pageSize: 15 });
+      expect(result.current.state.sorting).toEqual([{ id: "name", desc: false }]);
+      expect(result.current.state.globalFilter).toBe("no persistence test");
     });
   });
 
@@ -379,17 +379,17 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // First set pagination to non-zero page
       act(() => {
-        result.current.setPagination({ pageIndex: 5, pageSize: 10 });
+        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 10 });
       });
 
-      expect(result.current.pagination.pageIndex).toBe(5);
+      expect(result.current.state.pagination.pageIndex).toBe(5);
 
       // Then change filters, which should reset pagination
       act(() => {
-        result.current.setColumnFilters([{ id: "role", value: "admin" }]);
+        result.current.handlers.onColumnFiltersChange([{ id: "role", value: "admin" }]);
       });
 
-      expect(result.current.pagination.pageIndex).toBe(0);
+      expect(result.current.state.pagination.pageIndex).toBe(0);
     });
 
     it("should reset pagination when global filter changes (default behavior)", () => {
@@ -401,17 +401,17 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // First set pagination to non-zero page
       act(() => {
-        result.current.setPagination({ pageIndex: 3, pageSize: 10 });
+        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 10 });
       });
 
-      expect(result.current.pagination.pageIndex).toBe(3);
+      expect(result.current.state.pagination.pageIndex).toBe(3);
 
       // Then change global filter, which should reset pagination
       act(() => {
-        result.current.setGlobalFilter("search");
+        result.current.handlers.onGlobalFilterChange("search");
       });
 
-      expect(result.current.pagination.pageIndex).toBe(0);
+      expect(result.current.state.pagination.pageIndex).toBe(0);
     });
 
     it("should not reset pagination when automaticPageReset is disabled", () => {
@@ -424,17 +424,17 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // First set pagination to non-zero page
       act(() => {
-        result.current.setPagination({ pageIndex: 5, pageSize: 10 });
+        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 10 });
       });
 
-      expect(result.current.pagination.pageIndex).toBe(5);
+      expect(result.current.state.pagination.pageIndex).toBe(5);
 
       // Then change filters, which should NOT reset pagination
       act(() => {
-        result.current.setColumnFilters([{ id: "role", value: "admin" }]);
+        result.current.handlers.onColumnFiltersChange([{ id: "role", value: "admin" }]);
       });
 
-      expect(result.current.pagination.pageIndex).toBe(5);
+      expect(result.current.state.pagination.pageIndex).toBe(5);
     });
 
     it("should manually reset pagination when resetPagination is called", () => {
@@ -447,20 +447,20 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set pagination to non-zero page
       act(() => {
-        result.current.setPagination({ pageIndex: 7, pageSize: 25 });
+        result.current.handlers.onPaginationChange({ pageIndex: 7, pageSize: 25 });
       });
 
-      expect(result.current.pagination.pageIndex).toBe(7);
-      expect(result.current.pagination.pageSize).toBe(25);
+      expect(result.current.state.pagination.pageIndex).toBe(7);
+      expect(result.current.state.pagination.pageSize).toBe(25);
 
       // Manually reset pagination
       act(() => {
         result.current.resetPagination();
       });
 
-      expect(result.current.pagination.pageIndex).toBe(0);
+      expect(result.current.state.pagination.pageIndex).toBe(0);
       // pageSize should remain unchanged
-      expect(result.current.pagination.pageSize).toBe(25);
+      expect(result.current.state.pagination.pageSize).toBe(25);
     });
   });
 
@@ -477,7 +477,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setColumnVisibility({ email: false });
+        result.current.handlers.onColumnVisibilityChange({ email: false });
       });
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
@@ -501,11 +501,11 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setPagination({ pageIndex: 2, pageSize: 10 });
+        result.current.handlers.onPaginationChange({ pageIndex: 2, pageSize: 10 });
       });
 
       // The hook should accept the namespace configuration and update state
-      expect(result.current.pagination).toEqual({ pageIndex: 2, pageSize: 10 });
+      expect(result.current.state.pagination).toEqual({ pageIndex: 2, pageSize: 10 });
     });
 
     it("should persist pagination to localStorage when configured", () => {
@@ -522,7 +522,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setPagination({ pageIndex: 3, pageSize: 50 });
+        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 50 });
       });
 
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
@@ -539,7 +539,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setSorting([{ id: "name", desc: true }]);
+        result.current.handlers.onSortingChange([{ id: "name", desc: true }]);
       });
 
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
@@ -560,8 +560,8 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.setPagination({ pageIndex: 1, pageSize: 20 });
-        result.current.setGlobalFilter("search");
+        result.current.handlers.onPaginationChange({ pageIndex: 1, pageSize: 20 });
+        result.current.handlers.onGlobalFilterChange("search");
       });
 
       expect(
@@ -581,20 +581,8 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
-          state: {
-            pagination: tableState.pagination,
-            sorting: tableState.sorting,
-            columnFilters: tableState.columnFilters,
-            columnVisibility: tableState.columnVisibility,
-            globalFilter: tableState.globalFilter,
-            rowSelection: tableState.rowSelection,
-          },
-          onPaginationChange: tableState.setPagination,
-          onSortingChange: tableState.setSorting,
-          onColumnFiltersChange: tableState.setColumnFilters,
-          onColumnVisibilityChange: tableState.setColumnVisibility,
-          onGlobalFilterChange: tableState.setGlobalFilter,
-          onRowSelectionChange: tableState.setRowSelection,
+          state: tableState.state,
+          ...tableState.handlers,
           getCoreRowModel: getCoreRowModel(),
           getFilteredRowModel: getFilteredRowModel(),
           getPaginationRowModel: getPaginationRowModel(),
@@ -618,7 +606,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       });
 
       expect(result.current.table.getState().pagination.pageIndex).toBe(2);
-      expect(result.current.tableState.pagination.pageIndex).toBe(2);
+      expect(result.current.tableState.state.pagination.pageIndex).toBe(2);
     });
 
     it("should handle React Table updater functions correctly", () => {
@@ -630,20 +618,20 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Test with updater function
       act(() => {
-        result.current.setPagination((prev) => ({
+        result.current.handlers.onPaginationChange((prev) => ({
           ...prev,
           pageIndex: prev.pageIndex + 1,
         }));
       });
 
-      expect(result.current.pagination.pageIndex).toBe(1);
+      expect(result.current.state.pagination.pageIndex).toBe(1);
 
       // Test with direct value
       act(() => {
-        result.current.setPagination({ pageIndex: 5, pageSize: 25 });
+        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 25 });
       });
 
-      expect(result.current.pagination).toEqual({ pageIndex: 5, pageSize: 25 });
+      expect(result.current.state.pagination).toEqual({ pageIndex: 5, pageSize: 25 });
     });
   });
 
@@ -669,11 +657,11 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       // The hook should initialize without errors and return state objects
-      expect(result.current.pagination).toBeDefined();
-      expect(result.current.sorting).toBeDefined();
-      expect(result.current.globalFilter).toBeDefined();
-      expect(typeof result.current.pagination.pageIndex).toBe("number");
-      expect(typeof result.current.pagination.pageSize).toBe("number");
+      expect(result.current.state.pagination).toBeDefined();
+      expect(result.current.state.sorting).toBeDefined();
+      expect(result.current.state.globalFilter).toBeDefined();
+      expect(typeof result.current.state.pagination.pageIndex).toBe("number");
+      expect(typeof result.current.state.pagination.pageSize).toBe("number");
     });
 
     it("should initialize from localStorage", () => {
@@ -694,7 +682,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       // The hook should initialize and try to read from localStorage
-      expect(result.current.columnVisibility).toBeDefined();
+      expect(result.current.state.columnVisibility).toBeDefined();
       expect(mockLocalStorage.getItem).toHaveBeenCalledWith("data-table");
     });
 
@@ -721,9 +709,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         })
       );
 
-      expect(result.current.pagination.pageIndex).toBe(2);
-      expect(result.current.globalFilter).toBe("search");
-      expect(result.current.columnVisibility).toEqual({ email: false });
+      expect(result.current.state.pagination.pageIndex).toBe(2);
+      expect(result.current.state.globalFilter).toBe("search");
+      expect(result.current.state.columnVisibility).toEqual({ email: false });
     });
   });
 
@@ -738,7 +726,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       // Should not crash and should use default values
-      expect(result.current.columnVisibility).toEqual({});
+      expect(result.current.state.columnVisibility).toEqual({});
     });
 
     it("should handle empty columns array", () => {
@@ -748,9 +736,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         })
       );
 
-      expect(result.current.pagination).toBeDefined();
-      expect(result.current.sorting).toEqual([]);
-      expect(result.current.columnFilters).toEqual([]);
+      expect(result.current.state.pagination).toBeDefined();
+      expect(result.current.state.sorting).toEqual([]);
+      expect(result.current.state.columnFilters).toEqual([]);
     });
 
     it("should handle state updates with undefined values gracefully", () => {
@@ -762,10 +750,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // These should not crash
       act(() => {
-        result.current.setGlobalFilter("");
+        result.current.handlers.onGlobalFilterChange("");
       });
 
-      expect(result.current.globalFilter).toBe("");
+      expect(result.current.state.globalFilter).toBe("");
     });
   });
 
@@ -778,12 +766,12 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       // These assertions verify TypeScript compilation
-      const pagination: PaginationState = result.current.pagination;
-      const sorting: SortingState = result.current.sorting;
-      const columnFilters: ColumnFiltersState = result.current.columnFilters;
-      const columnVisibility: VisibilityState = result.current.columnVisibility;
-      const globalFilter: string = result.current.globalFilter;
-      const rowSelection: RowSelectionState = result.current.rowSelection;
+      const pagination: PaginationState = result.current.state.pagination;
+      const sorting: SortingState = result.current.state.sorting;
+      const columnFilters: ColumnFiltersState = result.current.state.columnFilters;
+      const columnVisibility: VisibilityState = result.current.state.columnVisibility;
+      const globalFilter: string = result.current.state.globalFilter;
+      const rowSelection: RowSelectionState = result.current.state.rowSelection;
 
       expect(pagination).toBeDefined();
       expect(sorting).toBeDefined();
@@ -824,14 +812,14 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       // Rerender with the same props
       rerender();
 
-      // Note: Due to dependencies in useCallback, setters may change if state changes
+      // Note: Due to dependencies in useCallback, handlers may change if state changes
       // This test verifies that the functions exist and are callable
-      expect(typeof result.current.setPagination).toBe("function");
-      expect(typeof result.current.setSorting).toBe("function");
-      expect(typeof result.current.setColumnFilters).toBe("function");
-      expect(typeof result.current.setColumnVisibility).toBe("function");
-      expect(typeof result.current.setGlobalFilter).toBe("function");
-      expect(typeof result.current.setRowSelection).toBe("function");
+      expect(typeof result.current.handlers.onPaginationChange).toBe("function");
+      expect(typeof result.current.handlers.onSortingChange).toBe("function");
+      expect(typeof result.current.handlers.onColumnFiltersChange).toBe("function");
+      expect(typeof result.current.handlers.onColumnVisibilityChange).toBe("function");
+      expect(typeof result.current.handlers.onGlobalFilterChange).toBe("function");
+      expect(typeof result.current.handlers.onRowSelectionChange).toBe("function");
       expect(typeof result.current.resetPagination).toBe("function");
     });
   });
