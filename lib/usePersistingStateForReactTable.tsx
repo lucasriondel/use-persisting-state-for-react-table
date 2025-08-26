@@ -5,6 +5,7 @@ import {
   RowSelectionState,
   SortingState,
   TableOptions,
+  Updater,
   VisibilityState,
 } from "@tanstack/react-table";
 import { useCallback, useState } from "react";
@@ -277,31 +278,45 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     resetPaginationLogic(pagination, setPaginationState);
   }, [pagination, setPaginationState]);
 
-  const setPagination = useCallback((updater: PaginationState) => {
-    handlePaginationChange?.(updater, pagination);
-    setPaginationState(updater);
-  }, []);
+  const setPagination = useCallback(
+    (updater: Updater<PaginationState>) => {
+      handlePaginationChange?.(updater, pagination);
+      setPaginationState(updater);
+    },
+    [pagination, handlePaginationChange]
+  );
 
-  const setSorting = useCallback((updater: SortingState) => {
-    handleSortingChange?.(updater, sorting);
-    setSortingState(updater);
-  }, []);
+  const setSorting = useCallback(
+    (updater: Updater<SortingState>) => {
+      handleSortingChange?.(updater, sorting);
+      setSortingState(updater);
+    },
+    [sorting, handleSortingChange]
+  );
 
   const setColumnFilters = useCallback(
-    (updater: ColumnFiltersState) => {
+    (updater: Updater<ColumnFiltersState>) => {
       handleColumnFiltersChange?.(updater, columnFilters);
       setColumnFiltersState(updater);
       if (automaticPageReset) {
         resetPagination();
       }
     },
-    [automaticPageReset, resetPagination]
+    [
+      columnFilters,
+      handleColumnFiltersChange,
+      automaticPageReset,
+      resetPagination,
+    ]
   );
 
-  const setColumnVisibility = useCallback((updater: VisibilityState) => {
-    handleColumnVisibilityChange?.(updater, columnVisibility);
-    setColumnVisibilityState(updater);
-  }, []);
+  const setColumnVisibility = useCallback(
+    (updater: Updater<VisibilityState>) => {
+      handleColumnVisibilityChange?.(updater, columnVisibility);
+      setColumnVisibilityState(updater);
+    },
+    []
+  );
 
   const setGlobalFilter = useCallback(
     (updater: string) => {
@@ -314,7 +329,7 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     [automaticPageReset, resetPagination]
   );
 
-  const setRowSelection = useCallback((updater: RowSelectionState) => {
+  const setRowSelection = useCallback((updater: Updater<RowSelectionState>) => {
     handleRowSelectionChange?.(updater, rowSelection);
     setRowSelectionState(updater);
   }, []);
