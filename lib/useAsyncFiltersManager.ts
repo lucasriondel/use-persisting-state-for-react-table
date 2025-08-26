@@ -1,7 +1,7 @@
-import { ColumnFiltersState, RowData } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
 import { useEffect } from "react";
 import { getColumnIdentifier } from "./getColumnIdentifier";
-import { MultiSelectMeta, PersistingTableOptions, SelectMeta } from "./types";
+import { MultiSelectMeta, SelectMeta } from "./types";
 import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
 import { sanitizeValue } from "./usePersistingFiltersLogic/sanitizeValues";
 import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
@@ -11,12 +11,11 @@ import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
  *
  * @template TData - The type of data in your table rows
  */
-interface UseAsyncFiltersManagerProps<TData extends RowData>
-  extends PersistingTableOptions<TData> {
-  /** React state setter for updating column filters */
-  setColumnFilters: React.Dispatch<
-    React.SetStateAction<ColumnFiltersState | undefined>
-  >;
+interface UseAsyncFiltersManagerProps<TData extends RowData> {
+  columns: ColumnDef<TData, unknown>[];
+  urlNamespace?: string | undefined;
+  localStorageKey?: string | undefined;
+  setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
 }
 
 /**
@@ -113,14 +112,15 @@ interface UseAsyncFiltersManagerProps<TData extends RowData>
  */
 export function useAsyncFiltersManager<TData extends RowData>({
   columns,
-  persistence,
+  urlNamespace,
+  localStorageKey,
   setColumnFilters,
 }: UseAsyncFiltersManagerProps<TData>) {
   const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
     useFilterBuckets({
       columns,
-      urlNamespace: persistence?.urlNamespace,
-      localStorageKey: persistence?.localStorageKey,
+      urlNamespace,
+      localStorageKey,
     });
 
   useEffect(() => {

@@ -1,5 +1,15 @@
-import { RowData, TableOptions } from "@tanstack/react-table";
+import {
+  ColumnFiltersState,
+  PaginationState,
+  RowData,
+  RowSelectionState,
+  SortingState,
+  TableOptions,
+  VisibilityState,
+} from "@tanstack/react-table";
+import { useCallback, useState } from "react";
 import { PersistenceStorage } from "./types";
+import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
 import { useLocalStorageKeyValidation } from "./useLocalStorageKeyValidation";
 import { usePersistingColumnVisibilityLogic } from "./usePersistingColumnVisibilityLogic";
 import { usePersistingFiltersLogic } from "./usePersistingFiltersLogic";
@@ -11,6 +21,7 @@ import { usePersistingSortingLogic } from "./usePersistingSortingLogic";
 export interface PersistingTableOptions<TData extends RowData>
   extends Pick<TableOptions<TData>, "columns"> {
   initialState?: TableOptions<TData>["state"];
+  automaticPageReset?: boolean; // default is true
   persistence?: {
     urlNamespace?: string;
     localStorageKey?: string;
@@ -189,8 +200,11 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const { handleColumnFiltersChange, initialColumnFiltersState } =
     usePersistingFiltersLogic(options);
 
-  const { handlePaginationChange, initialPaginationState, resetPagination } =
-    usePersistingPaginationLogic(options);
+  const {
+    handlePaginationChange,
+    initialPaginationState,
+    resetPagination: resetPaginationLogic,
+  } = usePersistingPaginationLogic(options);
 
   const { handleSortingChange, initialSortingState } =
     usePersistingSortingLogic(options);
@@ -204,31 +218,95 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   const { handleRowSelectionChange, initialRowSelectionState } =
     usePersistingRowSelectionLogic(options);
 
-  type TableState = NonNullable<TableOptions<TData>["state"]>;
-  const initialState: TableState = {
-    columnVisibility:
-      initialColumnVisibilityState ||
-      options.initialState?.columnVisibility ||
-      {},
-    columnFilters:
-      initialColumnFiltersState || options.initialState?.columnFilters || [],
-    globalFilter: initialGlobalFilterState,
-    rowSelection:
-      initialRowSelectionState || options.initialState?.rowSelection || {},
-    sorting: initialSortingState || options.initialState?.sorting || [],
-    pagination: initialPaginationState,
-  };
+  const [pagination, setPaginationState] = useState(initialPaginationState);
+  const [sorting, setSortingState] = useState(
+    initialSortingState || options.initialState?.sorting || []
+  );
+  const [columnFilters, setColumnFiltersState] = useState(
+    initialColumnFiltersState || options.initialState?.columnFilters || []
+  );
+  const [columnVisibility, setColumnVisibilityState] = useState(
+    initialColumnVisibilityState || options.initialState?.columnVisibility || {}
+  );
+  const [globalFilter, setGlobalFilterState] = useState(
+    initialGlobalFilterState
+  );
+  const [rowSelection, setRowSelectionState] = useState(
+    initialRowSelectionState || options.initialState?.rowSelection || {}
+  );
+
+  const resetPagination = useCallback(() => {
+    resetPaginationLogic(pagination, setPaginationState);
+  }, [pagination, setPaginationState]);
+
+  const setPagination = useCallback((updater: PaginationState) => {
+    handlePaginationChange?.(updater, pagination);
+    setPaginationState(updater);
+  }, []);
+
+  const setSorting = useCallback((updater: SortingState) => {
+    handleSortingChange?.(updater, sorting);
+    setSortingState(updater);
+  }, []);
+
+  const setColumnFilters = useCallback(
+    (updater: ColumnFiltersState) => {
+      handleColumnFiltersChange?.(updater, columnFilters);
+      setColumnFiltersState(updater);
+      if (options.automaticPageReset) {
+        resetPagination();
+      }
+    },
+    [options.automaticPageReset, resetPagination]
+  );
+
+  const setColumnVisibility = useCallback((updater: VisibilityState) => {
+    handleColumnVisibilityChange?.(updater, columnVisibility);
+    setColumnVisibilityState(updater);
+  }, []);
+
+  const setGlobalFilter = useCallback(
+    (updater: string) => {
+      handleGlobalFilterChange?.(updater, globalFilter);
+      setGlobalFilterState(updater);
+      if (options.automaticPageReset) {
+        resetPagination();
+      }
+    },
+    [options.automaticPageReset, resetPagination]
+  );
+
+  const setRowSelection = useCallback((updater: RowSelectionState) => {
+    handleRowSelectionChange?.(updater, rowSelection);
+    setRowSelectionState(updater);
+  }, []);
+
+  useAsyncFiltersManager({
+    columns: options.columns,
+    urlNamespace: options.persistence?.urlNamespace,
+    localStorageKey: options.persistence?.localStorageKey,
+    setColumnFilters: setColumnFiltersState,
+  });
 
   return {
-    initialState,
-    handlers: {
-      onColumnFiltersChange: handleColumnFiltersChange,
-      onPaginationChange: handlePaginationChange,
-      onSortingChange: handleSortingChange,
-      onColumnVisibilityChange: handleColumnVisibilityChange,
-      onGlobalFilterChange: handleGlobalFilterChange,
-      onRowSelectionChange: handleRowSelectionChange,
-    },
+    pagination,
+    setPagination,
+
+    sorting,
+    setSorting,
+
+    columnFilters,
+    setColumnFilters,
+
+    columnVisibility,
+    setColumnVisibility,
+
+    globalFilter,
+    setGlobalFilter,
+
+    rowSelection,
+    setRowSelection,
+
     resetPagination,
   };
 }
