@@ -926,6 +926,234 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
   });
 
+  describe("array order independence", () => {
+    it("handles multiselect filter changes regardless of array order", () => {
+      const { result: filtersHook } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          persistence: {
+            urlNamespace: "table",
+          },
+        })
+      );
+
+      const { result: tableHook } = renderHook(() => {
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
+
+        const table = useReactTable({
+          data: mockUsers,
+          columns: testColumns,
+          state: { columnFilters },
+          onColumnFiltersChange: (updater) => {
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
+            setColumnFilters(updater);
+          },
+          getCoreRowModel: getCoreRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          enableColumnFilters: true,
+        });
+
+        return { table, columnFilters };
+      });
+
+      // Start with no filters
+      expect(tableHook.current.columnFilters).toEqual([]);
+      expect(tableHook.current.table.getFilteredRowModel().rows).toHaveLength(
+        8
+      );
+
+      // Step 1: Set role filter to user only
+      act(() => {
+        tableHook.current.table.getColumn("role")?.setFilterValue(["user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user"] },
+      ]);
+
+      let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(4); // Bob, Diana, Frank, Henry
+      filteredRows.forEach((row) => {
+        expect(row.original.role).toBe("user");
+      });
+
+      // Verify URL was updated
+      expect(mockHistory.replaceState).toHaveBeenCalledWith(
+        expect.any(Object),
+        "",
+        expect.stringContaining("table.role=user")
+      );
+
+      // Step 2: Add admin role to existing user role filter
+      // This should work regardless of the order ["user", "admin"] vs ["admin", "user"]
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["user", "admin"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user", "admin"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Bob, Diana, Frank, Henry, Alice, Eve
+      filteredRows.forEach((row) => {
+        expect(["user", "admin"]).toContain(row.original.role);
+      });
+
+      // Verify URL was updated with both values
+      expect(mockHistory.replaceState).toHaveBeenCalledWith(
+        expect.any(Object),
+        "",
+        expect.stringContaining("table.role=user%2Cadmin")
+      );
+
+      // Step 3: Change order to ["admin", "user"] - should be treated as same value
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["admin", "user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["admin", "user"] },
+      ]);
+
+      // Should still show the same filtered results
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Same users as before
+      filteredRows.forEach((row) => {
+        expect(["user", "admin"]).toContain(row.original.role);
+      });
+
+      // Step 4: Add manager role to the mix
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["admin", "user", "manager"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["admin", "user", "manager"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(8); // All users since all roles are included
+      filteredRows.forEach((row) => {
+        expect(["user", "admin", "manager"]).toContain(row.original.role);
+      });
+
+      // Step 5: Remove admin role (should work with remaining ["user", "manager"])
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["user", "manager"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user", "manager"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Bob, Diana, Frank, Henry, Charlie, Grace
+      filteredRows.forEach((row) => {
+        expect(["user", "manager"]).toContain(row.original.role);
+      });
+
+      // Step 6: Test with different order ["manager", "user"] - should work the same
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["manager", "user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["manager", "user"] },
+      ]);
+
+      // Should show the same results as Step 5
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6);
+      filteredRows.forEach((row) => {
+        expect(["user", "manager"]).toContain(row.original.role);
+      });
+    });
+
+    it("handles array order changes in status multiselect filter", () => {
+      const { result: filtersHook } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          persistence: {
+            urlNamespace: "table",
+          },
+        })
+      );
+
+      const { result: tableHook } = renderHook(() => {
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
+
+        const table = useReactTable({
+          data: mockUsers,
+          columns: testColumns,
+          state: { columnFilters },
+          onColumnFiltersChange: (updater) => {
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
+            setColumnFilters(updater);
+          },
+          getCoreRowModel: getCoreRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          enableColumnFilters: true,
+        });
+
+        return { table, columnFilters };
+      });
+
+      // Set status filter: ["active", "pending"]
+      act(() => {
+        tableHook.current.table
+          .getColumn("status")
+          ?.setFilterValue(["active", "pending"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "status", value: ["active", "pending"] },
+      ]);
+
+      let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // 5 active + 1 pending (all except Bob and Eve who are inactive)
+
+      // Change order to ["pending", "active"] - should work the same
+      act(() => {
+        tableHook.current.table
+          .getColumn("status")
+          ?.setFilterValue(["pending", "active"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "status", value: ["pending", "active"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Same results
+      filteredRows.forEach((row) => {
+        expect(["active", "pending"]).toContain(row.original.status);
+      });
+    });
+  });
+
   describe("real-world filtering scenarios", () => {
     it("simulates user applying and modifying multiple filters", () => {
       const { result: filtersHook } = renderHook(() =>
