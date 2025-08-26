@@ -1,6 +1,3 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -8,6 +5,9 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { act, renderHook } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { usePersistingFiltersLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -84,7 +84,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   },
   {
     accessorKey: "email",
-    header: "Email", 
+    header: "Email",
     cell: ({ row }) => row.getValue("email"),
   },
   {
@@ -172,7 +172,8 @@ const testColumns: ColumnDef<TestUser>[] = [
         isLoading: false,
         variant: "dateRange",
         codec: {
-          parse: (value: string) => JSON.parse(value) as [Date | null, Date | null],
+          parse: (value: string) =>
+            JSON.parse(value) as [Date | null, Date | null],
           format: (value: [Date | null, Date | null]) => JSON.stringify(value),
         },
         persistenceStorage: "url",
@@ -182,7 +183,7 @@ const testColumns: ColumnDef<TestUser>[] = [
       if (!value || value.length !== 2) return true;
       const [start, end] = value;
       if (!start && !end) return true;
-      
+
       const rowDate = new Date(row.getValue(id) as string);
       if (start && rowDate < new Date(start)) return false;
       if (end && rowDate > new Date(end)) return false;
@@ -212,7 +213,7 @@ const testColumns: ColumnDef<TestUser>[] = [
       if (!value || value.length !== 2) return true;
       const [min, max] = value;
       const rowValue = row.getValue(id) as number;
-      
+
       if (min !== undefined && rowValue < min) return false;
       if (max !== undefined && rowValue > max) return false;
       return true;
@@ -228,14 +229,94 @@ const testColumns: ColumnDef<TestUser>[] = [
 
 // Mock data with filterable values
 const mockUsers: TestUser[] = [
-  { id: "1", name: "Alice Smith", email: "alice@example.com", role: "admin", status: "active", department: "Engineering", birthDate: "1990-01-15", salary: 75000, projects: 5 },
-  { id: "2", name: "Bob Johnson", email: "bob@example.com", role: "user", status: "inactive", department: "Marketing", birthDate: "1988-06-20", salary: 55000, projects: 3 },
-  { id: "3", name: "Charlie Brown", email: "charlie@example.com", role: "manager", status: "active", department: "Engineering", birthDate: "1985-03-10", salary: 85000, projects: 8 },
-  { id: "4", name: "Diana Prince", email: "diana@example.com", role: "user", status: "active", department: "Sales", birthDate: "1992-11-05", salary: 60000, projects: 4 },
-  { id: "5", name: "Eve Wilson", email: "eve@example.com", role: "admin", status: "inactive", department: "HR", birthDate: "1987-08-30", salary: 70000, projects: 6 },
-  { id: "6", name: "Frank Miller", email: "frank@example.com", role: "user", status: "active", department: "Engineering", birthDate: "1991-12-25", salary: 65000, projects: 7 },
-  { id: "7", name: "Grace Lee", email: "grace@example.com", role: "manager", status: "active", department: "Marketing", birthDate: "1989-04-18", salary: 80000, projects: 5 },
-  { id: "8", name: "Henry Davis", email: "henry@example.com", role: "user", status: "pending", department: "Sales", birthDate: "1993-09-12", salary: 50000, projects: 2 },
+  {
+    id: "1",
+    name: "Alice Smith",
+    email: "alice@example.com",
+    role: "admin",
+    status: "active",
+    department: "Engineering",
+    birthDate: "1990-01-15",
+    salary: 75000,
+    projects: 5,
+  },
+  {
+    id: "2",
+    name: "Bob Johnson",
+    email: "bob@example.com",
+    role: "user",
+    status: "inactive",
+    department: "Marketing",
+    birthDate: "1988-06-20",
+    salary: 55000,
+    projects: 3,
+  },
+  {
+    id: "3",
+    name: "Charlie Brown",
+    email: "charlie@example.com",
+    role: "manager",
+    status: "active",
+    department: "Engineering",
+    birthDate: "1985-03-10",
+    salary: 85000,
+    projects: 8,
+  },
+  {
+    id: "4",
+    name: "Diana Prince",
+    email: "diana@example.com",
+    role: "user",
+    status: "active",
+    department: "Sales",
+    birthDate: "1992-11-05",
+    salary: 60000,
+    projects: 4,
+  },
+  {
+    id: "5",
+    name: "Eve Wilson",
+    email: "eve@example.com",
+    role: "admin",
+    status: "inactive",
+    department: "HR",
+    birthDate: "1987-08-30",
+    salary: 70000,
+    projects: 6,
+  },
+  {
+    id: "6",
+    name: "Frank Miller",
+    email: "frank@example.com",
+    role: "user",
+    status: "active",
+    department: "Engineering",
+    birthDate: "1991-12-25",
+    salary: 65000,
+    projects: 7,
+  },
+  {
+    id: "7",
+    name: "Grace Lee",
+    email: "grace@example.com",
+    role: "manager",
+    status: "active",
+    department: "Marketing",
+    birthDate: "1989-04-18",
+    salary: 80000,
+    projects: 5,
+  },
+  {
+    id: "8",
+    name: "Henry Davis",
+    email: "henry@example.com",
+    role: "user",
+    status: "pending",
+    department: "Sales",
+    birthDate: "1993-09-12",
+    salary: 50000,
+    projects: 2,
+  },
 ];
 
 describe("usePersistingFiltersLogic Integration Tests", () => {
@@ -259,16 +340,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -280,21 +365,25 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.columnFilters).toEqual([]);
-      expect(tableHook.current.table.getFilteredRowModel().rows).toHaveLength(8);
+      expect(tableHook.current.table.getFilteredRowModel().rows).toHaveLength(
+        8
+      );
 
       // Set role filter to admin and user
       act(() => {
-        tableHook.current.table.getColumn("role")?.setFilterValue(["admin", "user"]);
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["admin", "user"]);
       });
 
       expect(tableHook.current.columnFilters).toEqual([
-        { id: "role", value: ["admin", "user"] }
+        { id: "role", value: ["admin", "user"] },
       ]);
 
       // Should filter to only admin and user roles
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(6); // Alice, Bob, Diana, Eve, Frank, Henry
-      filteredRows.forEach(row => {
+      filteredRows.forEach((row) => {
         expect(["admin", "user"]).toContain(row.original.role);
       });
 
@@ -306,8 +395,10 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("reads initial state from URL parameters", () => {
-      // Set up URL with multiSelect filter parameter  
-      setWindowLocation("https://example.com/?table.role=manager&table.status=%5B%22active%22%5D");
+      // Set up URL with multiSelect filter parameter
+      setWindowLocation(
+        "https://example.com/?table.role=manager&table.status=%5B%22active%22%5D"
+      );
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
@@ -339,16 +430,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -362,13 +457,15 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       // Set birthDate filter range
       const startDate = new Date("1990-01-01");
       const endDate = new Date("1992-12-31");
-      
+
       act(() => {
-        tableHook.current.table.getColumn("birthDate")?.setFilterValue([startDate, endDate]);
+        tableHook.current.table
+          .getColumn("birthDate")
+          ?.setFilterValue([startDate, endDate]);
       });
 
       expect(tableHook.current.columnFilters).toEqual([
-        { id: "birthDate", value: [startDate, endDate] }
+        { id: "birthDate", value: [startDate, endDate] },
       ]);
 
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
@@ -389,16 +486,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -411,11 +512,13 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       // Set salary filter range
       act(() => {
-        tableHook.current.table.getColumn("salary")?.setFilterValue([60000, 80000]);
+        tableHook.current.table
+          .getColumn("salary")
+          ?.setFilterValue([60000, 80000]);
       });
 
       expect(tableHook.current.columnFilters).toEqual([
-        { id: "salary", value: [60000, 80000] }
+        { id: "salary", value: [60000, 80000] },
       ]);
 
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
@@ -438,16 +541,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -460,17 +567,19 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       // Set department filter
       act(() => {
-        tableHook.current.table.getColumn("department")?.setFilterValue("Engineering");
+        tableHook.current.table
+          .getColumn("department")
+          ?.setFilterValue("Engineering");
       });
 
       expect(tableHook.current.columnFilters).toEqual([
-        { id: "department", value: "Engineering" }
+        { id: "department", value: "Engineering" },
       ]);
 
       // Should filter to only Engineering department
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(3); // Alice, Charlie, Frank
-      filteredRows.forEach(row => {
+      filteredRows.forEach((row) => {
         expect(row.original.department).toBe("Engineering");
       });
 
@@ -481,7 +590,10 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("reads initial state from localStorage", () => {
-      mockLocalStorage.setItem("filter-store", JSON.stringify({ department: "Marketing" }));
+      mockLocalStorage.setItem(
+        "filter-store",
+        JSON.stringify({ department: "Marketing" })
+      );
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
@@ -505,8 +617,11 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
   describe("mixed persistence", () => {
     it("handles URL and localStorage filters simultaneously", () => {
       // Pre-populate localStorage with department filter
-      mockLocalStorage.setItem("mixed-filters", JSON.stringify({ department: "Engineering" }));
-      
+      mockLocalStorage.setItem(
+        "mixed-filters",
+        JSON.stringify({ department: "Engineering" })
+      );
+
       // Set up URL with role filter
       setWindowLocation("https://example.com/?table.role=admin%2Cmanager");
 
@@ -521,16 +636,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -552,7 +671,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       // Should filter to admin/manager roles in Engineering
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(2); // Alice (admin), Charlie (manager)
-      filteredRows.forEach(row => {
+      filteredRows.forEach((row) => {
         expect(["admin", "manager"]).toContain(row.original.role);
         expect(row.original.department).toBe("Engineering");
       });
@@ -571,16 +690,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -595,13 +718,13 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       act(() => {
         tableHook.current.table.setColumnFilters([
           { id: "role", value: ["admin"] },
-          { id: "status", value: ["active"] }
+          { id: "status", value: ["active"] },
         ]);
       });
 
       expect(tableHook.current.columnFilters).toEqual([
         { id: "role", value: ["admin"] },
-        { id: "status", value: ["active"] }
+        { id: "status", value: ["active"] },
       ]);
 
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
@@ -629,7 +752,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
           initialState: {
             columnFilters: [
               { id: "role", value: ["admin", "manager"] },
-              { id: "department", value: "Engineering" }
+              { id: "department", value: "Engineering" },
             ],
           },
           persistence: {
@@ -642,7 +765,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       // Should use initial state
       expect(result.current.initialColumnFiltersState).toEqual([
         { id: "role", value: ["admin", "manager"] },
-        { id: "department", value: "Engineering" }
+        { id: "department", value: "Engineering" },
       ]);
 
       // Should persist URL filters
@@ -652,7 +775,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         expect.stringContaining("table.role=admin%2Cmanager")
       );
 
-      // Should persist localStorage filters  
+      // Should persist localStorage filters
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "initial-filters",
         expect.stringContaining('"department":"Engineering"')
@@ -662,7 +785,10 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     it("does not persist initial state when persisted values already exist", () => {
       // Pre-existing values
       setWindowLocation("https://example.com/?table.role=user");
-      mockLocalStorage.setItem("existing-filters", JSON.stringify({ department: "Sales" }));
+      mockLocalStorage.setItem(
+        "existing-filters",
+        JSON.stringify({ department: "Sales" })
+      );
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
@@ -688,42 +814,6 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
   });
 
   describe("filter sanitization and validation", () => {
-    it("sanitizes invalid multiSelect options", async () => {
-      // Create columns with loaded options
-      const columnsWithOptions = [...testColumns];
-      const roleColumn = columnsWithOptions.find(col => col.accessorKey === "role");
-      if (roleColumn?.meta?.filter) {
-        roleColumn.meta.filter.isLoading = false; // Ensure options are loaded
-      }
-
-      // Set up URL with invalid option values
-      setWindowLocation("https://example.com/?table.role=admin%2Cinvalid%2Cuser");
-
-      const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: columnsWithOptions,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
-      );
-
-      // Should sanitize out invalid options
-      expect(filtersHook.current.initialColumnFiltersState).toEqual([
-        { id: "role", value: ["admin", "user"] }, // "invalid" should be filtered out
-      ]);
-
-      // Wait for sanitization effect to update URL
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      // Should update URL to remove invalid values
-      expect(mockHistory.replaceState).toHaveBeenCalledWith(
-        expect.any(Object),
-        "",
-        expect.stringContaining("table.role=admin%2Cuser")
-      );
-    });
-
     it("handles empty filter values correctly", () => {
       const { result: filtersHook } = renderHook(() =>
         usePersistingFiltersLogic({
@@ -735,16 +825,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -761,7 +855,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.columnFilters).toEqual([
-        { id: "role", value: [] }
+        { id: "role", value: [] },
       ]);
 
       // Should show all rows when filter is empty
@@ -832,6 +926,234 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
   });
 
+  describe("array order independence", () => {
+    it("handles multiselect filter changes regardless of array order", () => {
+      const { result: filtersHook } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          persistence: {
+            urlNamespace: "table",
+          },
+        })
+      );
+
+      const { result: tableHook } = renderHook(() => {
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
+
+        const table = useReactTable({
+          data: mockUsers,
+          columns: testColumns,
+          state: { columnFilters },
+          onColumnFiltersChange: (updater) => {
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
+            setColumnFilters(updater);
+          },
+          getCoreRowModel: getCoreRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          enableColumnFilters: true,
+        });
+
+        return { table, columnFilters };
+      });
+
+      // Start with no filters
+      expect(tableHook.current.columnFilters).toEqual([]);
+      expect(tableHook.current.table.getFilteredRowModel().rows).toHaveLength(
+        8
+      );
+
+      // Step 1: Set role filter to user only
+      act(() => {
+        tableHook.current.table.getColumn("role")?.setFilterValue(["user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user"] },
+      ]);
+
+      let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(4); // Bob, Diana, Frank, Henry
+      filteredRows.forEach((row) => {
+        expect(row.original.role).toBe("user");
+      });
+
+      // Verify URL was updated
+      expect(mockHistory.replaceState).toHaveBeenCalledWith(
+        expect.any(Object),
+        "",
+        expect.stringContaining("table.role=user")
+      );
+
+      // Step 2: Add admin role to existing user role filter
+      // This should work regardless of the order ["user", "admin"] vs ["admin", "user"]
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["user", "admin"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user", "admin"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Bob, Diana, Frank, Henry, Alice, Eve
+      filteredRows.forEach((row) => {
+        expect(["user", "admin"]).toContain(row.original.role);
+      });
+
+      // Verify URL was updated with both values
+      expect(mockHistory.replaceState).toHaveBeenCalledWith(
+        expect.any(Object),
+        "",
+        expect.stringContaining("table.role=user%2Cadmin")
+      );
+
+      // Step 3: Change order to ["admin", "user"] - should be treated as same value
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["admin", "user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["admin", "user"] },
+      ]);
+
+      // Should still show the same filtered results
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Same users as before
+      filteredRows.forEach((row) => {
+        expect(["user", "admin"]).toContain(row.original.role);
+      });
+
+      // Step 4: Add manager role to the mix
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["admin", "user", "manager"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["admin", "user", "manager"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(8); // All users since all roles are included
+      filteredRows.forEach((row) => {
+        expect(["user", "admin", "manager"]).toContain(row.original.role);
+      });
+
+      // Step 5: Remove admin role (should work with remaining ["user", "manager"])
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["user", "manager"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user", "manager"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Bob, Diana, Frank, Henry, Charlie, Grace
+      filteredRows.forEach((row) => {
+        expect(["user", "manager"]).toContain(row.original.role);
+      });
+
+      // Step 6: Test with different order ["manager", "user"] - should work the same
+      act(() => {
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["manager", "user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["manager", "user"] },
+      ]);
+
+      // Should show the same results as Step 5
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6);
+      filteredRows.forEach((row) => {
+        expect(["user", "manager"]).toContain(row.original.role);
+      });
+    });
+
+    it("handles array order changes in status multiselect filter", () => {
+      const { result: filtersHook } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          persistence: {
+            urlNamespace: "table",
+          },
+        })
+      );
+
+      const { result: tableHook } = renderHook(() => {
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
+
+        const table = useReactTable({
+          data: mockUsers,
+          columns: testColumns,
+          state: { columnFilters },
+          onColumnFiltersChange: (updater) => {
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
+            setColumnFilters(updater);
+          },
+          getCoreRowModel: getCoreRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          enableColumnFilters: true,
+        });
+
+        return { table, columnFilters };
+      });
+
+      // Set status filter: ["active", "pending"]
+      act(() => {
+        tableHook.current.table
+          .getColumn("status")
+          ?.setFilterValue(["active", "pending"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "status", value: ["active", "pending"] },
+      ]);
+
+      let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // 5 active + 1 pending (all except Bob and Eve who are inactive)
+
+      // Change order to ["pending", "active"] - should work the same
+      act(() => {
+        tableHook.current.table
+          .getColumn("status")
+          ?.setFilterValue(["pending", "active"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "status", value: ["pending", "active"] },
+      ]);
+
+      filteredRows = tableHook.current.table.getFilteredRowModel().rows;
+      expect(filteredRows).toHaveLength(6); // Same results
+      filteredRows.forEach((row) => {
+        expect(["active", "pending"]).toContain(row.original.status);
+      });
+    });
+  });
+
   describe("real-world filtering scenarios", () => {
     it("simulates user applying and modifying multiple filters", () => {
       const { result: filtersHook } = renderHook(() =>
@@ -848,16 +1170,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-          filtersHook.current.initialColumnFiltersState || []
-        );
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnFilters },
           onColumnFiltersChange: (updater) => {
-            filtersHook.current.handleColumnFiltersChange(updater, columnFilters);
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
             setColumnFilters(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -869,11 +1195,15 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.columnFilters).toEqual([]);
-      expect(tableHook.current.table.getFilteredRowModel().rows).toHaveLength(8);
+      expect(tableHook.current.table.getFilteredRowModel().rows).toHaveLength(
+        8
+      );
 
       // Apply role filter
       act(() => {
-        tableHook.current.table.getColumn("role")?.setFilterValue(["admin", "manager"]);
+        tableHook.current.table
+          .getColumn("role")
+          ?.setFilterValue(["admin", "manager"]);
       });
 
       let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
@@ -891,19 +1221,21 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(3); // Alice, Charlie, Grace
-      filteredRows.forEach(row => {
+      filteredRows.forEach((row) => {
         expect(["admin", "manager"]).toContain(row.original.role);
         expect(row.original.status).toBe("active");
       });
 
       // Add department filter (localStorage)
       act(() => {
-        tableHook.current.table.getColumn("department")?.setFilterValue("Engineering");
+        tableHook.current.table
+          .getColumn("department")
+          ?.setFilterValue("Engineering");
       });
 
       filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(2); // Alice, Charlie
-      filteredRows.forEach(row => {
+      filteredRows.forEach((row) => {
         expect(["admin", "manager"]).toContain(row.original.role);
         expect(row.original.status).toBe("active");
         expect(row.original.department).toBe("Engineering");

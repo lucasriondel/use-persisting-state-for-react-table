@@ -167,7 +167,7 @@ export interface PersistingTableOptions<TData extends RowData> {
 }
 
 // Table state type
-export type TableState<TData extends RowData> = {
+export type TableState = {
   columnVisibility: Record<string, boolean>;
   columnFilters: Array<{ id: string; value: unknown }>;
   globalFilter: string;
@@ -190,8 +190,109 @@ export interface TableHandlers {
 }
 
 // Return type for the main hook
-export interface UsePersistingStateReturn<TData extends RowData> {
-  initialState: TableState<TData>;
+export interface UsePersistingStateReturn {
+  initialState: TableState;
   handlers: TableHandlers;
   resetPagination: () => void;
+}
+
+// Export a utility type that can be used to extend ColumnMeta
+export interface PersistingTableColumnMeta {
+  filter?: BaseFilterMeta & FiltersMeta;
+}
+
+// Utility type for consumers to extend ColumnMeta while preserving existing extensions
+export type ExtendColumnMeta<T = Record<string, unknown>> =
+  PersistingTableColumnMeta & T;
+
+declare module "@tanstack/react-table" {
+  interface BaseFilterMeta {
+    key?: string;
+    isLoading?: boolean;
+    persistenceStorage?: PersistenceStorage;
+    variant: FilterVariant;
+  }
+
+  type FiltersMeta =
+    | SelectMeta
+    | MultiSelectMeta
+    | TextMeta
+    | DateMeta
+    | NumberMeta
+    | DateRangeMeta
+    | NumberRangeMeta;
+
+  export type SelectMeta = BaseFilterMeta & {
+    variant: "select";
+    codec?: Codec<string>;
+    options: {
+      value: string;
+      label: string;
+      disabled?: boolean;
+      count?: number;
+    }[];
+  };
+  export type MultiSelectMeta = BaseFilterMeta & {
+    variant: "multiSelect";
+    codec?: Codec<string[]>;
+    options: {
+      value: string;
+      label: string;
+      disabled?: boolean;
+      count?: number;
+    }[];
+  };
+  export type TextMeta = BaseFilterMeta & {
+    variant: "text";
+    codec?: Codec<string>;
+  };
+  export type DateMeta = BaseFilterMeta & {
+    variant: "date";
+    codec?: Codec<Date | null>;
+    // DayPicker navigation/selection constraints
+    defaultMonth?: Date; // initial visible month
+    startMonth?: Date; // earliest navigable month
+    endMonth?: Date; // latest navigable month
+    fromDate?: Date; // earliest selectable date
+    toDate?: Date; // latest selectable date
+    disabled?: unknown; // DayPicker matcher type - can be customized when needed
+    captionLayout?: "label" | "dropdown";
+  };
+  export type DateRangeMeta = BaseFilterMeta & {
+    variant: "dateRange";
+    codec?: Codec<[Date | null, Date | null]>;
+    // DayPicker navigation/selection constraints
+    defaultMonth?: Date; // initial visible month
+    startMonth?: Date; // earliest navigable month
+    endMonth?: Date; // latest navigable month
+    fromDate?: Date; // earliest selectable date
+    toDate?: Date; // latest selectable date
+    disabled?: unknown; // DayPicker matcher type - can be customized when needed
+    // Range length constraints in days; mapped to DayPicker's min/max when mode="range"
+    rangeMinDays?: number;
+    rangeMaxDays?: number;
+    captionLayout?: "label" | "dropdown";
+  };
+  export type NumberMeta = BaseFilterMeta & {
+    variant: "number";
+    codec?: Codec<number>;
+  };
+  export type NumberRangeMeta = BaseFilterMeta & {
+    variant: "numberRange";
+    min?: number;
+    max?: number;
+    step?: number;
+    orientation?: "horizontal" | "vertical";
+    minStepsBetweenThumbs?: number;
+    disabled?: boolean;
+    codec?: Codec<[number, number]>;
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue>
+    extends PersistingTableColumnMeta {
+    // The filter property is defined in PersistingTableColumnMeta
+    // Additional properties can be added by consumers using additional declare module statements
+    [key: string]: unknown;
+  }
 }

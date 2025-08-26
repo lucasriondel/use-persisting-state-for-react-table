@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
+import { describe, expect, it } from "vitest";
 import { computeInitialColumnFiltersState } from "../computeInitialColumnFiltersState";
 
 interface TestData {
@@ -13,7 +13,12 @@ interface TestData {
 describe("computeInitialColumnFiltersState", () => {
   describe("basic functionality", () => {
     it("returns undefined for empty columns", () => {
-      const result = computeInitialColumnFiltersState<TestData>([], {}, {}, false);
+      const result = computeInitialColumnFiltersState<TestData>(
+        [],
+        {},
+        {},
+        false
+      );
       expect(result).toBeUndefined();
     });
 
@@ -21,8 +26,16 @@ describe("computeInitialColumnFiltersState", () => {
       const columns: ColumnDef<TestData, unknown>[] = [
         { id: "name", accessorKey: "name" },
       ];
-      const initialFilters: ColumnFiltersState = [{ id: "name", value: "initial" }];
-      const result = computeInitialColumnFiltersState(columns, {}, {}, false, initialFilters);
+      const initialFilters: ColumnFiltersState = [
+        { id: "name", value: "initial" },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        {},
+        {},
+        false,
+        initialFilters
+      );
       expect(result).toBe(initialFilters);
     });
 
@@ -40,7 +53,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { name: "john" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "name", value: "john" }]);
     });
 
@@ -58,7 +76,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const localBucket = { age: 25 };
-      const result = computeInitialColumnFiltersState(columns, {}, localBucket, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        {},
+        localBucket,
+        false
+      );
       expect(result).toEqual([{ id: "age", value: 25 }]);
     });
   });
@@ -88,7 +111,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { name: "", status: "active" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "status", value: "active" }]);
     });
   });
@@ -114,7 +142,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { status: "active" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toEqual([{ id: "status", value: "active" }]);
       });
 
@@ -128,15 +161,18 @@ describe("computeInitialColumnFiltersState", () => {
                 variant: "select",
                 persistenceStorage: "url",
                 isLoading: false,
-                options: [
-                  { label: "Active", value: "active" },
-                ],
+                options: [{ label: "Active", value: "active" }],
               },
             },
           },
         ];
         const urlBucket = { status: "invalid" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toBeUndefined();
       });
 
@@ -160,7 +196,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { tags: ["tag1", "tag3", "invalid"] };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toEqual([{ id: "tags", value: ["tag1", "tag3"] }]);
       });
 
@@ -174,15 +215,18 @@ describe("computeInitialColumnFiltersState", () => {
                 variant: "multiSelect",
                 persistenceStorage: "url",
                 isLoading: false,
-                options: [
-                  { label: "Tag 1", value: "tag1" },
-                ],
+                options: [{ label: "Tag 1", value: "tag1" }],
               },
             },
           },
         ];
         const urlBucket = { tags: ["invalid1", "invalid2"] };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toBeUndefined();
       });
 
@@ -202,7 +246,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { status: "any-value" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toEqual([{ id: "status", value: "any-value" }]);
       });
 
@@ -222,7 +271,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { status: "any-value" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toEqual([{ id: "status", value: "any-value" }]);
       });
     });
@@ -244,7 +298,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { status: "pending-value" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, true);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          true
+        );
         expect(result).toEqual([{ id: "status", value: "pending-value" }]);
       });
 
@@ -264,7 +323,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { status: "pending-value" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toBeUndefined();
       });
     });
@@ -286,7 +350,12 @@ describe("computeInitialColumnFiltersState", () => {
           },
         ];
         const urlBucket = { status: "any-value" };
-        const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+        const result = computeInitialColumnFiltersState(
+          columns,
+          urlBucket,
+          {},
+          false
+        );
         expect(result).toEqual([{ id: "status", value: "any-value" }]);
       });
     });
@@ -307,7 +376,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { name: 42 }; // Number should be converted to string
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "name", value: "42" }]);
     });
 
@@ -325,7 +399,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { age: "25" }; // String should be converted to number
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "age", value: 25 }]);
     });
 
@@ -343,7 +422,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { age: "invalid-number" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toBeUndefined();
     });
 
@@ -361,8 +445,15 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { createdAt: "2022-01-01" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
-      expect(result).toEqual([{ id: "createdAt", value: new Date("2022-01-01") }]);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
+      expect(result).toEqual([
+        { id: "createdAt", value: new Date("2022-01-01") },
+      ]);
     });
 
     it("handles dateRange values", () => {
@@ -379,11 +470,18 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { dateRange: ["2022-01-01", "2022-12-31"] };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
-      expect(result).toEqual([{ 
-        id: "dateRange", 
-        value: [new Date("2022-01-01"), new Date("2022-12-31")] 
-      }]);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
+      expect(result).toEqual([
+        {
+          id: "dateRange",
+          value: [new Date("2022-01-01"), new Date("2022-12-31")],
+        },
+      ]);
     });
 
     it("handles numberRange values", () => {
@@ -400,7 +498,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { priceRange: [100, 500] };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "priceRange", value: [100, 500] }]);
     });
   });
@@ -421,7 +524,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { searchName: "alice" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "name", value: "alice" }]);
     });
 
@@ -438,7 +546,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { name: "bob" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([{ id: "name", value: "bob" }]);
     });
   });
@@ -485,7 +598,12 @@ describe("computeInitialColumnFiltersState", () => {
 
       const urlBucket = { name: "john", status: "active" };
       const localBucket = { age: 25 };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, localBucket, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        localBucket,
+        false
+      );
       expect(result).toEqual([
         { id: "name", value: "john" },
         { id: "age", value: 25 },
@@ -513,16 +631,19 @@ describe("computeInitialColumnFiltersState", () => {
               variant: "select",
               persistenceStorage: "url",
               isLoading: false,
-              options: [
-                { label: "Active", value: "active" },
-              ],
+              options: [{ label: "Active", value: "active" }],
             },
           },
         },
       ];
 
       const urlBucket = { name: "", status: "invalid" }; // Both should be filtered out
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toBeUndefined();
     });
   });
@@ -533,7 +654,12 @@ describe("computeInitialColumnFiltersState", () => {
         { id: "name", accessorKey: "name" }, // No filter meta
       ];
       const urlBucket = { name: "ignored" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toBeUndefined();
     });
 
@@ -551,7 +677,12 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { name: "ignored" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toBeUndefined();
     });
 
@@ -569,8 +700,10 @@ describe("computeInitialColumnFiltersState", () => {
         },
       ];
       const urlBucket = { anything: "ignored" };
-      
-      expect(() => computeInitialColumnFiltersState(columns, urlBucket, {}, false)).toThrow(
+
+      expect(() =>
+        computeInitialColumnFiltersState(columns, urlBucket, {}, false)
+      ).toThrow(
         "Column must have either an 'id' or 'accessorKey' property defined"
       );
     });
@@ -600,7 +733,12 @@ describe("computeInitialColumnFiltersState", () => {
       ];
 
       const urlBucket = { z_last: "z-value", a_first: "a-value" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false
+      );
       expect(result).toEqual([
         { id: "z_last", value: "z-value" },
         { id: "a_first", value: "a-value" },
@@ -620,8 +758,16 @@ describe("computeInitialColumnFiltersState", () => {
           },
         },
       ];
-      const initialFilters: ColumnFiltersState = [{ id: "other", value: "fallback" }];
-      const result = computeInitialColumnFiltersState(columns, {}, {}, false, initialFilters);
+      const initialFilters: ColumnFiltersState = [
+        { id: "other", value: "fallback" },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        {},
+        {},
+        false,
+        initialFilters
+      );
       expect(result).toBe(initialFilters);
     });
 
@@ -638,10 +784,311 @@ describe("computeInitialColumnFiltersState", () => {
           },
         },
       ];
-      const initialFilters: ColumnFiltersState = [{ id: "other", value: "fallback" }];
+      const initialFilters: ColumnFiltersState = [
+        { id: "other", value: "fallback" },
+      ];
       const urlBucket = { name: "persisted" };
-      const result = computeInitialColumnFiltersState(columns, urlBucket, {}, false, initialFilters);
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
       expect(result).toEqual([{ id: "name", value: "persisted" }]);
+    });
+  });
+
+  describe("loading state precedence over initial state", () => {
+    it("returns empty array when loading filter conflicts with initial state (optimisticAsync: false)", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "role",
+          accessorKey: "role",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              persistenceStorage: "url",
+              isLoading: true,
+              options: [], // Empty options while loading
+            },
+          },
+        },
+      ];
+      const urlBucket = { role: ["manager", "WRONG-ROLE"] };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
+
+      // Should return empty array to let URL data take precedence when loading completes
+      expect(result).toEqual([]);
+    });
+
+    it("includes raw value when loading filter conflicts with initial state (optimisticAsync: true)", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "role",
+          accessorKey: "role",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              persistenceStorage: "url",
+              isLoading: true,
+              options: [], // Empty options while loading
+            },
+          },
+        },
+      ];
+      const urlBucket = { role: ["manager", "WRONG-ROLE"] };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        true,
+        initialFilters
+      );
+
+      // Should return raw URL value optimistically
+      expect(result).toEqual([
+        { id: "role", value: ["manager", "WRONG-ROLE"] },
+      ]);
+    });
+
+    it("returns initial state when loading filter does not conflict", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "status",
+          accessorKey: "status",
+          meta: {
+            filter: {
+              variant: "select",
+              persistenceStorage: "url",
+              isLoading: true,
+              options: [],
+            },
+          },
+        },
+      ];
+      const urlBucket = { status: "pending" };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] },
+      ]; // Different column
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
+
+      // Should return initial state since loading filter doesn't conflict
+      expect(result).toEqual([{ id: "role", value: ["admin"] }]);
+    });
+
+    it("handles multiple loading filters with mixed conflicts", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "role",
+          accessorKey: "role",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              persistenceStorage: "url",
+              isLoading: true,
+              options: [],
+            },
+          },
+        },
+        {
+          id: "department",
+          accessorKey: "department",
+          meta: {
+            filter: {
+              variant: "select",
+              persistenceStorage: "url",
+              isLoading: true,
+              options: [],
+            },
+          },
+        },
+      ];
+      const urlBucket = { role: ["manager"], department: "engineering" };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] }, // Conflicts with loading filter
+        { id: "other", value: "no-conflict" }, // No conflict
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
+
+      // Should return empty array because at least one loading filter conflicts
+      expect(result).toEqual([]);
+    });
+
+    it("handles loading filter with localStorage storage", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "preferences",
+          accessorKey: "preferences",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              persistenceStorage: "localStorage",
+              isLoading: true,
+              options: [],
+            },
+          },
+        },
+      ];
+      const localBucket = { preferences: ["dark-mode", "compact-view"] };
+      const initialFilters: ColumnFiltersState = [
+        { id: "preferences", value: ["light-mode"] },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        {},
+        localBucket,
+        false,
+        initialFilters
+      );
+
+      // Should return empty array for localStorage loading conflict too
+      expect(result).toEqual([]);
+    });
+
+    it("returns initial state when bucket data is completely invalid (not loading)", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "role",
+          accessorKey: "role",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              persistenceStorage: "url",
+              isLoading: false, // Not loading, options are available
+              options: [
+                { label: "Admin", value: "admin" },
+                { label: "User", value: "user" },
+              ],
+            },
+          },
+        },
+      ];
+      const urlBucket = { role: ["completely-invalid-role"] };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
+
+      // Should fall back to initial state because bucket data is invalid (not loading)
+      expect(result).toEqual([{ id: "role", value: ["admin"] }]);
+    });
+
+    it("handles mixed loading and non-loading filters", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "role",
+          accessorKey: "role",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              persistenceStorage: "url",
+              isLoading: true, // Loading
+              options: [],
+            },
+          },
+        },
+        {
+          id: "status",
+          accessorKey: "status",
+          meta: {
+            filter: {
+              variant: "select",
+              persistenceStorage: "url",
+              isLoading: false, // Not loading
+              options: [{ label: "Active", value: "active" }],
+            },
+          },
+        },
+      ];
+      const urlBucket = { role: ["manager"], status: "active" };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] },
+      ];
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
+
+      // Should return the processed non-loading filter, since conflicts only affect fallback to initial state
+      expect(result).toEqual([{ id: "status", value: "active" }]);
+    });
+
+    it("returns processed results when no loading conflicts exist", () => {
+      const columns: ColumnDef<TestData, unknown>[] = [
+        {
+          id: "status",
+          accessorKey: "status",
+          meta: {
+            filter: {
+              variant: "select",
+              persistenceStorage: "url",
+              isLoading: false,
+              options: [{ label: "Active", value: "active" }],
+            },
+          },
+        },
+        {
+          id: "department",
+          accessorKey: "department",
+          meta: {
+            filter: {
+              variant: "text",
+              persistenceStorage: "url",
+            },
+          },
+        },
+      ];
+      const urlBucket = { status: "active", department: "engineering" };
+      const initialFilters: ColumnFiltersState = [
+        { id: "role", value: ["admin"] },
+      ]; // Different column
+      const result = computeInitialColumnFiltersState(
+        columns,
+        urlBucket,
+        {},
+        false,
+        initialFilters
+      );
+
+      // Should return processed results since no loading conflicts
+      expect(result).toEqual([
+        { id: "status", value: "active" },
+        { id: "department", value: "engineering" },
+      ]);
     });
   });
 });

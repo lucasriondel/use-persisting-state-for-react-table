@@ -10,6 +10,25 @@ import { getColumnIdentifier } from "../getColumnIdentifier";
 import { flattenColumns } from "./flattenColumns";
 import { isEmptyValue } from "./isEmptyValue";
 
+/**
+ * Compares two values for equality, handling arrays with order-independent comparison
+ */
+function areValuesEqual(prevValue: unknown, nextValue: unknown): boolean {
+  // If both are arrays, compare them order-independently
+  if (Array.isArray(prevValue) && Array.isArray(nextValue)) {
+    if (prevValue.length !== nextValue.length) return false;
+
+    // Create sorted copies to avoid mutating the original arrays
+    const sortedPrev = [...(prevValue as unknown[])].sort();
+    const sortedNext = [...(nextValue as unknown[])].sort();
+
+    return JSON.stringify(sortedPrev) === JSON.stringify(sortedNext);
+  }
+
+  // For non-arrays, use JSON.stringify comparison
+  return JSON.stringify(prevValue) === JSON.stringify(nextValue);
+}
+
 export function createColumnFiltersChangeHandler<TData extends RowData>(
   columns: Array<ColumnDef<TData, unknown>>,
   urlBucketApi: UrlApiActions<Record<string, unknown>>,
@@ -50,8 +69,7 @@ export function createColumnFiltersChangeHandler<TData extends RowData>(
       const nextHasValue = nextFilter && !isEmptyValue(nextValue);
 
       // Only patch if something actually changed
-      const valueChanged =
-        JSON.stringify(prevValue) !== JSON.stringify(nextValue);
+      const valueChanged = !areValuesEqual(prevValue, nextValue);
       const existenceChanged = prevHasValue !== nextHasValue;
 
       if (valueChanged || existenceChanged) {

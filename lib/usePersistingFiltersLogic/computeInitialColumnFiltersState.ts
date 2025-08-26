@@ -15,6 +15,8 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
   const flat = flattenColumns(columns);
 
   const out: ColumnFiltersState = [];
+  const bucketColumnIds = new Set<string>(); // Track columns with bucket data
+  const loadingColumnIds = new Set<string>(); // Track columns that are loading
 
   for (const col of flat) {
     const filterMeta = col.meta?.filter;
@@ -31,6 +33,8 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
 
     if (isEmptyValue(raw)) continue;
 
+    bucketColumnIds.add(columnId);
+
     if (
       filterMeta.variant === "select" ||
       filterMeta.variant === "multiSelect"
@@ -46,6 +50,7 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
         continue;
       }
       if (selectableMeta.isLoading === true) {
+        loadingColumnIds.add(columnId);
         if (optimisticAsync) out.push({ id: columnId, value: raw });
         continue;
       }
@@ -58,5 +63,29 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
     if (!isEmptyValue(sanitized)) out.push({ id: columnId, value: sanitized });
   }
 
-  return out.length > 0 ? out : initialStateFilters;
+  if (out.length > 0) return out;
+
+  // If no results, check if we should return empty array vs initialStateFilters
+  if (bucketColumnIds.size > 0) {
+    // We found bucket data but couldn't process it - this could be due to:
+    // 1. Loading state (isLoading: true) with optimisticAsync: false -> should return [] to override initial state
+    // 2. Invalid data that got filtered out completely -> should return initialStateFilters for backward compatibility
+
+    // If there are any loading columns with bucket data, prioritize waiting for loading over initial state
+    if (loadingColumnIds.size > 0 && initialStateFilters) {
+      for (const filter of initialStateFilters) {
+        if (loadingColumnIds.has(filter.id)) {
+          // This initial state filter conflicts with a loading bucket filter
+          // Return empty array to let the loading filter take precedence when it completes
+          return [];
+        }
+      }
+    }
+
+    // For other cases (invalid data that got completely filtered out), fall back to initial state
+    return initialStateFilters;
+  }
+
+  // No bucket data found, fall back to initial state
+  return initialStateFilters;
 }
