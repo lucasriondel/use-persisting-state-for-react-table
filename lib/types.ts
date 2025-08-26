@@ -196,6 +196,15 @@ export interface UsePersistingStateReturn {
   resetPagination: () => void;
 }
 
+// Export a utility type that can be used to extend ColumnMeta
+export interface PersistingTableColumnMeta {
+  filter?: BaseFilterMeta & FiltersMeta;
+}
+
+// Utility type for consumers to extend ColumnMeta while preserving existing extensions
+export type ExtendColumnMeta<T = Record<string, unknown>> =
+  PersistingTableColumnMeta & T;
+
 declare module "@tanstack/react-table" {
   interface BaseFilterMeta {
     key?: string;
@@ -280,7 +289,10 @@ declare module "@tanstack/react-table" {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    filter?: BaseFilterMeta & FiltersMeta;
+  interface ColumnMeta<TData extends RowData, TValue>
+    extends PersistingTableColumnMeta {
+    // The filter property is defined in PersistingTableColumnMeta
+    // Additional properties can be added by consumers using additional declare module statements
+    [key: string]: unknown;
   }
 }

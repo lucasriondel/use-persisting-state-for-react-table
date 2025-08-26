@@ -668,6 +668,49 @@ const invalidConfig = usePersistingStateForReactTable<User>({
 });
 ```
 
+### Extending ColumnMeta
+
+This package extends TanStack Table's `ColumnMeta` interface to add filter metadata. If you need to add your own custom properties to `ColumnMeta`, you can use the provided `ExtendColumnMeta` utility type:
+
+```tsx
+import { ExtendColumnMeta } from "use-persisting-state-for-react-table";
+import "@tanstack/react-table";
+
+// Define your custom meta properties
+type MyColumnMeta = ExtendColumnMeta<{
+  newProp: string;
+}>;
+
+// Extend the ColumnMeta interface
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> extends MyColumnMeta {}
+}
+
+// Now you can use both filter properties and your custom properties
+const columns: ColumnDef<User>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    meta: {
+      // Filter metadata from this package
+      filter: {
+        variant: "text",
+        persistenceStorage: "url",
+      },
+      // Your custom properties
+      newProp: "Custom value",
+    },
+  },
+];
+```
+
+This approach ensures that:
+
+- ✅ You get full TypeScript support for both filter metadata and your custom properties
+- ✅ The filter functionality from this package continues to work
+- ✅ Your custom properties are type-safe and available in IntelliSense
+- ✅ No conflicts occur between different extensions
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
