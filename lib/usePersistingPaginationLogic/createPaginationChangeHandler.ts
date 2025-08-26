@@ -2,6 +2,7 @@ import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthoo
 import { PaginationState, Updater } from "@tanstack/react-table";
 import { UrlApiActions } from "use-url-state-reacthook";
 import { PersistenceStorage } from "../types";
+import { validatePageSize } from "./validatePageSize";
 
 export function createPaginationChangeHandler(
   shouldPersistPageIndex: boolean,
@@ -11,7 +12,8 @@ export function createPaginationChangeHandler(
   pageSizeTarget: PersistenceStorage,
   pageSizeKey: string,
   urlBucketApi: UrlApiActions<Record<string, unknown>>,
-  localBucketApi: LocalStorageApiActions<Record<string, unknown>>
+  localBucketApi: LocalStorageApiActions<Record<string, unknown>>,
+  allowedPageSizes?: number[]
 ) {
   return (
     updater: Updater<PaginationState>,
@@ -32,10 +34,17 @@ export function createPaginationChangeHandler(
     }
 
     if (shouldPersistPageSize && next.pageSize !== undefined) {
+      let pageSizeToStore = next.pageSize;
+      
+      // Only validate if allowedPageSizes is provided
+      if (allowedPageSizes !== undefined) {
+        pageSizeToStore = validatePageSize(next.pageSize, allowedPageSizes);
+      }
+      
       if (pageSizeTarget === "url") {
-        urlBucketApi.patch({ [pageSizeKey]: next.pageSize });
+        urlBucketApi.patch({ [pageSizeKey]: pageSizeToStore });
       } else {
-        localBucketApi.patch({ [pageSizeKey]: next.pageSize });
+        localBucketApi.patch({ [pageSizeKey]: pageSizeToStore });
       }
     }
   };

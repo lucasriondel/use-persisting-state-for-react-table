@@ -811,4 +811,171 @@ describe("createPaginationChangeHandler", () => {
       expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 25 });
     });
   });
+
+  describe("pageSize validation with allowedPageSizes", () => {
+    it("does not validate when allowedPageSizes is not provided (backward compatibility)", () => {
+      const mockUrlApi = createMockBucketApi();
+      const mockLocalApi = createMockBucketApi();
+
+      const handler = createPaginationChangeHandler(
+        false,
+        true, // shouldPersistPageSize
+        "url",
+        "pageIndex",
+        "url",
+        "pageSize",
+        mockUrlApi,
+        mockLocalApi
+        // No allowedPageSizes provided, should not validate
+      );
+
+      const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
+      const newState: PaginationState = { pageIndex: 0, pageSize: 15 }; // Any value should be allowed
+
+      handler(newState, currentState);
+
+      // Should persist the provided value without validation
+      expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 15 });
+    });
+
+    it("validates pageSize with custom allowed values", () => {
+      const mockUrlApi = createMockBucketApi();
+      const mockLocalApi = createMockBucketApi();
+      const customAllowed = [5, 15, 25, 100];
+
+      const handler = createPaginationChangeHandler(
+        false,
+        true,
+        "url",
+        "pageIndex",
+        "url",
+        "pageSize",
+        mockUrlApi,
+        mockLocalApi,
+        customAllowed
+      );
+
+      const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
+      
+      // Test valid value
+      handler({ pageIndex: 0, pageSize: 15 }, currentState);
+      expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 15 });
+
+      // Reset mock
+      mockUrlApi.patch.mockClear();
+
+      // Test invalid value - should fallback to first allowed value
+      handler({ pageIndex: 0, pageSize: 20 }, currentState); // 20 is not in custom allowed
+      expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 5 });
+    });
+
+    it("validates pageSize for localStorage target", () => {
+      const mockUrlApi = createMockBucketApi();
+      const mockLocalApi = createMockBucketApi();
+      const customAllowed = [5, 15, 25, 100];
+
+      const handler = createPaginationChangeHandler(
+        false,
+        true,
+        "url",
+        "pageIndex",
+        "localStorage",
+        "pageSize",
+        mockUrlApi,
+        mockLocalApi,
+        customAllowed
+      );
+
+      const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
+      const newState: PaginationState = { pageIndex: 0, pageSize: 30 }; // Invalid
+
+      handler(newState, currentState);
+
+      // Should persist to localStorage with validated value
+      expect(mockLocalApi.patch).toHaveBeenCalledWith({ pageSize: 5 });
+      expect(mockUrlApi.patch).not.toHaveBeenCalled();
+    });
+
+    it("does not validate when pageSize persistence is disabled", () => {
+      const mockUrlApi = createMockBucketApi();
+      const mockLocalApi = createMockBucketApi();
+      const customAllowed = [5, 15, 25, 100];
+
+      const handler = createPaginationChangeHandler(
+        false,
+        false, // shouldPersistPageSize disabled
+        "url",
+        "pageIndex",
+        "url",
+        "pageSize",
+        mockUrlApi,
+        mockLocalApi,
+        customAllowed
+      );
+
+      const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
+      const newState: PaginationState = { pageIndex: 0, pageSize: 999 }; // Invalid but won't be persisted
+
+      handler(newState, currentState);
+
+      // No pageSize should be persisted since it's disabled
+      expect(mockUrlApi.patch).not.toHaveBeenCalled();
+      expect(mockLocalApi.patch).not.toHaveBeenCalled();
+    });
+
+    it("validates pageSize with function updater", () => {
+      const mockUrlApi = createMockBucketApi();
+      const mockLocalApi = createMockBucketApi();
+      const customAllowed = [10, 20, 50];
+
+      const handler = createPaginationChangeHandler(
+        false,
+        true,
+        "url",
+        "pageIndex",
+        "url",
+        "pageSize",
+        mockUrlApi,
+        mockLocalApi,
+        customAllowed
+      );
+
+      const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
+      const updaterFn = vi.fn((old: PaginationState) => ({
+        ...old,
+        pageSize: 15, // Invalid value
+      }));
+
+      handler(updaterFn, currentState);
+
+      expect(updaterFn).toHaveBeenCalledWith(currentState);
+      // Should persist first allowed value (10) instead of 15
+      expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 10 });
+    });
+
+    it("handles edge case with empty allowed values", () => {
+      const mockUrlApi = createMockBucketApi();
+      const mockLocalApi = createMockBucketApi();
+
+      const handler = createPaginationChangeHandler(
+        false,
+        true,
+        "url",
+        "pageIndex",
+        "url",
+        "pageSize",
+        mockUrlApi,
+        mockLocalApi,
+        [] // Empty allowed values
+      );
+
+      const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
+      const newState: PaginationState = { pageIndex: 0, pageSize: 25 };
+
+      handler(newState, currentState);
+
+      // Should fall back to default value (10) when allowed values is empty
+      expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 10 });
+    });
+  });
 });

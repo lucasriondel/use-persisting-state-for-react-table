@@ -166,12 +166,13 @@ Returns an object with state values, their setters, and utility functions:
 
 #### PaginationConfig
 
-| Option                         | Type                      | Default       | Description                             |
-| ------------------------------ | ------------------------- | ------------- | --------------------------------------- |
-| `pageIndex.persistenceStorage` | `"url" \| "localStorage"` | Required      | Where to persist the current page index |
-| `pageIndex.key`                | `string`                  | `"pageIndex"` | Key name for pageIndex persistence      |
-| `pageSize.persistenceStorage`  | `"url" \| "localStorage"` | Required      | Where to persist the page size          |
-| `pageSize.key`                 | `string`                  | `"pageSize"`  | Key name for pageSize persistence       |
+| Option                         | Type                      | Default       | Description                                                                                                                                                           |
+| ------------------------------ | ------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pageIndex.persistenceStorage` | `"url" \| "localStorage"` | Required      | Where to persist the current page index                                                                                                                               |
+| `pageIndex.key`                | `string`                  | `"pageIndex"` | Key name for pageIndex persistence                                                                                                                                    |
+| `pageSize.persistenceStorage`  | `"url" \| "localStorage"` | Required      | Where to persist the page size                                                                                                                                        |
+| `pageSize.key`                 | `string`                  | `"pageSize"`  | Key name for pageSize persistence                                                                                                                                     |
+| `pageSize.allowedPageSizes`    | `number[]`                | `undefined`   | Optional array of allowed page size values. When provided, persisted page sizes are validated against this array. Invalid values fallback to the first allowed value. |
 
 #### SortingConfig
 
@@ -350,6 +351,64 @@ const columns: ColumnDef<User>[] = [
   },
 ];
 ```
+
+### Page Size Validation
+
+You can restrict the allowed page sizes to prevent users from setting arbitrary values through URL manipulation or localStorage tampering:
+
+```tsx
+import { usePersistingStateForReactTable } from "use-persisting-state-for-react-table";
+
+function TableWithValidatedPageSize() {
+  const { state, handlers } = usePersistingStateForReactTable({
+    columns,
+    persistence: {
+      urlNamespace: "products",
+      pagination: {
+        pageIndex: { persistenceStorage: "url" },
+        pageSize: {
+          persistenceStorage: "url",
+          // Only allow these specific page sizes
+          allowedPageSizes: [10, 25, 50, 100],
+        },
+      },
+    },
+  });
+
+  const table = useReactTable({
+    data,
+    columns,
+    state,
+    ...handlers,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
+
+  return (
+    <div>
+      {/* Your table implementation */}
+
+      {/* Page size selector with only allowed values */}
+      <select
+        value={state.pagination.pageSize}
+        onChange={(e) => table.setPageSize(Number(e.target.value))}
+      >
+        <option value={10}>10 per page</option>
+        <option value={25}>25 per page</option>
+        <option value={50}>50 per page</option>
+        <option value={100}>100 per page</option>
+      </select>
+    </div>
+  );
+}
+```
+
+**How it works:**
+
+- When `allowedPageSizes` is provided, any persisted page size is validated against this array
+- If a user tries to set `?pageSize=15` in the URL but only `[10, 25, 50, 100]` are allowed, it will automatically fallback to `10` (the first allowed value)
+- This prevents URL manipulation and ensures your UI components (like page size selectors) stay in sync
+- When `allowedPageSizes` is not provided, no validation occurs (backward compatible behavior)
 
 ## 🔧 Advanced Configuration
 

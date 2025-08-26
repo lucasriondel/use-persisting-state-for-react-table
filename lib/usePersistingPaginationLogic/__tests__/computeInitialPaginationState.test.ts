@@ -868,4 +868,237 @@ describe("computeInitialPaginationState", () => {
       expect(result).toEqual({});
     });
   });
+
+  describe("pageSize validation with allowedPageSizes", () => {
+    describe("with default allowed values", () => {
+      it("accepts valid pageSize from URL bucket", () => {
+        const defaultAllowed = [10, 20, 50];
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: 20 };
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          defaultAllowed
+        );
+
+        expect(result.pageSize).toBe(20);
+      });
+
+      it("falls back to first allowed value when persisted pageSize is invalid", () => {
+        const defaultAllowed = [10, 20, 50];
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: 15 }; // 15 is not in default [10, 20, 50]
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          defaultAllowed
+        );
+
+        expect(result.pageSize).toBe(10); // First default value
+      });
+
+      it("validates pageSize from localStorage bucket", () => {
+        const defaultAllowed = [10, 20, 50];
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const localBucket = { pageSize: 25 }; // Invalid in default allowed values
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "localStorage",
+          "pageIndex",
+          "pageSize",
+          {},
+          localBucket,
+          initialState,
+          defaultAllowed
+        );
+
+        expect(result.pageSize).toBe(10); // Falls back to first default value
+      });
+    });
+
+    describe("with custom allowed values", () => {
+      it("accepts valid pageSize from custom allowed list", () => {
+        const customAllowed = [5, 15, 25, 100];
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: 15 };
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          customAllowed
+        );
+
+        expect(result.pageSize).toBe(15);
+      });
+
+      it("falls back to first custom value when persisted pageSize is invalid", () => {
+        const customAllowed = [5, 15, 25, 100];
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: 20 }; // 20 is not in custom allowed values
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          customAllowed
+        );
+
+        expect(result.pageSize).toBe(5); // First custom value
+      });
+
+      it("handles non-number values in storage", () => {
+        const customAllowed = [5, 15, 25, 100];
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: "invalid" };
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          customAllowed
+        );
+
+        // Non-number values should not trigger validation - should keep initial state
+        expect(result.pageSize).toBe(10); // Keeps initial state value
+      });
+    });
+
+    describe("edge cases", () => {
+      it("handles empty allowed values array", () => {
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: 20 };
+
+        const result = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          []
+        );
+
+        expect(result.pageSize).toBe(10); // Falls back to default 10
+      });
+
+      it("does not validate when pageSize persistence is disabled", () => {
+        const initialState: PaginationState = {
+          pageIndex: 0,
+          pageSize: 10,
+        };
+        const urlBucket = { pageSize: 999 }; // Invalid value
+
+        const result = computeInitialPaginationState(
+          false,
+          false, // pageSize persistence disabled
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          urlBucket,
+          {},
+          initialState,
+          [5, 15, 25]
+        );
+
+        expect(result.pageSize).toBe(10); // Keeps initial state value
+      });
+
+      it("validates both URL and localStorage sources", () => {
+        const customAllowed = [5, 15, 25, 100];
+        
+        // Test URL source
+        const urlResult = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "url",
+          "pageIndex",
+          "pageSize",
+          { pageSize: 30 }, // Invalid
+          {},
+          { pageIndex: 0, pageSize: 10 },
+          customAllowed
+        );
+        expect(urlResult.pageSize).toBe(5);
+
+        // Test localStorage source
+        const localResult = computeInitialPaginationState(
+          false,
+          true,
+          undefined,
+          "localStorage",
+          "pageIndex",
+          "pageSize",
+          {},
+          { pageSize: 30 }, // Invalid
+          { pageIndex: 0, pageSize: 10 },
+          customAllowed
+        );
+        expect(localResult.pageSize).toBe(5);
+      });
+    });
+  });
 });

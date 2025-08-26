@@ -13,6 +13,43 @@ import { persistInitialPagination } from "./persistInitialPagination";
 
 import { PersistenceStorage } from "../types";
 
+/**
+ * Hook for managing pagination state persistence with optional page size validation.
+ *
+ * @param options Configuration options including persistence settings
+ * @param options.persistence.pagination.pageSize.allowedPageSizes Optional array of allowed page size values.
+ *   When provided, persisted page sizes will be validated against this array.
+ *   If a persisted page size is not in this array, it will fallback to the first value.
+ *   When not provided, no validation is performed (backward compatible behavior).
+ *
+ * @example
+ * ```tsx
+ * // With validation
+ * const { handlePaginationChange, initialPaginationState } = usePersistingPaginationLogic({
+ *   columns: [],
+ *   persistence: {
+ *     pagination: {
+ *       pageSize: {
+ *         persistenceStorage: "url",
+ *         allowedPageSizes: [10, 25, 50, 100]
+ *       }
+ *     }
+ *   }
+ * });
+ *
+ * // Without validation (backward compatible)
+ * const { handlePaginationChange, initialPaginationState } = usePersistingPaginationLogic({
+ *   columns: [],
+ *   persistence: {
+ *     pagination: {
+ *       pageSize: {
+ *         persistenceStorage: "url"
+ *       }
+ *     }
+ *   }
+ * });
+ * ```
+ */
 export function usePersistingPaginationLogic<TData extends RowData>(
   options: PersistingTableOptions<TData> & {
     persistence?: {
@@ -21,7 +58,11 @@ export function usePersistingPaginationLogic<TData extends RowData>(
           persistenceStorage: PersistenceStorage;
           key?: string;
         };
-        pageSize?: { persistenceStorage: PersistenceStorage; key?: string };
+        pageSize?: {
+          persistenceStorage: PersistenceStorage;
+          key?: string;
+          allowedPageSizes?: number[];
+        };
       };
     };
   }
@@ -33,6 +74,7 @@ export function usePersistingPaginationLogic<TData extends RowData>(
 
   const pageSizeTarget = paginationConfig?.pageSize?.persistenceStorage;
   const pageSizeKey = paginationConfig?.pageSize?.key ?? "pageSize";
+  const allowedPageSizes = paginationConfig?.pageSize?.allowedPageSizes;
 
   const shouldPersistPageIndex = Boolean(pageIndexTarget);
   const shouldPersistPageSize = Boolean(pageSizeTarget);
@@ -67,7 +109,8 @@ export function usePersistingPaginationLogic<TData extends RowData>(
       pageSizeKey,
       urlBucket,
       localBucket,
-      options.initialState?.pagination
+      options.initialState?.pagination,
+      allowedPageSizes
     );
   }, [
     shouldPersistPageIndex,
@@ -79,6 +122,7 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     urlBucket,
     localBucket,
     options.initialState?.pagination,
+    allowedPageSizes,
   ]);
 
   const handlePaginationChange = useMemo(() => {
@@ -90,7 +134,8 @@ export function usePersistingPaginationLogic<TData extends RowData>(
       pageSizeTarget ?? "url",
       pageSizeKey,
       urlBucketApi,
-      localBucketApi
+      localBucketApi,
+      allowedPageSizes
     );
   }, [
     shouldPersistPageIndex,
@@ -101,6 +146,7 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     pageSizeKey,
     urlBucketApi,
     localBucketApi,
+    allowedPageSizes,
   ]);
 
   // Track if initial state has been persisted to avoid duplicate persistence
@@ -119,7 +165,8 @@ export function usePersistingPaginationLogic<TData extends RowData>(
         localBucket,
         urlBucketApi,
         localBucketApi,
-        options.initialState?.pagination
+        options.initialState?.pagination,
+        allowedPageSizes
       );
       initialStatePersisted.current = true;
     }
@@ -135,6 +182,7 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     urlBucketApi,
     localBucketApi,
     options.initialState?.pagination,
+    allowedPageSizes,
   ]);
 
   return {

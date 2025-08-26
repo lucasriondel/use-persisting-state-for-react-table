@@ -125,6 +125,12 @@ export interface PersistenceConfig {
     pageSize: {
       persistenceStorage: PersistenceStorage; // default is url
       key?: string;
+      /**
+       * Array of allowed page size values for validation.
+       * If a persisted value is not in this array, it will fallback to the first value.
+       * @default [10, 20, 50]
+       */
+      allowedPageSizes?: number[];
     };
   };
   sorting?: {

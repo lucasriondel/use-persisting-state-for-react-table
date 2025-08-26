@@ -2,6 +2,7 @@ import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthoo
 import { PaginationState } from "@tanstack/react-table";
 import { UrlApiActions } from "use-url-state-reacthook";
 import { PersistenceStorage } from "../types";
+import { validatePageSize } from "./validatePageSize";
 
 export function persistInitialPagination(
   shouldPersistPageIndex: boolean,
@@ -14,7 +15,8 @@ export function persistInitialPagination(
   localBucket: Record<string, unknown>,
   urlBucketApi: UrlApiActions<Record<string, unknown>>,
   localBucketApi: LocalStorageApiActions<Record<string, unknown>>,
-  initialPagination?: PaginationState
+  initialPagination?: PaginationState,
+  allowedPageSizes?: number[]
 ): void {
   if (initialPagination) {
     let needsUpdate = false;
@@ -40,7 +42,14 @@ export function persistInitialPagination(
           : localBucket[pageSizeKey];
       if (typeof raw !== "number") {
         const patch = pageSizeTarget === "url" ? urlPatch : localPatch;
-        patch[pageSizeKey] = initialPagination.pageSize;
+        
+        let pageSizeToStore = initialPagination.pageSize;
+        // Only validate if allowedPageSizes is provided
+        if (allowedPageSizes !== undefined) {
+          pageSizeToStore = validatePageSize(initialPagination.pageSize, allowedPageSizes);
+        }
+        
+        patch[pageSizeKey] = pageSizeToStore;
         needsUpdate = true;
       }
     }
