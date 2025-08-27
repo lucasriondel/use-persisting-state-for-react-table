@@ -1,7 +1,7 @@
 /**
  * Validates if a page size value is allowed and returns a valid page size.
  * If the value is not in the allowed list, returns the first allowed value.
- * 
+ *
  * @param value The page size value to validate
  * @param allowedPageSizes Array of allowed page size values
  * @returns A valid page size from the allowed list
@@ -21,5 +21,5 @@ export function validatePageSize(
   }
 
   // Fallback to first allowed value
-  return allowedPageSizes[0];
+  return allowedPageSizes[0]!;
 }

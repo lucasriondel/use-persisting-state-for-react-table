@@ -7,11 +7,8 @@ import { PersistingTableOptions } from "../usePersistingStateForReactTable";
 // Import utility functions
 import { computeInitialPaginationState } from "./computeInitialPaginationState";
 import { createPaginationChangeHandler } from "./createPaginationChangeHandler";
-import { persistInitialPagination } from "./persistInitialPagination";
 
 // Internal utilities - not exported to reduce API surface
-
-import { PersistenceStorage } from "../types";
 
 /**
  * Hook for managing pagination state persistence with optional page size validation.
@@ -51,21 +48,7 @@ import { PersistenceStorage } from "../types";
  * ```
  */
 export function usePersistingPaginationLogic<TData extends RowData>(
-  options: PersistingTableOptions<TData> & {
-    persistence?: {
-      pagination?: {
-        pageIndex?: {
-          persistenceStorage: PersistenceStorage;
-          key?: string;
-        };
-        pageSize?: {
-          persistenceStorage: PersistenceStorage;
-          key?: string;
-          allowedPageSizes?: number[];
-        };
-      };
-    };
-  }
+  options: PersistingTableOptions<TData>
 ) {
   const paginationConfig = options.persistence?.pagination;
 
@@ -74,7 +57,9 @@ export function usePersistingPaginationLogic<TData extends RowData>(
 
   const pageSizeTarget = paginationConfig?.pageSize?.persistenceStorage;
   const pageSizeKey = paginationConfig?.pageSize?.key ?? "pageSize";
-  const allowedPageSizes = paginationConfig?.pageSize?.allowedPageSizes;
+  const allowedPageSizes = paginationConfig?.pageSize?.allowedPageSizes ?? [
+    10, 20, 50,
+  ];
 
   const shouldPersistPageIndex = Boolean(pageIndexTarget);
   const shouldPersistPageSize = Boolean(pageSizeTarget);
@@ -98,32 +83,6 @@ export function usePersistingPaginationLogic<TData extends RowData>(
       key: options.persistence?.localStorageKey ?? "pagination",
     }
   );
-
-  const initialPaginationState = useMemo(() => {
-    return computeInitialPaginationState(
-      shouldPersistPageIndex,
-      shouldPersistPageSize,
-      pageIndexTarget,
-      pageSizeTarget,
-      pageIndexKey,
-      pageSizeKey,
-      urlBucket,
-      localBucket,
-      options.initialState?.pagination,
-      allowedPageSizes
-    );
-  }, [
-    shouldPersistPageIndex,
-    shouldPersistPageSize,
-    pageIndexTarget,
-    pageSizeTarget,
-    pageIndexKey,
-    pageSizeKey,
-    urlBucket,
-    localBucket,
-    options.initialState?.pagination,
-    allowedPageSizes,
-  ]);
 
   const handlePaginationChange = useMemo(() => {
     return createPaginationChangeHandler(
@@ -152,22 +111,54 @@ export function usePersistingPaginationLogic<TData extends RowData>(
   // Track if initial state has been persisted to avoid duplicate persistence
   const initialStatePersisted = useRef(false);
 
+  const initialPaginationState = useMemo(() => {
+    return computeInitialPaginationState(
+      shouldPersistPageIndex,
+      shouldPersistPageSize,
+      pageIndexTarget,
+      pageSizeTarget,
+      pageIndexKey,
+      pageSizeKey,
+      urlBucket,
+      localBucket,
+      allowedPageSizes,
+      options.initialState?.pagination
+    );
+  }, []);
+
   useEffect(() => {
     if (!initialStatePersisted.current) {
-      persistInitialPagination(
-        shouldPersistPageIndex,
-        shouldPersistPageSize,
-        pageIndexTarget ?? "url",
-        pageSizeTarget ?? "url",
-        pageIndexKey,
-        pageSizeKey,
-        urlBucket,
-        localBucket,
-        urlBucketApi,
-        localBucketApi,
-        options.initialState?.pagination,
-        allowedPageSizes
-      );
+      // Only persist initial state if it's different from what's already persisted
+      const currentPersistedState = {
+        pageIndex: shouldPersistPageIndex
+          ? pageIndexTarget === "url"
+            ? urlBucket[pageIndexKey]
+            : localBucket[pageIndexKey]
+          : undefined,
+        pageSize: shouldPersistPageSize
+          ? pageSizeTarget === "url"
+            ? urlBucket[pageSizeKey]
+            : localBucket[pageSizeKey]
+          : undefined,
+      };
+
+      const shouldPersist =
+        (shouldPersistPageIndex &&
+          (currentPersistedState.pageIndex === undefined ||
+            currentPersistedState.pageIndex !==
+              initialPaginationState.pageIndex)) ||
+        (shouldPersistPageSize &&
+          (currentPersistedState.pageSize === undefined ||
+            currentPersistedState.pageSize !==
+              initialPaginationState.pageSize));
+
+      if (shouldPersist) {
+        handlePaginationChange(
+          initialPaginationState,
+          options.initialState?.pagination ?? { pageIndex: 0, pageSize: 10 }
+        );
+      }
+
       initialStatePersisted.current = true;
     }
   }, [
@@ -177,12 +168,11 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     pageSizeTarget,
     pageIndexKey,
     pageSizeKey,
-    urlBucket,
-    localBucket,
     urlBucketApi,
     localBucketApi,
-    options.initialState?.pagination,
-    allowedPageSizes,
+    initialPaginationState,
+    urlBucket,
+    localBucket,
   ]);
 
   return {

@@ -13,17 +13,14 @@ export function createPaginationChangeHandler(
   pageSizeKey: string,
   urlBucketApi: UrlApiActions<Record<string, unknown>>,
   localBucketApi: LocalStorageApiActions<Record<string, unknown>>,
-  allowedPageSizes?: number[]
+  allowedPageSizes: number[] | undefined
 ) {
   return (
     updater: Updater<PaginationState>,
     currentTableState: PaginationState
   ) => {
     const prev = currentTableState;
-    const next =
-      typeof updater === "function"
-        ? updater(prev)
-        : updater;
+    const next = typeof updater === "function" ? updater(prev) : updater;
 
     if (shouldPersistPageIndex && next.pageIndex !== undefined) {
       if (pageIndexTarget === "url") {
@@ -35,12 +32,12 @@ export function createPaginationChangeHandler(
 
     if (shouldPersistPageSize && next.pageSize !== undefined) {
       let pageSizeToStore = next.pageSize;
-      
-      // Only validate if allowedPageSizes is provided
-      if (allowedPageSizes !== undefined) {
+
+      // Validate if allowedPageSizes is provided (either from config or test)
+      if (allowedPageSizes) {
         pageSizeToStore = validatePageSize(next.pageSize, allowedPageSizes);
       }
-      
+
       if (pageSizeTarget === "url") {
         urlBucketApi.patch({ [pageSizeKey]: pageSizeToStore });
       } else {

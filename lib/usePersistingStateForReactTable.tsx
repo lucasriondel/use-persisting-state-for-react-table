@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { useCallback, useReducer } from "react";
 import { TableState, tableStateReducer } from "./tableStateReducer";
-import { PersistenceStorage } from "./types";
+import { PersistenceConfig } from "./types";
 import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
 import { useLocalStorageKeyValidation } from "./useLocalStorageKeyValidation";
 import { usePersistingColumnVisibilityLogic } from "./usePersistingColumnVisibilityLogic";
@@ -20,45 +20,14 @@ import { usePersistingPaginationLogic } from "./usePersistingPaginationLogic";
 import { usePersistingRowSelectionLogic } from "./usePersistingRowSelectionLogic";
 import { usePersistingSortingLogic } from "./usePersistingSortingLogic";
 
-export interface PersistingTableOptions<TData extends RowData>
-  extends Pick<TableOptions<TData>, "columns"> {
+export type PersistingTableOptions<TData extends RowData> = Pick<
+  TableOptions<TData>,
+  "columns"
+> & {
   initialState?: TableOptions<TData>["state"];
   automaticPageReset?: boolean; // default is true
-  persistence?: {
-    urlNamespace?: string;
-    localStorageKey?: string;
-    pagination?: {
-      pageIndex: {
-        persistenceStorage: PersistenceStorage;
-        key?: string;
-      };
-      pageSize: {
-        persistenceStorage: PersistenceStorage;
-        key?: string;
-      };
-    };
-    sorting?: {
-      persistenceStorage: PersistenceStorage;
-      sortingColumnKey?: string; // default "sortingColumn"
-      sortingDirectionKey?: string; // default "sortingDirection"
-    };
-    columnVisibility?: {
-      persistenceStorage: PersistenceStorage;
-      key?: string;
-    };
-    globalFilter?: {
-      persistenceStorage: PersistenceStorage;
-      key?: string;
-    };
-    rowSelection?: {
-      persistenceStorage: PersistenceStorage;
-      key?: string;
-    };
-    filters?: {
-      optimisticAsync?: boolean;
-    };
-  };
-}
+  persistence?: PersistenceConfig;
+};
 
 /**
  * A comprehensive React hook for managing persisted state in React Table applications.

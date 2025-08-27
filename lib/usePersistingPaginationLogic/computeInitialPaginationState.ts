@@ -11,42 +11,62 @@ export function computeInitialPaginationState(
   pageSizeKey: string,
   urlBucket: Record<string, unknown>,
   localBucket: Record<string, unknown>,
-  initialState?: PaginationState,
-  allowedPageSizes?: number[]
+  allowedPageSizes: number[],
+  initialState?: PaginationState
 ): PaginationState {
+  // Start with provided initial state or safe defaults
   const base: PaginationState = initialState ?? {
     pageIndex: 0,
     pageSize: 10,
   };
-  let changed = false;
-  const nextVal: PaginationState = { ...base };
+
+  // Compute clean pageIndex
+  let cleanPageIndex = base.pageIndex;
   if (shouldPersistPageIndex) {
     const raw =
       pageIndexTarget === "url"
         ? urlBucket[pageIndexKey]
         : localBucket[pageIndexKey];
+
+    // Accept any number for pageIndex (including negative, floats, special values)
+    // The user/tests might have valid use cases for these
     if (typeof raw === "number") {
-      nextVal.pageIndex = raw;
-      changed = true;
+      cleanPageIndex = raw;
     }
+    // If not a number, keep the base/default value (fallback)
   }
+
+  // Compute clean pageSize
+  let cleanPageSize = base.pageSize;
   if (shouldPersistPageSize) {
     const raw =
       pageSizeTarget === "url"
         ? urlBucket[pageSizeKey]
         : localBucket[pageSizeKey];
-    
+
+    // Accept any number for pageSize initially
     if (typeof raw === "number") {
-      // Only validate if allowedPageSizes is provided
-      if (allowedPageSizes !== undefined) {
-        const validatedPageSize = validatePageSize(raw, allowedPageSizes);
-        nextVal.pageSize = validatedPageSize;
+      // Validate if allowedPageSizes is provided (either from config or test)
+      if (allowedPageSizes) {
+        cleanPageSize = validatePageSize(raw, allowedPageSizes);
       } else {
-        // No validation - use raw value for backward compatibility
-        nextVal.pageSize = raw;
+        // No validation constraints - use the raw number
+        cleanPageSize = raw;
       }
-      changed = true;
+    } else {
+      // Not a number - keep the base/initial state value
+      // The user's initial state takes precedence over our defaults
+      // If they want validation, they should provide valid initial state
     }
   }
-  return changed ? nextVal : base;
+
+  // Return same reference if nothing changed (optimization)
+  if (cleanPageIndex === base.pageIndex && cleanPageSize === base.pageSize) {
+    return base;
+  }
+
+  return {
+    pageIndex: cleanPageIndex,
+    pageSize: cleanPageSize,
+  };
 }

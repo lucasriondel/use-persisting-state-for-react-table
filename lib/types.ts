@@ -118,11 +118,12 @@ export interface PersistenceConfig {
   urlNamespace?: string;
   localStorageKey?: string;
   pagination?: {
-    pageIndex: {
+    automaticPageReset?: boolean;
+    pageIndex?: {
       persistenceStorage: PersistenceStorage; // default is url
       key?: string;
     };
-    pageSize: {
+    pageSize?: {
       persistenceStorage: PersistenceStorage; // default is url
       key?: string;
       /**
