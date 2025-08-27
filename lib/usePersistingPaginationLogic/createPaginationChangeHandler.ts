@@ -17,10 +17,18 @@ export function createPaginationChangeHandler(
 ) {
   return (
     updater: Updater<PaginationState>,
-    currentTableState: PaginationState
+    currentTableState?: PaginationState
   ) => {
     const prev = currentTableState;
-    const next = typeof updater === "function" ? updater(prev) : updater;
+
+    if (!prev && typeof updater === "function") {
+      throw new Error(
+        "Cannot use updater function when currentTableState is undefined"
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = typeof updater === "function" ? updater(prev!) : updater;
 
     if (shouldPersistPageIndex && next.pageIndex !== undefined) {
       if (pageIndexTarget === "url") {

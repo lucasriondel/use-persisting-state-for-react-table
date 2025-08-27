@@ -112,18 +112,18 @@ export function usePersistingPaginationLogic<TData extends RowData>(
   const initialStatePersisted = useRef(false);
 
   const initialPaginationState = useMemo(() => {
-    return computeInitialPaginationState(
+    return computeInitialPaginationState({
       shouldPersistPageIndex,
       shouldPersistPageSize,
-      pageIndexTarget,
-      pageSizeTarget,
+      pageIndexPersistenceStorage: pageIndexTarget,
+      pageSizePersistenceStorage: pageSizeTarget,
       pageIndexKey,
       pageSizeKey,
       urlBucket,
       localBucket,
       allowedPageSizes,
-      options.initialState?.pagination
-    );
+      initialState: options.initialState?.pagination,
+    });
   }, []);
 
   useEffect(() => {
@@ -153,10 +153,7 @@ export function usePersistingPaginationLogic<TData extends RowData>(
               initialPaginationState.pageSize));
 
       if (shouldPersist) {
-        handlePaginationChange(
-          initialPaginationState,
-          options.initialState?.pagination ?? { pageIndex: 0, pageSize: 10 }
-        );
+        handlePaginationChange(initialPaginationState);
       }
 
       initialStatePersisted.current = true;

@@ -22,18 +22,18 @@ const allowedPageSizes = [
 describe("computeInitialPaginationState", () => {
   describe("default behavior", () => {
     it("returns default pagination when no persistence and no initialState", () => {
-      const result = computeInitialPaginationState(
-        false, // shouldPersistPageIndex
-        false, // shouldPersistPageSize
-        undefined,
-        undefined,
-        "pageIndex",
-        "pageSize",
-        {},
-        {},
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket: {},
+        localBucket: {},
         allowedPageSizes,
-        undefined
-      );
+        initialState: undefined,
+      });
 
       expect(result).toEqual({
         pageIndex: 0,
@@ -47,18 +47,18 @@ describe("computeInitialPaginationState", () => {
         pageSize: 25,
       };
 
-      const result = computeInitialPaginationState(
-        false,
-        false,
-        undefined,
-        undefined,
-        "pageIndex",
-        "pageSize",
-        {},
-        {},
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket: {},
+        localBucket: {},
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual(initialState);
     });
@@ -71,18 +71,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: 10, pageSize: 100 };
       const localBucket = { pageIndex: 20, pageSize: 200 };
 
-      const result = computeInitialPaginationState(
-        false,
-        false,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual(initialState);
     });
@@ -98,18 +98,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageIndex: 7 };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "url",
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "url",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 7,
@@ -125,18 +125,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageIndex: "invalid" };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "url",
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "url",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual(initialState);
       });
@@ -152,18 +152,18 @@ describe("computeInitialPaginationState", () => {
         };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "url",
-          undefined,
-          "customPageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "url",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "customPageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 15,
@@ -179,18 +179,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageIndex: -5 };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "url",
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "url",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: -5,
@@ -206,18 +206,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageIndex: 0 };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "url",
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "url",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 0,
@@ -235,18 +235,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = {};
         const localBucket = { pageIndex: 12 };
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "localStorage",
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "localStorage",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 12,
@@ -262,18 +262,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = {};
         const localBucket = { pageIndex: { invalid: "object" } };
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          "localStorage",
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: "localStorage",
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual(initialState);
       });
@@ -288,18 +288,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageIndex: 5 };
         const localBucket = { pageIndex: 8 };
 
-        const result = computeInitialPaginationState(
-          true,
-          false,
-          undefined,
-          undefined,
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: false,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: undefined,
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 8, // from localStorage
@@ -319,18 +319,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageSize: 50 };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 0,
@@ -346,18 +346,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageSize: "50" }; // string instead of number
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual(initialState);
       });
@@ -373,18 +373,18 @@ describe("computeInitialPaginationState", () => {
         };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "customPageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "customPageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 0,
@@ -400,18 +400,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageSize: 0 };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 0,
@@ -427,18 +427,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = { pageSize: 10000 };
         const localBucket = {};
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 0,
@@ -456,18 +456,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = {};
         const localBucket = { pageSize: 100 };
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "localStorage",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "localStorage",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual({
           pageIndex: 0,
@@ -483,18 +483,18 @@ describe("computeInitialPaginationState", () => {
         const urlBucket = {};
         const localBucket = { pageSize: [50] }; // array instead of number
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "localStorage",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "localStorage",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
           localBucket,
           allowedPageSizes,
-          initialState
-        );
+          initialState,
+        });
 
         expect(result).toEqual(initialState);
       });
@@ -510,18 +510,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: 7, pageSize: 50 };
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "url",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual({
         pageIndex: 7,
@@ -537,18 +537,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: 10 }; // pageSize missing
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "url",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual({
         pageIndex: 10, // from URL
@@ -564,18 +564,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: 15 };
       const localBucket = { pageSize: 100 };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual({
         pageIndex: 15, // from URL
@@ -596,18 +596,18 @@ describe("computeInitialPaginationState", () => {
       };
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "url",
-        "currentPage",
-        "itemsPerPage",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "currentPage",
+        pageSizeKey: "itemsPerPage",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual({
         pageIndex: 8,
@@ -623,18 +623,18 @@ describe("computeInitialPaginationState", () => {
         pageSize: 20,
       };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
-        {},
-        {},
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket: {},
+        localBucket: {},
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual(initialState);
     });
@@ -647,18 +647,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: null };
       const localBucket = { pageSize: null };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual(initialState);
     });
@@ -671,18 +671,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: undefined };
       const localBucket = { pageSize: undefined };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual(initialState);
     });
@@ -695,18 +695,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: true };
       const localBucket = { pageSize: false };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual(initialState);
     });
@@ -719,18 +719,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: "5" };
       const localBucket = { pageSize: "100" };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       // String numbers are not treated as numbers
       expect(result).toEqual(initialState);
@@ -744,18 +744,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: 3.7 };
       const localBucket = { pageSize: 25.9 };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual({
         pageIndex: 3.7,
@@ -771,18 +771,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: Infinity };
       const localBucket = { pageSize: -Infinity };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       expect(result).toEqual({
         pageIndex: Infinity,
@@ -798,18 +798,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: NaN };
       const localBucket = { pageSize: NaN };
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       // NaN is still of type "number" in JavaScript
       expect(result).toEqual({
@@ -828,18 +828,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = {};
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        true,
-        true,
-        "url",
-        "localStorage",
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       // Should return the same reference when unchanged
       expect(result).toBe(initialState);
@@ -853,18 +853,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = { pageIndex: 5 };
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        true,
-        false,
-        "url",
-        undefined,
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        initialState
-      );
+        initialState,
+      });
 
       // Should return a new object when changes were made
       expect(result).not.toBe(initialState);
@@ -878,18 +878,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = {};
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        false,
-        false,
-        undefined,
-        undefined,
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        undefined
-      );
+        initialState: undefined,
+      });
 
       expect(result).toEqual({
         pageIndex: 0,
@@ -902,18 +902,18 @@ describe("computeInitialPaginationState", () => {
       const urlBucket = {};
       const localBucket = {};
 
-      const result = computeInitialPaginationState(
-        false,
-        false,
-        undefined,
-        undefined,
-        "pageIndex",
-        "pageSize",
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
         urlBucket,
         localBucket,
         allowedPageSizes,
-        incompleteInitialState
-      );
+        initialState: incompleteInitialState,
+      });
 
       // The function uses initialState ?? defaults, so empty object is used as-is
       expect(result).toEqual({});
@@ -930,18 +930,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: 20 };
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          defaultAllowed,
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: defaultAllowed,
+          initialState,
+        });
 
         expect(result.pageSize).toBe(20);
       });
@@ -954,18 +954,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: 15 }; // 15 is not in default [10, 20, 50]
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          defaultAllowed,
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: defaultAllowed,
+          initialState,
+        });
 
         expect(result.pageSize).toBe(10); // First default value
       });
@@ -978,18 +978,18 @@ describe("computeInitialPaginationState", () => {
         };
         const localBucket = { pageSize: 25 }; // Invalid in default allowed values
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "localStorage",
-          "pageIndex",
-          "pageSize",
-          {},
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "localStorage",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
+          urlBucket: {},
           localBucket,
-          defaultAllowed,
-          initialState
-        );
+          allowedPageSizes: defaultAllowed,
+          initialState,
+        });
 
         expect(result.pageSize).toBe(10); // Falls back to first default value
       });
@@ -1004,18 +1004,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: 15 };
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          customAllowed,
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: customAllowed,
+          initialState,
+        });
 
         expect(result.pageSize).toBe(15);
       });
@@ -1028,18 +1028,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: 20 }; // 20 is not in custom allowed values
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          customAllowed,
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: customAllowed,
+          initialState,
+        });
 
         expect(result.pageSize).toBe(5); // First custom value
       });
@@ -1052,18 +1052,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: "invalid" };
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          customAllowed,
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: customAllowed,
+          initialState,
+        });
 
         // Non-number values should not trigger validation - should keep initial state
         expect(result.pageSize).toBe(10); // Keeps initial state value
@@ -1078,18 +1078,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: 20 };
 
-        const result = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          [], // empty allowedPageSizes
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: [], // empty allowedPageSizes
+          initialState,
+        });
 
         expect(result.pageSize).toBe(10); // Falls back to default 10
       });
@@ -1101,18 +1101,18 @@ describe("computeInitialPaginationState", () => {
         };
         const urlBucket = { pageSize: 999 }; // Invalid value
 
-        const result = computeInitialPaginationState(
-          false,
-          false, // pageSize persistence disabled
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
+        const result = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: false, // pageSize persistence disabled
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
           urlBucket,
-          {},
-          [5, 15, 25], // allowedPageSizes
-          initialState
-        );
+          localBucket: {},
+          allowedPageSizes: [5, 15, 25], // allowedPageSizes
+          initialState,
+        });
 
         expect(result.pageSize).toBe(10); // Keeps initial state value
       });
@@ -1121,33 +1121,33 @@ describe("computeInitialPaginationState", () => {
         const customAllowed = [5, 15, 25, 100];
 
         // Test URL source
-        const urlResult = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "url",
-          "pageIndex",
-          "pageSize",
-          { pageSize: 30 }, // Invalid
-          {},
-          customAllowed,
-          { pageIndex: 0, pageSize: 10 }
-        );
+        const urlResult = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "url",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
+          urlBucket: { pageSize: 30 }, // Invalid
+          localBucket: {},
+          allowedPageSizes: customAllowed,
+          initialState: { pageIndex: 0, pageSize: 10 },
+        });
         expect(urlResult.pageSize).toBe(5);
 
         // Test localStorage source
-        const localResult = computeInitialPaginationState(
-          false,
-          true,
-          undefined,
-          "localStorage",
-          "pageIndex",
-          "pageSize",
-          {},
-          { pageSize: 30 }, // Invalid
-          customAllowed,
-          { pageIndex: 0, pageSize: 10 }
-        );
+        const localResult = computeInitialPaginationState({
+          shouldPersistPageIndex: false,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: undefined,
+          pageSizePersistenceStorage: "localStorage",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
+          urlBucket: {},
+          localBucket: { pageSize: 30 }, // Invalid
+          allowedPageSizes: customAllowed,
+          initialState: { pageIndex: 0, pageSize: 10 },
+        });
         expect(localResult.pageSize).toBe(5);
       });
     });

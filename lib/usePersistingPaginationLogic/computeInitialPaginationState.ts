@@ -2,18 +2,35 @@ import { PaginationState } from "@tanstack/react-table";
 import { PersistenceStorage } from "../types";
 import { validatePageSize } from "./validatePageSize";
 
+interface ComputeInitialPaginationStateParams {
+  shouldPersistPageIndex: boolean;
+  shouldPersistPageSize: boolean;
+  pageIndexPersistenceStorage: PersistenceStorage | undefined;
+  pageSizePersistenceStorage: PersistenceStorage | undefined;
+  pageIndexKey: string;
+  pageSizeKey: string;
+  urlBucket: Record<string, unknown>;
+  localBucket: Record<string, unknown>;
+  allowedPageSizes: number[];
+  initialState?: PaginationState | undefined;
+}
+
 export function computeInitialPaginationState(
-  shouldPersistPageIndex: boolean,
-  shouldPersistPageSize: boolean,
-  pageIndexTarget: PersistenceStorage | undefined,
-  pageSizeTarget: PersistenceStorage | undefined,
-  pageIndexKey: string,
-  pageSizeKey: string,
-  urlBucket: Record<string, unknown>,
-  localBucket: Record<string, unknown>,
-  allowedPageSizes: number[],
-  initialState?: PaginationState
+  params: ComputeInitialPaginationStateParams
 ): PaginationState {
+  const {
+    shouldPersistPageIndex,
+    shouldPersistPageSize,
+    pageIndexPersistenceStorage,
+    pageSizePersistenceStorage,
+    pageIndexKey,
+    pageSizeKey,
+    urlBucket,
+    localBucket,
+    allowedPageSizes,
+    initialState,
+  } = params;
+
   // Start with provided initial state or safe defaults
   const base: PaginationState = initialState ?? {
     pageIndex: 0,
@@ -24,7 +41,7 @@ export function computeInitialPaginationState(
   let cleanPageIndex = base.pageIndex;
   if (shouldPersistPageIndex) {
     const raw =
-      pageIndexTarget === "url"
+      pageIndexPersistenceStorage === "url"
         ? urlBucket[pageIndexKey]
         : localBucket[pageIndexKey];
 
@@ -40,7 +57,7 @@ export function computeInitialPaginationState(
   let cleanPageSize = base.pageSize;
   if (shouldPersistPageSize) {
     const raw =
-      pageSizeTarget === "url"
+      pageSizePersistenceStorage === "url"
         ? urlBucket[pageSizeKey]
         : localBucket[pageSizeKey];
 
