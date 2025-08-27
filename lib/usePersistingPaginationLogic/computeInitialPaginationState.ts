@@ -11,7 +11,7 @@ interface ComputeInitialPaginationStateParams {
   pageSizeKey: string;
   urlBucket: Record<string, unknown>;
   localBucket: Record<string, unknown>;
-  allowedPageSizes: number[];
+  allowedPageSizes: number[] | undefined;
   initialState?: PaginationState | undefined;
 }
 

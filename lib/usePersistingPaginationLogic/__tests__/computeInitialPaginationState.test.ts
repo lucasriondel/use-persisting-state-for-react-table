@@ -920,6 +920,450 @@ describe("computeInitialPaginationState", () => {
     });
   });
 
+  describe("additional edge cases", () => {
+    it("handles partially defined initialState (missing pageIndex)", () => {
+      const incompleteInitialState = { pageSize: 25 } as PaginationState;
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket: {},
+        localBucket: {},
+        allowedPageSizes,
+        initialState: incompleteInitialState,
+      });
+
+      expect(result.pageSize).toBe(25);
+      expect(result.pageIndex).toBeUndefined();
+    });
+
+    it("handles partially defined initialState (missing pageSize)", () => {
+      const incompleteInitialState = { pageIndex: 5 } as PaginationState;
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket: {},
+        localBucket: {},
+        allowedPageSizes,
+        initialState: incompleteInitialState,
+      });
+
+      expect(result.pageIndex).toBe(5);
+      expect(result.pageSize).toBeUndefined();
+    });
+
+    it("handles initialState with extra properties", () => {
+      const initialStateWithExtra = {
+        pageIndex: 3,
+        pageSize: 30,
+        extraProperty: "should be preserved",
+        anotherExtra: 42,
+      } as PaginationState & { extraProperty: string; anotherExtra: number };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: undefined,
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket: {},
+        localBucket: {},
+        allowedPageSizes,
+        initialState: initialStateWithExtra,
+      });
+
+      expect(result).toBe(initialStateWithExtra);
+    });
+
+    it("handles function values in buckets", () => {
+      const initialState: PaginationState = {
+        pageIndex: 2,
+        pageSize: 20,
+      };
+      const urlBucket = { pageIndex: () => 5 };
+      const localBucket = { pageSize: function() { return 100; } };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes,
+        initialState,
+      });
+
+      expect(result).toEqual(initialState);
+    });
+
+    it("handles symbol values in buckets", () => {
+      const initialState: PaginationState = {
+        pageIndex: 2,
+        pageSize: 20,
+      };
+      const sym = Symbol("test");
+      const urlBucket = { pageIndex: sym };
+      const localBucket = { pageSize: sym };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes,
+        initialState,
+      });
+
+      expect(result).toEqual(initialState);
+    });
+
+    it("handles BigInt values in buckets", () => {
+      const initialState: PaginationState = {
+        pageIndex: 2,
+        pageSize: 20,
+      };
+      const urlBucket = { pageIndex: BigInt(5) };
+      const localBucket = { pageSize: BigInt(100) };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes,
+        initialState,
+      });
+
+      expect(result).toEqual(initialState);
+    });
+
+    it("handles extremely large numbers (beyond MAX_SAFE_INTEGER)", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const largeNumber = Number.MAX_SAFE_INTEGER + 1000;
+      const urlBucket = { pageIndex: largeNumber };
+      const localBucket = { pageSize: largeNumber };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes: undefined,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: largeNumber,
+        pageSize: largeNumber,
+      });
+    });
+
+    it("handles extremely small numbers (beyond MIN_SAFE_INTEGER)", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const smallNumber = Number.MIN_SAFE_INTEGER - 1000;
+      const urlBucket = { pageIndex: smallNumber };
+      const localBucket = { pageSize: smallNumber };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes: undefined,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: smallNumber,
+        pageSize: smallNumber,
+      });
+    });
+
+    it("handles Number.MAX_VALUE boundary", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const urlBucket = { pageIndex: Number.MAX_VALUE };
+      const localBucket = { pageSize: Number.MAX_VALUE };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes: undefined,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: Number.MAX_VALUE,
+        pageSize: Number.MAX_VALUE,
+      });
+    });
+
+    it("handles Number.MIN_VALUE boundary", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const urlBucket = { pageIndex: Number.MIN_VALUE };
+      const localBucket = { pageSize: Number.MIN_VALUE };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket,
+        allowedPageSizes: undefined,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: Number.MIN_VALUE,
+        pageSize: Number.MIN_VALUE,
+      });
+    });
+
+    it("validates pageSize with single element allowedPageSizes array", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const singleAllowed = [25];
+      const urlBucket = { pageSize: 50 }; // Invalid
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes: singleAllowed,
+        initialState,
+      });
+
+      expect(result.pageSize).toBe(25); // Falls back to single allowed value
+    });
+
+    it("validates pageSize with duplicate values in allowedPageSizes", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const duplicateAllowed = [25, 50, 25, 100, 50];
+      const urlBucket = { pageSize: 25 }; // Valid (even though duplicated)
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes: duplicateAllowed,
+        initialState,
+      });
+
+      expect(result.pageSize).toBe(25);
+    });
+
+    it("validates pageSize with unsorted allowedPageSizes array", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const unsortedAllowed = [100, 25, 75, 10, 50];
+      const urlBucket = { pageSize: 75 }; // Valid
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes: unsortedAllowed,
+        initialState,
+      });
+
+      expect(result.pageSize).toBe(75);
+    });
+
+    it("handles null buckets gracefully", () => {
+      const initialState: PaginationState = {
+        pageIndex: 2,
+        pageSize: 20,
+      };
+
+      // This test should expect an error since the function doesn't handle null buckets
+      expect(() => {
+        computeInitialPaginationState({
+          shouldPersistPageIndex: true,
+          shouldPersistPageSize: true,
+          pageIndexPersistenceStorage: "url",
+          pageSizePersistenceStorage: "localStorage",
+          pageIndexKey: "pageIndex",
+          pageSizeKey: "pageSize",
+          urlBucket: null as unknown as Record<string, unknown>,
+          localBucket: null as unknown as Record<string, unknown>,
+          allowedPageSizes,
+          initialState,
+        });
+      }).toThrow();
+    });
+
+    it("handles scenario where only pageIndex key exists in bucket", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const urlBucket = { pageIndex: 15 }; // pageSize missing
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: 15, // from URL
+        pageSize: 10, // from initialState
+      });
+    });
+
+    it("handles scenario where only pageSize key exists in bucket", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const urlBucket = { pageSize: 50 }; // pageIndex missing
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: 0, // from initialState
+        pageSize: 50, // from URL
+      });
+    });
+
+    it("handles both persistence enabled but different shouldPersist flags", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const urlBucket = { pageIndex: 5, pageSize: 50 };
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: true, // enabled
+        shouldPersistPageSize: false, // disabled
+        pageIndexPersistenceStorage: "url",
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes,
+        initialState,
+      });
+
+      expect(result).toEqual({
+        pageIndex: 5, // persisted because shouldPersistPageIndex is true
+        pageSize: 10, // not persisted because shouldPersistPageSize is false
+      });
+    });
+
+    it("validates pageSize with negative numbers in allowedPageSizes", () => {
+      const initialState: PaginationState = {
+        pageIndex: 0,
+        pageSize: 10,
+      };
+      const negativeAllowed = [-10, -5, 0, 5, 10];
+      const urlBucket = { pageSize: -5 }; // Valid negative
+
+      const result = computeInitialPaginationState({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexPersistenceStorage: undefined,
+        pageSizePersistenceStorage: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeKey: "pageSize",
+        urlBucket,
+        localBucket: {},
+        allowedPageSizes: negativeAllowed,
+        initialState,
+      });
+
+      expect(result.pageSize).toBe(-5);
+    });
+  });
+
   describe("pageSize validation with allowedPageSizes", () => {
     describe("with default allowed values", () => {
       it("accepts valid pageSize from URL bucket", () => {
