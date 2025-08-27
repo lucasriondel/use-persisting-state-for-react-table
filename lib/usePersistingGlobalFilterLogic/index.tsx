@@ -7,7 +7,6 @@ import { PersistingTableOptions } from "../usePersistingStateForReactTable";
 // Import utility functions
 import { computeInitialGlobalFilterState } from "./computeInitialGlobalFilterState";
 import { createGlobalFilterChangeHandler } from "./createGlobalFilterChangeHandler";
-import { persistInitialGlobalFilter } from "./persistInitialGlobalFilter";
 
 // Internal utilities - not exported to reduce API surface
 
@@ -39,24 +38,6 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
     }
   );
 
-  const initialGlobalFilterState = useMemo(() => {
-    return computeInitialGlobalFilterState(
-      shouldPersist,
-      target,
-      key,
-      urlBucket,
-      localBucket,
-      options.initialState?.globalFilter as string | undefined
-    );
-  }, [
-    shouldPersist,
-    target,
-    key,
-    urlBucket,
-    localBucket,
-    options.initialState?.globalFilter,
-  ]);
-
   const handleGlobalFilterChange = useMemo(() => {
     return createGlobalFilterChangeHandler(
       key,
@@ -67,18 +48,37 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
   // Track if initial state has been persisted to avoid duplicate persistence
   const initialStatePersisted = useRef(false);
 
+  const initialGlobalFilterState = useMemo(() => {
+    return computeInitialGlobalFilterState({
+      shouldPersist,
+      target,
+      key,
+      urlBucket,
+      localBucket,
+      initialState: options.initialState?.globalFilter as string | undefined,
+    });
+  }, []);
+
   useEffect(() => {
     if (!initialStatePersisted.current) {
-      persistInitialGlobalFilter(
-        shouldPersist,
-        target,
-        key,
-        urlBucket,
-        localBucket,
-        urlBucketApi,
-        localBucketApi,
-        options.initialState?.globalFilter as string | undefined
-      );
+      // Only persist initial state if it's different from what's already persisted
+      const currentPersistedState = shouldPersist
+        ? target === "url"
+          ? urlBucket[key]
+          : localBucket[key]
+        : undefined;
+
+      const shouldPersistInitial = 
+        shouldPersist && 
+        handleGlobalFilterChange &&
+        initialGlobalFilterState &&
+        (currentPersistedState === undefined || 
+         currentPersistedState !== initialGlobalFilterState);
+
+      if (shouldPersistInitial) {
+        handleGlobalFilterChange(initialGlobalFilterState);
+      }
+
       initialStatePersisted.current = true;
     }
   }, [
@@ -87,9 +87,8 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
     key,
     urlBucket,
     localBucket,
-    urlBucketApi,
-    localBucketApi,
-    options.initialState?.globalFilter,
+    handleGlobalFilterChange,
+    initialGlobalFilterState,
   ]);
 
   return { handleGlobalFilterChange, initialGlobalFilterState };
