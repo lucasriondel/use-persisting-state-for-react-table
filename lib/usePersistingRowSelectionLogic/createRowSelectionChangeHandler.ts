@@ -7,14 +7,19 @@ export function createRowSelectionChangeHandler(
 ) {
   return (
     updater: Updater<RowSelectionState>,
-    currentTableState: RowSelectionState
+    currentTableState?: RowSelectionState
   ) => {
     // Use the current table state for comparison and updater execution
     const prev = currentTableState;
-    const next =
-      typeof updater === "function"
-        ? updater(prev)
-        : updater;
+
+    if (!prev && typeof updater === "function") {
+      throw new Error(
+        "Cannot use updater function when currentTableState is undefined"
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = typeof updater === "function" ? updater(prev!) : updater;
 
     // Filter out false values to only keep selected rows
     const selectedOnly = Object.fromEntries(

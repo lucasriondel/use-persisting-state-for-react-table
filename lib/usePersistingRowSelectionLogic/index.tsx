@@ -7,7 +7,6 @@ import { PersistingTableOptions } from "../usePersistingStateForReactTable";
 // Import utility functions
 import { computeInitialRowSelectionState } from "./computeInitialRowSelectionState";
 import { createRowSelectionChangeHandler } from "./createRowSelectionChangeHandler";
-import { persistInitialRowSelection } from "./persistInitialRowSelection";
 
 // Internal utilities - not exported to reduce API surface
 
@@ -22,7 +21,9 @@ export function usePersistingRowSelectionLogic<TData extends RowData>(
   const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
     {},
     {
-      ...(options.persistence?.urlNamespace && { namespace: options.persistence.urlNamespace }),
+      ...(options.persistence?.urlNamespace && {
+        namespace: options.persistence.urlNamespace,
+      }),
       history: "replace",
       debounceMs: 0,
     }
@@ -37,24 +38,6 @@ export function usePersistingRowSelectionLogic<TData extends RowData>(
     }
   );
 
-  const initialRowSelectionState = useMemo(() => {
-    return computeInitialRowSelectionState(
-      shouldPersist,
-      target,
-      key,
-      urlBucket,
-      localBucket,
-      options.initialState?.rowSelection
-    );
-  }, [
-    shouldPersist,
-    target,
-    key,
-    urlBucket,
-    localBucket,
-    options.initialState?.rowSelection,
-  ]);
-
   const handleRowSelectionChange = useMemo(() => {
     if (!shouldPersist) return;
 
@@ -67,18 +50,37 @@ export function usePersistingRowSelectionLogic<TData extends RowData>(
   // Track if initial state has been persisted to avoid duplicate persistence
   const initialStatePersisted = useRef(false);
 
+  const initialRowSelectionState = useMemo(() => {
+    return computeInitialRowSelectionState({
+      shouldPersist,
+      target,
+      key,
+      urlBucket,
+      localBucket,
+      initialState: options.initialState?.rowSelection,
+    });
+  }, []);
+
   useEffect(() => {
     if (!initialStatePersisted.current) {
-      persistInitialRowSelection(
-        shouldPersist,
-        target,
-        key,
-        urlBucket,
-        localBucket,
-        urlBucketApi,
-        localBucketApi,
-        options.initialState?.rowSelection
-      );
+      // Only persist initial state if it's different from what's already persisted
+      const currentPersistedState = shouldPersist
+        ? target === "url"
+          ? urlBucket[key]
+          : localBucket[key]
+        : undefined;
+
+      const shouldPersistInitial =
+        shouldPersist &&
+        handleRowSelectionChange &&
+        (currentPersistedState === undefined ||
+          JSON.stringify(currentPersistedState) !==
+            JSON.stringify(initialRowSelectionState));
+
+      if (shouldPersistInitial) {
+        handleRowSelectionChange(initialRowSelectionState);
+      }
+
       initialStatePersisted.current = true;
     }
   }, [
@@ -87,9 +89,8 @@ export function usePersistingRowSelectionLogic<TData extends RowData>(
     key,
     urlBucket,
     localBucket,
-    urlBucketApi,
-    localBucketApi,
-    options.initialState?.rowSelection,
+    handleRowSelectionChange,
+    initialRowSelectionState,
   ]);
 
   return { handleRowSelectionChange, initialRowSelectionState };

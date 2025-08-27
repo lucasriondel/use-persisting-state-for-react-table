@@ -638,8 +638,10 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
         })
       );
 
-      // The hook returns the raw value as-is (current behavior)
-      expect(result.current.initialRowSelectionState).toBe("invalidjson");
+      // Should fall back to initial state when URL values are invalid
+      expect(result.current.initialRowSelectionState).toEqual({
+        "1": true,
+      });
     });
 
     it("handles localStorage JSON parse errors gracefully", () => {
