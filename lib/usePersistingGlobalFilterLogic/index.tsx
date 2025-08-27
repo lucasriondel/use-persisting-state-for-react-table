@@ -68,12 +68,11 @@ export function usePersistingGlobalFilterLogic<TData extends RowData>(
           : localBucket[key]
         : undefined;
 
-      const shouldPersistInitial = 
-        shouldPersist && 
-        handleGlobalFilterChange &&
+      const shouldPersistInitial =
+        shouldPersist &&
         initialGlobalFilterState &&
-        (currentPersistedState === undefined || 
-         currentPersistedState !== initialGlobalFilterState);
+        (currentPersistedState === undefined ||
+          currentPersistedState !== initialGlobalFilterState);
 
       if (shouldPersistInitial) {
         handleGlobalFilterChange(initialGlobalFilterState);

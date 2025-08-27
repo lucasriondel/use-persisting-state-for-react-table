@@ -8,9 +8,17 @@ export function createGlobalFilterChangeHandler(
     | LocalStorageApiActions<Record<string, unknown>>
     | UrlApiActions<Record<string, unknown>>
 ) {
-  return (updater: Updater<string>, currentTableState: string) => {
+  return (updater: Updater<string>, currentTableState?: string) => {
     const prev = currentTableState;
-    const next = typeof updater === "function" ? updater(prev) : updater;
+
+    if (!prev && typeof updater === "function") {
+      throw new Error(
+        "Cannot use updater function when currentTableState is undefined"
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = typeof updater === "function" ? updater(prev!) : updater;
 
     // If the value is empty, remove the key from the bucket
     // If the value has content, update the bucket

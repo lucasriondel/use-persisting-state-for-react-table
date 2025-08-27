@@ -6,7 +6,7 @@ interface ComputeInitialGlobalFilterStateParams {
   key: string;
   urlBucket: Record<string, unknown>;
   localBucket: Record<string, unknown>;
-  initialState?: string;
+  initialState?: string | undefined;
 }
 
 function isValidGlobalFilter(value: unknown): value is string {
@@ -16,7 +16,8 @@ function isValidGlobalFilter(value: unknown): value is string {
 export function computeInitialGlobalFilterState(
   params: ComputeInitialGlobalFilterStateParams
 ): string {
-  const { shouldPersist, target, key, urlBucket, localBucket, initialState } = params;
+  const { shouldPersist, target, key, urlBucket, localBucket, initialState } =
+    params;
 
   // Start with provided initial state or safe defaults
   const base: string = initialState ?? "";
@@ -35,7 +36,7 @@ export function computeInitialGlobalFilterState(
     if (raw === base) {
       return base;
     }
-    
+
     return raw;
   }
 
