@@ -6,16 +6,17 @@ export function createSortingChangeHandler(
   columnKey: string,
   directionKey: string
 ) {
-  return (
-    updater: Updater<SortingState>,
-    currentTableState: SortingState
-  ) => {
-    // Use the current table state for comparison and updater execution
+  return (updater: Updater<SortingState>, currentTableState?: SortingState) => {
     const prev = currentTableState;
-    const next =
-      typeof updater === "function"
-        ? updater(prev)
-        : updater;
+
+    if (!prev && typeof updater === "function") {
+      throw new Error(
+        "Cannot use updater function when currentTableState is undefined"
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = typeof updater === "function" ? updater(prev!) : updater;
 
     const first = next[0];
     if (first) {

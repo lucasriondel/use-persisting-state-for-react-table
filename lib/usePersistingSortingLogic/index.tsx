@@ -7,7 +7,6 @@ import { PersistingTableOptions } from "../usePersistingStateForReactTable";
 // Import utility functions
 import { computeInitialSortingState } from "./computeInitialSortingState";
 import { createSortingChangeHandler } from "./createSortingChangeHandler";
-import { persistInitialSorting } from "./persistInitialSorting";
 
 // Internal utilities - not exported to reduce API surface
 
@@ -41,26 +40,6 @@ export function usePersistingSortingLogic<TData extends RowData>(
     }
   );
 
-  const initialSortingState = useMemo(() => {
-    return computeInitialSortingState(
-      shouldPersist,
-      target,
-      columnKey,
-      directionKey,
-      urlBucket,
-      localBucket,
-      options.initialState?.sorting
-    );
-  }, [
-    shouldPersist,
-    target,
-    columnKey,
-    directionKey,
-    urlBucket,
-    localBucket,
-    options.initialState?.sorting,
-  ]);
-
   const handleSortingChange = useMemo(() => {
     if (!shouldPersist) return;
 
@@ -81,19 +60,45 @@ export function usePersistingSortingLogic<TData extends RowData>(
   // Track if initial state has been persisted to avoid duplicate persistence
   const initialStatePersisted = useRef(false);
 
+  const initialSortingState = useMemo(() => {
+    return computeInitialSortingState({
+      shouldPersist,
+      target,
+      columnKey,
+      directionKey,
+      urlBucket,
+      localBucket,
+      initialState: options.initialState?.sorting,
+    });
+  }, []);
+
   useEffect(() => {
     if (!initialStatePersisted.current) {
-      persistInitialSorting(
-        shouldPersist,
-        target,
-        columnKey,
-        directionKey,
-        urlBucket,
-        localBucket,
-        urlBucketApi,
-        localBucketApi,
-        options.initialState?.sorting
-      );
+      // Only persist initial state if it's different from what's already persisted
+      const currentColumnValue = shouldPersist
+        ? target === "url"
+          ? urlBucket[columnKey]
+          : localBucket[columnKey]
+        : undefined;
+      
+      const currentDirectionValue = shouldPersist
+        ? target === "url"
+          ? urlBucket[directionKey]
+          : localBucket[directionKey]
+        : undefined;
+
+      const shouldPersistInitial = 
+        shouldPersist && 
+        handleSortingChange &&
+        initialSortingState.length > 0 &&
+        (!currentColumnValue || !currentDirectionValue ||
+         currentColumnValue !== initialSortingState[0]?.id ||
+         currentDirectionValue !== (initialSortingState[0]?.desc ? "desc" : "asc"));
+
+      if (shouldPersistInitial) {
+        handleSortingChange(initialSortingState);
+      }
+
       initialStatePersisted.current = true;
     }
   }, [
@@ -103,9 +108,8 @@ export function usePersistingSortingLogic<TData extends RowData>(
     directionKey,
     urlBucket,
     localBucket,
-    urlBucketApi,
-    localBucketApi,
-    options.initialState?.sorting,
+    handleSortingChange,
+    initialSortingState,
   ]);
 
   return {

@@ -615,9 +615,9 @@ describe("usePersistingSortingLogic Integration Tests", () => {
         })
       );
 
-      // Should create sorting state with invalid direction treated as string
+      // Should fall back to initial state when direction is invalid
       expect(result.current.initialSortingState).toEqual([
-        { id: "name", desc: false }, // "invaliddir" !== "desc" so desc: false
+        { id: "email", desc: false }, // Falls back to initial state since "invaliddir" is not a valid direction
       ]);
     });
 
