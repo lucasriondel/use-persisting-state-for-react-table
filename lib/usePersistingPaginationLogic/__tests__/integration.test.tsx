@@ -177,7 +177,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
     it("reads initial state from URL parameters", () => {
       // Set up URL with pagination parameters using proper URL object
       setWindowLocation(
-        "https://example.com/?table.pageIndex=3&table.pageSize=25"
+        "https://example.com/?table.pageIndex=3&table.pageSize=20"
       );
 
       const { result } = renderHook(() =>
@@ -202,7 +202,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should read from URL instead of initial state
       expect(result.current.initialPaginationState).toEqual({
         pageIndex: 3,
-        pageSize: 25,
+        pageSize: 20,
       });
     });
 
@@ -250,7 +250,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       });
 
       act(() => {
-        tableHook.current.table.setPageSize(15);
+        tableHook.current.table.setPageSize(20);
       });
 
       // Should use custom keys in URL
@@ -262,7 +262,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),
         "",
-        expect.stringContaining("data.size=15")
+        expect.stringContaining("data.size=20")
       );
     });
   });
@@ -275,7 +275,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           initialState: {
             pagination: {
               pageIndex: 1,
-              pageSize: 15,
+              pageSize: 20,
             },
           },
           persistence: {
@@ -315,7 +315,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Initial state should be set
       expect(tableHook.current.pagination).toEqual({
         pageIndex: 1,
-        pageSize: 15,
+        pageSize: 20,
       });
 
       // Change pagination
@@ -336,7 +336,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // localStorage should be updated with both values
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "test-pagination",
-        expect.stringContaining('"pageSize":30')
+        expect.stringContaining('"pageSize":20')
       );
     });
 
@@ -344,7 +344,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Pre-populate localStorage
       mockLocalStorage.setItem(
         "test-pagination",
-        JSON.stringify({ pageIndex: 7, pageSize: 40 })
+        JSON.stringify({ pageIndex: 7, pageSize: 50 })
       );
 
       const { result } = renderHook(() =>
@@ -369,7 +369,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should read from localStorage instead of initial state
       expect(result.current.initialPaginationState).toEqual({
         pageIndex: 7,
-        pageSize: 40,
+        pageSize: 50,
       });
     });
   });
@@ -380,7 +380,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       setWindowLocation("https://example.com/?pageIndex=6");
       mockLocalStorage.setItem(
         "mixed-pagination",
-        JSON.stringify({ pageSize: 35 })
+        JSON.stringify({ pageSize: 50 })
       );
 
       const { result: paginationHook } = renderHook(() =>
@@ -423,7 +423,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should read from both storages
       expect(tableHook.current.pagination).toEqual({
         pageIndex: 6,
-        pageSize: 35,
+        pageSize: 50,
       });
 
       // Change pageIndex (should update URL)
@@ -439,12 +439,12 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       // Change pageSize (should update localStorage)
       act(() => {
-        tableHook.current.table.setPageSize(45);
+        tableHook.current.table.setPageSize(50);
       });
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "mixed-pagination",
-        expect.stringContaining('"pageSize":45')
+        expect.stringContaining('"pageSize":50')
       );
     });
   });
@@ -629,7 +629,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       setWindowLocation("https://example.com/?existing.pageIndex=10");
       mockLocalStorage.setItem(
         "existing-pagination",
-        JSON.stringify({ pageSize: 100 })
+        JSON.stringify({ pageSize: 50 })
       );
 
       const { result } = renderHook(() =>
@@ -644,7 +644,10 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           persistence: {
             pagination: {
               pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "localStorage" },
+              pageSize: {
+                persistenceStorage: "localStorage",
+                allowedPageSizes: [10, 20, 50, 100],
+              },
             },
             urlNamespace: "existing",
             localStorageKey: "existing-pagination",
@@ -655,7 +658,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should use existing values instead of initial state
       expect(result.current.initialPaginationState).toEqual({
         pageIndex: 10,
-        pageSize: 100,
+        pageSize: 50,
       });
 
       // Allow useEffect to run
@@ -686,7 +689,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           initialState: {
             pagination: {
               pageIndex: 2,
-              pageSize: 25,
+              pageSize: 20,
             },
           },
           persistence: {
@@ -702,7 +705,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should fall back to initial state when URL values are invalid
       expect(result.current.initialPaginationState).toEqual({
         pageIndex: 2,
-        pageSize: 25,
+        pageSize: 20,
       });
     });
 
@@ -715,7 +718,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
           initialState: {
             pagination: {
               pageIndex: 3,
-              pageSize: 30,
+              pageSize: 20,
             },
           },
           persistence: {
@@ -731,7 +734,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should fall back to initial state when localStorage is corrupted
       expect(result.current.initialPaginationState).toEqual({
         pageIndex: 3,
-        pageSize: 30,
+        pageSize: 20,
       });
     });
   });
@@ -813,14 +816,14 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
       // Change page size (should reset to page 0)
       act(() => {
-        tableHook.current.table.setPageSize(25);
+        tableHook.current.table.setPageSize(20);
       });
 
-      expect(tableHook.current.pagination.pageSize).toBe(25);
+      expect(tableHook.current.pagination.pageSize).toBe(20);
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),
         "",
-        expect.stringContaining("users.pageSize=25")
+        expect.stringContaining("users.pageSize=20")
       );
 
       // Previous page from current position
@@ -828,11 +831,11 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
         tableHook.current.table.previousPage();
       });
 
-      expect(tableHook.current.pagination.pageIndex).toBe(2);
+      expect(tableHook.current.pagination.pageIndex).toBe(3);
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),
         "",
-        expect.stringContaining("users.pageIndex=2")
+        expect.stringContaining("users.pageIndex=3")
       );
     });
   });

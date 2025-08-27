@@ -165,12 +165,22 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       expect(result.current.state.rowSelection).toBeDefined();
 
       // Check that all handlers are present and are functions
-      expect(typeof result.current.handlers.onPaginationChange).toBe("function");
+      expect(typeof result.current.handlers.onPaginationChange).toBe(
+        "function"
+      );
       expect(typeof result.current.handlers.onSortingChange).toBe("function");
-      expect(typeof result.current.handlers.onColumnFiltersChange).toBe("function");
-      expect(typeof result.current.handlers.onColumnVisibilityChange).toBe("function");
-      expect(typeof result.current.handlers.onGlobalFilterChange).toBe("function");
-      expect(typeof result.current.handlers.onRowSelectionChange).toBe("function");
+      expect(typeof result.current.handlers.onColumnFiltersChange).toBe(
+        "function"
+      );
+      expect(typeof result.current.handlers.onColumnVisibilityChange).toBe(
+        "function"
+      );
+      expect(typeof result.current.handlers.onGlobalFilterChange).toBe(
+        "function"
+      );
+      expect(typeof result.current.handlers.onRowSelectionChange).toBe(
+        "function"
+      );
       expect(typeof result.current.resetPagination).toBe("function");
     });
 
@@ -194,7 +204,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
     it("should initialize with provided initial state", () => {
       const initialState = {
-        pagination: { pageIndex: 2, pageSize: 25 },
+        pagination: { pageIndex: 2, pageSize: 20 },
         sorting: [{ id: "name", desc: true }],
         columnFilters: [{ id: "role", value: "admin" }],
         columnVisibility: { email: false },
@@ -211,12 +221,18 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       expect(result.current.state.pagination).toEqual(initialState.pagination);
       expect(result.current.state.sorting).toEqual(initialState.sorting);
-      expect(result.current.state.columnFilters).toEqual(initialState.columnFilters);
+      expect(result.current.state.columnFilters).toEqual(
+        initialState.columnFilters
+      );
       expect(result.current.state.columnVisibility).toEqual(
         initialState.columnVisibility
       );
-      expect(result.current.state.globalFilter).toEqual(initialState.globalFilter);
-      expect(result.current.state.rowSelection).toEqual(initialState.rowSelection);
+      expect(result.current.state.globalFilter).toEqual(
+        initialState.globalFilter
+      );
+      expect(result.current.state.rowSelection).toEqual(
+        initialState.rowSelection
+      );
     });
   });
 
@@ -358,13 +374,21 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 15 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 3,
+          pageSize: 20,
+        });
         result.current.handlers.onSortingChange([{ id: "name", desc: false }]);
         result.current.handlers.onGlobalFilterChange("no persistence test");
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 3, pageSize: 15 });
-      expect(result.current.state.sorting).toEqual([{ id: "name", desc: false }]);
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 3,
+        pageSize: 20,
+      });
+      expect(result.current.state.sorting).toEqual([
+        { id: "name", desc: false },
+      ]);
       expect(result.current.state.globalFilter).toBe("no persistence test");
     });
   });
@@ -379,14 +403,19 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // First set pagination to non-zero page
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 10 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 5,
+          pageSize: 10,
+        });
       });
 
       expect(result.current.state.pagination.pageIndex).toBe(5);
 
       // Then change filters, which should reset pagination
       act(() => {
-        result.current.handlers.onColumnFiltersChange([{ id: "role", value: "admin" }]);
+        result.current.handlers.onColumnFiltersChange([
+          { id: "role", value: "admin" },
+        ]);
       });
 
       expect(result.current.state.pagination.pageIndex).toBe(0);
@@ -401,7 +430,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // First set pagination to non-zero page
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 10 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 3,
+          pageSize: 10,
+        });
       });
 
       expect(result.current.state.pagination.pageIndex).toBe(3);
@@ -424,14 +456,19 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // First set pagination to non-zero page
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 10 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 5,
+          pageSize: 10,
+        });
       });
 
       expect(result.current.state.pagination.pageIndex).toBe(5);
 
       // Then change filters, which should NOT reset pagination
       act(() => {
-        result.current.handlers.onColumnFiltersChange([{ id: "role", value: "admin" }]);
+        result.current.handlers.onColumnFiltersChange([
+          { id: "role", value: "admin" },
+        ]);
       });
 
       expect(result.current.state.pagination.pageIndex).toBe(5);
@@ -447,11 +484,14 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set pagination to non-zero page
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 7, pageSize: 25 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 7,
+          pageSize: 20,
+        });
       });
 
       expect(result.current.state.pagination.pageIndex).toBe(7);
-      expect(result.current.state.pagination.pageSize).toBe(25);
+      expect(result.current.state.pagination.pageSize).toBe(20);
 
       // Manually reset pagination
       act(() => {
@@ -460,7 +500,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       expect(result.current.state.pagination.pageIndex).toBe(0);
       // pageSize should remain unchanged
-      expect(result.current.state.pagination.pageSize).toBe(25);
+      expect(result.current.state.pagination.pageSize).toBe(20);
     });
 
     it("should reset pagination with URL persistence", () => {
@@ -479,10 +519,16 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set pagination to non-zero state
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 30 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 5,
+          pageSize: 30,
+        });
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 5, pageSize: 30 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 5,
+        pageSize: 30,
+      });
 
       // Clear mock calls from the initial set
       mockHistory.pushState.mockClear();
@@ -493,9 +539,14 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         result.current.resetPagination();
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 30 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 0,
+        pageSize: 30,
+      });
       // Should trigger persistence
-      const totalCalls = mockHistory.pushState.mock.calls.length + mockHistory.replaceState.mock.calls.length;
+      const totalCalls =
+        mockHistory.pushState.mock.calls.length +
+        mockHistory.replaceState.mock.calls.length;
       expect(totalCalls).toBeGreaterThan(0);
     });
 
@@ -515,17 +566,26 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set pagination to non-zero state
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 8, pageSize: 50 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 8,
+          pageSize: 50,
+        });
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 8, pageSize: 50 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 8,
+        pageSize: 50,
+      });
 
       // Reset pagination
       act(() => {
         result.current.resetPagination();
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 50 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 0,
+        pageSize: 50,
+      });
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "reset-test",
         expect.stringContaining('"pageIndex":0')
@@ -549,24 +609,35 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set pagination to non-zero state
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 4, pageSize: 40 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 4,
+          pageSize: 50,
+        });
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 4, pageSize: 40 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 4,
+        pageSize: 50,
+      });
 
       // Reset pagination
       act(() => {
         result.current.resetPagination();
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 40 });
-      
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 0,
+        pageSize: 50,
+      });
+
       // Both URL and localStorage should be updated
-      const totalCalls = mockHistory.pushState.mock.calls.length + mockHistory.replaceState.mock.calls.length;
+      const totalCalls =
+        mockHistory.pushState.mock.calls.length +
+        mockHistory.replaceState.mock.calls.length;
       expect(totalCalls).toBeGreaterThan(0);
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "mixed-test",
-        expect.stringContaining('"pageSize":40')
+        expect.stringContaining('"pageSize":50')
       );
     });
 
@@ -579,7 +650,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set pagination with edge case pageSize
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 0 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 3,
+          pageSize: 0,
+        });
       });
 
       // Reset pagination
@@ -588,7 +662,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       });
 
       // Should preserve pageSize even if it's 0
-      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 0 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 0,
+        pageSize: 0,
+      });
     });
 
     it("should handle multiple rapid reset calls", () => {
@@ -600,7 +677,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Set initial state
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 9, pageSize: 20 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 9,
+          pageSize: 20,
+        });
       });
 
       // Make multiple rapid calls
@@ -611,7 +691,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       });
 
       // Should maintain consistent final state
-      expect(result.current.state.pagination).toEqual({ pageIndex: 0, pageSize: 20 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 0,
+        pageSize: 20,
+      });
     });
   });
 
@@ -652,11 +735,17 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 2, pageSize: 10 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 2,
+          pageSize: 10,
+        });
       });
 
       // The hook should accept the namespace configuration and update state
-      expect(result.current.state.pagination).toEqual({ pageIndex: 2, pageSize: 10 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 2,
+        pageSize: 10,
+      });
     });
 
     it("should persist pagination to localStorage when configured", () => {
@@ -673,7 +762,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 3, pageSize: 50 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 3,
+          pageSize: 50,
+        });
       });
 
       expect(mockLocalStorage.setItem).toHaveBeenCalled();
@@ -711,7 +803,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       );
 
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 1, pageSize: 20 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 1,
+          pageSize: 20,
+        });
         result.current.handlers.onGlobalFilterChange("search");
       });
 
@@ -779,10 +874,16 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Test with direct value
       act(() => {
-        result.current.handlers.onPaginationChange({ pageIndex: 5, pageSize: 25 });
+        result.current.handlers.onPaginationChange({
+          pageIndex: 5,
+          pageSize: 25,
+        });
       });
 
-      expect(result.current.state.pagination).toEqual({ pageIndex: 5, pageSize: 25 });
+      expect(result.current.state.pagination).toEqual({
+        pageIndex: 5,
+        pageSize: 25,
+      });
     });
   });
 
@@ -919,8 +1020,10 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       // These assertions verify TypeScript compilation
       const pagination: PaginationState = result.current.state.pagination;
       const sorting: SortingState = result.current.state.sorting;
-      const columnFilters: ColumnFiltersState = result.current.state.columnFilters;
-      const columnVisibility: VisibilityState = result.current.state.columnVisibility;
+      const columnFilters: ColumnFiltersState =
+        result.current.state.columnFilters;
+      const columnVisibility: VisibilityState =
+        result.current.state.columnVisibility;
       const globalFilter: string = result.current.state.globalFilter;
       const rowSelection: RowSelectionState = result.current.state.rowSelection;
 
@@ -965,12 +1068,22 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Note: Due to dependencies in useCallback, handlers may change if state changes
       // This test verifies that the functions exist and are callable
-      expect(typeof result.current.handlers.onPaginationChange).toBe("function");
+      expect(typeof result.current.handlers.onPaginationChange).toBe(
+        "function"
+      );
       expect(typeof result.current.handlers.onSortingChange).toBe("function");
-      expect(typeof result.current.handlers.onColumnFiltersChange).toBe("function");
-      expect(typeof result.current.handlers.onColumnVisibilityChange).toBe("function");
-      expect(typeof result.current.handlers.onGlobalFilterChange).toBe("function");
-      expect(typeof result.current.handlers.onRowSelectionChange).toBe("function");
+      expect(typeof result.current.handlers.onColumnFiltersChange).toBe(
+        "function"
+      );
+      expect(typeof result.current.handlers.onColumnVisibilityChange).toBe(
+        "function"
+      );
+      expect(typeof result.current.handlers.onGlobalFilterChange).toBe(
+        "function"
+      );
+      expect(typeof result.current.handlers.onRowSelectionChange).toBe(
+        "function"
+      );
       expect(typeof result.current.resetPagination).toBe("function");
     });
   });

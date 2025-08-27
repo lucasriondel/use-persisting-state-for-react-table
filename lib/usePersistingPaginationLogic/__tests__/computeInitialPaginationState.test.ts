@@ -1,6 +1,23 @@
+import type { PaginationState } from "@tanstack/react-table";
 import { describe, expect, it } from "vitest";
 import { computeInitialPaginationState } from "../computeInitialPaginationState";
-import type { PaginationState } from "@tanstack/react-table";
+
+const allowedPageSizes = [
+  0,
+  3.7,
+  10,
+  20,
+  25,
+  25.9,
+  50,
+  75,
+  100,
+  1000,
+  10000,
+  Infinity,
+  -Infinity,
+  NaN,
+];
 
 describe("computeInitialPaginationState", () => {
   describe("default behavior", () => {
@@ -14,6 +31,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         {},
         {},
+        allowedPageSizes,
         undefined
       );
 
@@ -38,6 +56,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         {},
         {},
+        allowedPageSizes,
         initialState
       );
 
@@ -61,6 +80,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -87,6 +107,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -113,6 +134,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -124,9 +146,9 @@ describe("computeInitialPaginationState", () => {
           pageIndex: 0,
           pageSize: 10,
         };
-        const urlBucket = { 
+        const urlBucket = {
           customPageIndex: 15,
-          pageIndex: 5 // should be ignored
+          pageIndex: 5, // should be ignored
         };
         const localBucket = {};
 
@@ -139,6 +161,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -165,6 +188,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -191,6 +215,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -219,6 +244,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -245,6 +271,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -270,6 +297,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -300,6 +328,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -326,6 +355,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -337,9 +367,9 @@ describe("computeInitialPaginationState", () => {
           pageIndex: 0,
           pageSize: 10,
         };
-        const urlBucket = { 
+        const urlBucket = {
           customPageSize: 75,
-          pageSize: 25 // should be ignored
+          pageSize: 25, // should be ignored
         };
         const localBucket = {};
 
@@ -352,6 +382,7 @@ describe("computeInitialPaginationState", () => {
           "customPageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -378,6 +409,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -404,6 +436,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -432,6 +465,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -458,6 +492,7 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           localBucket,
+          allowedPageSizes,
           initialState
         );
 
@@ -484,6 +519,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -510,12 +546,13 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
       expect(result).toEqual({
         pageIndex: 10, // from URL
-        pageSize: 25,  // from initialState
+        pageSize: 25, // from initialState
       });
     });
 
@@ -536,12 +573,13 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
       expect(result).toEqual({
-        pageIndex: 15,  // from URL
-        pageSize: 100,  // from localStorage
+        pageIndex: 15, // from URL
+        pageSize: 100, // from localStorage
       });
     });
 
@@ -550,11 +588,11 @@ describe("computeInitialPaginationState", () => {
         pageIndex: 0,
         pageSize: 10,
       };
-      const urlBucket = { 
+      const urlBucket = {
         currentPage: 8,
         itemsPerPage: 75,
         pageIndex: 1, // should be ignored
-        pageSize: 20   // should be ignored
+        pageSize: 20, // should be ignored
       };
       const localBucket = {};
 
@@ -567,6 +605,7 @@ describe("computeInitialPaginationState", () => {
         "itemsPerPage",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -593,6 +632,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         {},
         {},
+        allowedPageSizes,
         initialState
       );
 
@@ -616,6 +656,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -639,6 +680,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -662,6 +704,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -685,6 +728,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -709,6 +753,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -735,6 +780,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -761,6 +807,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -790,6 +837,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -814,6 +862,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         initialState
       );
 
@@ -838,6 +887,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         undefined
       );
 
@@ -861,6 +911,7 @@ describe("computeInitialPaginationState", () => {
         "pageSize",
         urlBucket,
         localBucket,
+        allowedPageSizes,
         incompleteInitialState
       );
 
@@ -888,8 +939,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          defaultAllowed
+          defaultAllowed,
+          initialState
         );
 
         expect(result.pageSize).toBe(20);
@@ -912,8 +963,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          defaultAllowed
+          defaultAllowed,
+          initialState
         );
 
         expect(result.pageSize).toBe(10); // First default value
@@ -936,8 +987,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           {},
           localBucket,
-          initialState,
-          defaultAllowed
+          defaultAllowed,
+          initialState
         );
 
         expect(result.pageSize).toBe(10); // Falls back to first default value
@@ -962,8 +1013,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          customAllowed
+          customAllowed,
+          initialState
         );
 
         expect(result.pageSize).toBe(15);
@@ -986,8 +1037,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          customAllowed
+          customAllowed,
+          initialState
         );
 
         expect(result.pageSize).toBe(5); // First custom value
@@ -1010,8 +1061,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          customAllowed
+          customAllowed,
+          initialState
         );
 
         // Non-number values should not trigger validation - should keep initial state
@@ -1036,8 +1087,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          []
+          [], // empty allowedPageSizes
+          initialState
         );
 
         expect(result.pageSize).toBe(10); // Falls back to default 10
@@ -1059,8 +1110,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           urlBucket,
           {},
-          initialState,
-          [5, 15, 25]
+          [5, 15, 25], // allowedPageSizes
+          initialState
         );
 
         expect(result.pageSize).toBe(10); // Keeps initial state value
@@ -1068,7 +1119,7 @@ describe("computeInitialPaginationState", () => {
 
       it("validates both URL and localStorage sources", () => {
         const customAllowed = [5, 15, 25, 100];
-        
+
         // Test URL source
         const urlResult = computeInitialPaginationState(
           false,
@@ -1079,8 +1130,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           { pageSize: 30 }, // Invalid
           {},
-          { pageIndex: 0, pageSize: 10 },
-          customAllowed
+          customAllowed,
+          { pageIndex: 0, pageSize: 10 }
         );
         expect(urlResult.pageSize).toBe(5);
 
@@ -1094,8 +1145,8 @@ describe("computeInitialPaginationState", () => {
           "pageSize",
           {},
           { pageSize: 30 }, // Invalid
-          { pageIndex: 0, pageSize: 10 },
-          customAllowed
+          customAllowed,
+          { pageIndex: 0, pageSize: 10 }
         );
         expect(localResult.pageSize).toBe(5);
       });
