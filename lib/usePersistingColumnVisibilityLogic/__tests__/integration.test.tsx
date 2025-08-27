@@ -453,9 +453,10 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
         })
       );
 
-      // The hook returns the raw value as-is (current behavior)
-      // This is consistent with how the URL deserializer works
-      expect(result.current.initialColumnVisibilityState).toBe("invalidjson");
+      // Should fall back to initial state when URL values are invalid
+      expect(result.current.initialColumnVisibilityState).toEqual({
+        email: false,
+      });
     });
 
     it("handles localStorage JSON parse errors gracefully", () => {
