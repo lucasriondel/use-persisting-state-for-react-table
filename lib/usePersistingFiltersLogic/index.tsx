@@ -27,6 +27,17 @@ export function usePersistingFiltersLogic<TData extends RowData>(
       localStorageKey: options.persistence?.localStorageKey,
     });
 
+  const handleColumnFiltersChange = useMemo(() => {
+    return createColumnFiltersChangeHandler(
+      columns ?? [],
+      urlBucketApi,
+      localBucketApi
+    );
+  }, [columns, urlBucketApi, localBucketApi]);
+
+  // Track if initial state has been persisted to avoid duplicate persistence
+  const initialStatePersisted = useRef(false);
+
   const optimisticAsync =
     options.persistence?.filters?.optimisticAsync ?? false;
   const initialColumnFiltersState = useMemo(() => {
@@ -39,24 +50,8 @@ export function usePersistingFiltersLogic<TData extends RowData>(
     });
 
     return result;
-  }, [
-    columns,
-    urlBucket,
-    localBucket,
-    optimisticAsync,
-    options.initialState?.columnFilters,
-  ]);
+  }, []);
 
-  const handleColumnFiltersChange = useMemo(() => {
-    return createColumnFiltersChangeHandler(
-      columns ?? [],
-      urlBucketApi,
-      localBucketApi
-    );
-  }, [columns, urlBucketApi, localBucketApi]);
-
-  // Track if initial state has been persisted to avoid duplicate persistence
-  const initialStatePersisted = useRef(false);
   useEffect(() => {
     if (!initialStatePersisted.current) {
       persistInitialColumnFilters(
@@ -69,14 +64,7 @@ export function usePersistingFiltersLogic<TData extends RowData>(
       );
       initialStatePersisted.current = true;
     }
-  }, [
-    columns,
-    urlBucket,
-    localBucket,
-    urlBucketApi,
-    localBucketApi,
-    options.initialState?.columnFilters,
-  ]);
+  }, []);
 
   return {
     handleColumnFiltersChange,

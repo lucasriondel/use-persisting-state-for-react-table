@@ -8,7 +8,7 @@ import {
   Updater,
   VisibilityState,
 } from "@tanstack/react-table";
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useReducer } from "react";
 import { TableState, tableStateReducer } from "./tableStateReducer";
 import { PersistenceConfig } from "./types";
 import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
@@ -226,21 +226,6 @@ export function usePersistingStateForReactTable<TData extends RowData>(
   };
 
   const [state, dispatch] = useReducer(tableStateReducer, initialState);
-
-  // Sync reducer state when initialColumnFiltersState changes
-  // This handles cases where loading state changes and new filters become available
-  useEffect(() => {
-    if (
-      initialColumnFiltersState &&
-      JSON.stringify(state.columnFilters) !==
-        JSON.stringify(initialColumnFiltersState)
-    ) {
-      dispatch({
-        type: "SET_COLUMN_FILTERS",
-        updater: initialColumnFiltersState,
-      });
-    }
-  }, [initialColumnFiltersState, state.columnFilters]);
 
   const {
     pagination,

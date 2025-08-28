@@ -1,4 +1,5 @@
 import {
+  AccessorKeyColumnDef,
   ColumnDef,
   ColumnFiltersState,
   getCoreRowModel,
@@ -1378,7 +1379,11 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
           initialState: {
             columnFilters: [{ id: "role", value: ["admin"] }],
           },
-          optimisticAsync: true,
+          persistence: {
+            filters: {
+              optimisticAsync: true,
+            },
+          },
         })
       );
 
@@ -1392,7 +1397,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     it("should only show non-loading filters when optimisticAsync is false", () => {
       // Create columns with mixed loading states
       const columnsWithLoading = testColumns.map((col) =>
-        col.accessorKey === "role"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
           ? {
               ...col,
               meta: {
@@ -1409,11 +1414,13 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
-          columns: columnsWithLoading,
+          columns: columnsWithLoading as ColumnDef<TestUser>[],
           persistence: {
             urlNamespace: "table",
+            filters: {
+              optimisticAsync: false,
+            },
           },
-          optimisticAsync: false, // Explicitly set to false
         })
       );
 
@@ -1423,9 +1430,10 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       ]);
     });
 
-    it("should show filters as they finish loading with optimisticAsync false", () => {
+    it("should show initial state filters as they finish loading with optimisticAsync false", () => {
       const loadingColumns = testColumns.map((col) =>
-        col.accessorKey === "role" || col.accessorKey === "status"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role" ||
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "status"
           ? {
               ...col,
               meta: {
@@ -1436,27 +1444,166 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
           : col
       );
 
-      const { result, rerender } = renderHook(
+      const { result } = renderHook(
         ({ columns }) =>
           usePersistingFiltersLogic({
-            columns,
+            columns: columns as ColumnDef<TestUser>[],
             initialState: {
               columnFilters: [
                 { id: "role", value: ["admin"] },
                 { id: "status", value: ["active"] },
               ],
             },
-            optimisticAsync: false,
+            persistence: {
+              filters: {
+                optimisticAsync: false,
+              },
+            },
           }),
         { initialProps: { columns: loadingColumns } }
       );
 
       // Initially no filters should be shown (all are loading)
-      expect(result.current.initialColumnFiltersState).toEqual([]);
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "role", value: ["admin"] },
+        { id: "status", value: ["active"] },
+      ]);
+
+      // // Simulate role finishing loading
+      // const roleLoadedColumns = loadingColumns.map((col) =>
+      //   (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
+      //     ? {
+      //         ...col,
+      //         meta: {
+      //           ...col.meta,
+      //           filter: { ...col.meta!.filter, isLoading: false },
+      //         },
+      //       }
+      //     : col
+      // );
+
+      // rerender({ columns: roleLoadedColumns });
+
+      // // Now role should appear
+      // expect(result.current.initialColumnFiltersState).toEqual([
+      //   { id: "role", value: ["admin"] },
+      // ]);
+
+      // // Simulate status finishing loading
+      // const allLoadedColumns = testColumns;
+
+      // rerender({ columns: allLoadedColumns });
+
+      // // Now both filters should be present
+      // expect(result.current.initialColumnFiltersState).toEqual(
+      //   expect.arrayContaining([
+      //     { id: "role", value: ["admin"] },
+      //     { id: "status", value: ["active"] },
+      //   ])
+      // );
+    });
+
+    it("should hide filters as they finish loading with optimisticAsync false when coming from bucket", () => {
+      const loadingColumns = testColumns.map((col) =>
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role" ||
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "status"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      setWindowLocation(
+        "https://example.com/?role=admin&status=%5B%22active%22%5D"
+      );
+
+      const { result, rerender } = renderHook(
+        ({ columns }) =>
+          usePersistingFiltersLogic({
+            columns: columns as ColumnDef<TestUser>[],
+            initialState: {},
+            persistence: {
+              filters: {
+                optimisticAsync: false,
+              },
+            },
+          }),
+        { initialProps: { columns: loadingColumns } }
+      );
+
+      // Initially no filters should be shown (all are loading)
+      expect(result.current.initialColumnFiltersState).toBeUndefined();
 
       // Simulate role finishing loading
       const roleLoadedColumns = loadingColumns.map((col) =>
-        col.accessorKey === "role"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: false },
+              },
+            }
+          : col
+      );
+
+      rerender({ columns: roleLoadedColumns });
+
+      // Now role should appear
+      expect(result.current.initialColumnFiltersState).toBeUndefined();
+
+      // Simulate status finishing loading
+      const allLoadedColumns = testColumns;
+
+      rerender({ columns: allLoadedColumns });
+
+      // Now both filters should be present
+      expect(result.current.initialColumnFiltersState).toBeUndefined();
+    });
+
+    it("should show loaded filters and hide filters as they finish loading with optimisticAsync false when coming from bucket", () => {
+      const loadingColumns = testColumns.map((col) =>
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      setWindowLocation(
+        "https://example.com/?role=admin&status=%5B%22active%22%5D&"
+      );
+
+      const { result, rerender } = renderHook(
+        ({ columns }) =>
+          usePersistingFiltersLogic({
+            columns: columns as ColumnDef<TestUser>[],
+            initialState: {},
+            persistence: {
+              filters: {
+                optimisticAsync: false,
+              },
+            },
+          }),
+        { initialProps: { columns: loadingColumns } }
+      );
+
+      // Initially no filters should be shown (all are loading)
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "status", value: ["active"] },
+      ]);
+
+      // Simulate role finishing loading
+      const roleLoadedColumns = loadingColumns.map((col) =>
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
           ? {
               ...col,
               meta: {
@@ -1471,7 +1618,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       // Now role should appear
       expect(result.current.initialColumnFiltersState).toEqual([
-        { id: "role", value: ["admin"] },
+        { id: "status", value: ["active"] },
       ]);
 
       // Simulate status finishing loading
@@ -1480,17 +1627,14 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       rerender({ columns: allLoadedColumns });
 
       // Now both filters should be present
-      expect(result.current.initialColumnFiltersState).toEqual(
-        expect.arrayContaining([
-          { id: "role", value: ["admin"] },
-          { id: "status", value: ["active"] },
-        ])
-      );
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "status", value: ["active"] },
+      ]);
     });
 
     it("should handle initial state properly with optimisticAsync false and loading filters", () => {
       const loadingColumns = testColumns.map((col) =>
-        col.accessorKey === "role"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
           ? {
               ...col,
               meta: {
@@ -1503,14 +1647,18 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
-          columns: loadingColumns,
+          columns: loadingColumns as ColumnDef<TestUser>[],
           initialState: {
             columnFilters: [
               { id: "role", value: ["admin"] },
               { id: "status", value: ["active"] },
             ],
           },
-          optimisticAsync: false,
+          persistence: {
+            filters: {
+              optimisticAsync: false,
+            },
+          },
         })
       );
 
@@ -1522,7 +1670,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
     it("should respect loading state changes during filter management", () => {
       const loadingColumns = testColumns.map((col) =>
-        col.accessorKey === "role"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
           ? {
               ...col,
               meta: {
@@ -1536,14 +1684,18 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       const { result, rerender } = renderHook(
         ({ columns }) =>
           usePersistingFiltersLogic({
-            columns,
+            columns: columns as ColumnDef<TestUser>[],
             initialState: {
               columnFilters: [
                 { id: "role", value: ["admin"] },
                 { id: "status", value: ["active"] },
               ],
             },
-            optimisticAsync: false,
+            persistence: {
+              filters: {
+                optimisticAsync: false,
+              },
+            },
           }),
         { initialProps: { columns: loadingColumns } }
       );
@@ -1567,7 +1719,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
     it("should handle conflicts between initial state and URL with optimisticAsync false", () => {
       const loadingColumns = testColumns.map((col) =>
-        col.accessorKey === "role"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
           ? {
               ...col,
               meta: {
@@ -1585,7 +1737,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
-          columns: loadingColumns,
+          columns: loadingColumns as ColumnDef<TestUser>[],
           initialState: {
             columnFilters: [
               { id: "role", value: ["admin"] }, // Different from URL
@@ -1594,8 +1746,10 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
           },
           persistence: {
             urlNamespace: "table",
+            filters: {
+              optimisticAsync: false,
+            },
           },
-          optimisticAsync: false,
         })
       );
 
@@ -1607,7 +1761,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
     it("should handle empty options gracefully with optimisticAsync false", () => {
       const columnsWithEmptyOptions = testColumns.map((col) =>
-        col.accessorKey === "role"
+        (col as AccessorKeyColumnDef<TestUser>).accessorKey === "role"
           ? {
               ...col,
               meta: {
@@ -1628,11 +1782,13 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
-          columns: columnsWithEmptyOptions,
+          columns: columnsWithEmptyOptions as ColumnDef<TestUser>[],
           persistence: {
             urlNamespace: "table",
+            filters: {
+              optimisticAsync: false,
+            },
           },
-          optimisticAsync: false,
         })
       );
 
@@ -1647,7 +1803,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
     it("should validate and sanitize filter values with optimisticAsync false", () => {
       const columnsWithOptions = testColumns.map((col) => {
-        if (col.accessorKey === "role") {
+        if ((col as AccessorKeyColumnDef<TestUser>).accessorKey === "role") {
           return {
             ...col,
             meta: {
@@ -1674,11 +1830,13 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
-          columns: columnsWithOptions,
+          columns: columnsWithOptions as ColumnDef<TestUser>[],
           persistence: {
             urlNamespace: "table",
+            filters: {
+              optimisticAsync: false,
+            },
           },
-          optimisticAsync: false,
         })
       );
 
@@ -1693,7 +1851,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
     it("should handle mixed persistence sources with optimisticAsync false", () => {
       const loadingColumns = testColumns.map((col) => {
-        if (col.accessorKey === "role") {
+        if ((col as AccessorKeyColumnDef<TestUser>).accessorKey === "role") {
           return {
             ...col,
             meta: {
@@ -1702,7 +1860,9 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
             },
           };
         }
-        if (col.accessorKey === "department") {
+        if (
+          (col as AccessorKeyColumnDef<TestUser>).accessorKey === "department"
+        ) {
           return {
             ...col,
             meta: {
@@ -1736,12 +1896,14 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const { result } = renderHook(() =>
         usePersistingFiltersLogic({
-          columns: loadingColumns,
+          columns: loadingColumns as ColumnDef<TestUser>[],
           persistence: {
             urlNamespace: "table",
             localStorageKey: "mixed-filters",
+            filters: {
+              optimisticAsync: false,
+            },
           },
-          optimisticAsync: false,
         })
       );
 
