@@ -30,13 +30,13 @@ export function usePersistingFiltersLogic<TData extends RowData>(
   const optimisticAsync =
     options.persistence?.filters?.optimisticAsync ?? false;
   const initialColumnFiltersState = useMemo(() => {
-    const result = computeInitialColumnFiltersState(
-      columns ?? [],
+    const result = computeInitialColumnFiltersState({
+      columns: columns ?? [],
       urlBucket,
       localBucket,
       optimisticAsync,
-      options.initialState?.columnFilters
-    );
+      initialStateFilters: options.initialState?.columnFilters,
+    });
 
     return result;
   }, [

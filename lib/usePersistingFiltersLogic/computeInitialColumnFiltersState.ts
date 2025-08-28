@@ -5,13 +5,18 @@ import { flattenColumns } from "./flattenColumns";
 import { isEmptyValue } from "./isEmptyValue";
 import { sanitizeValue } from "./sanitizeValues";
 
+export interface ComputeInitialColumnFiltersStateOptions<TData extends RowData> {
+  columns: Array<ColumnDef<TData, unknown>>;
+  urlBucket: Record<string, unknown>;
+  localBucket: Record<string, unknown>;
+  optimisticAsync: boolean;
+  initialStateFilters?: ColumnFiltersState | undefined;
+}
+
 export function computeInitialColumnFiltersState<TData extends RowData>(
-  columns: Array<ColumnDef<TData, unknown>>,
-  urlBucket: Record<string, unknown>,
-  localBucket: Record<string, unknown>,
-  optimisticAsync: boolean,
-  initialStateFilters?: ColumnFiltersState
+  options: ComputeInitialColumnFiltersStateOptions<TData>
 ): ColumnFiltersState | undefined {
+  const { columns, urlBucket, localBucket, optimisticAsync, initialStateFilters } = options;
   const flat = flattenColumns(columns);
 
   const out: ColumnFiltersState = [];
