@@ -1264,4 +1264,495 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       expect(tableHook.current.columnFilters).toEqual([]);
     });
   });
+
+  describe("useReducer synchronization regression tests", () => {
+    it("should maintain filter state consistency throughout lifecycle", () => {
+      const { result: filtersHook } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          initialState: {
+            columnFilters: [
+              { id: "role", value: ["admin"] },
+              { id: "status", value: ["active"] },
+            ],
+          },
+          persistence: {
+            urlNamespace: "table",
+          },
+        })
+      );
+
+      const { result: tableHook } = renderHook(() => {
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
+
+        const table = useReactTable({
+          data: mockUsers,
+          columns: testColumns,
+          state: { columnFilters },
+          onColumnFiltersChange: (updater) => {
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
+            setColumnFilters(updater);
+          },
+          getCoreRowModel: getCoreRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          enableColumnFilters: true,
+        });
+
+        return { table, columnFilters };
+      });
+
+      // Should have initial filters
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["admin"] },
+        { id: "status", value: ["active"] },
+      ]);
+
+      // Manual changes should work
+      act(() => {
+        tableHook.current.table.getColumn("role")?.setFilterValue(["user"]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["user"] },
+        { id: "status", value: ["active"] },
+      ]);
+    });
+
+    it("should handle function updaters correctly", () => {
+      const { result: filtersHook } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          persistence: {
+            urlNamespace: "table",
+          },
+        })
+      );
+
+      const { result: tableHook } = renderHook(() => {
+        const [columnFilters, setColumnFilters] =
+          React.useState<ColumnFiltersState>(
+            filtersHook.current.initialColumnFiltersState || []
+          );
+
+        const table = useReactTable({
+          data: mockUsers,
+          columns: testColumns,
+          state: { columnFilters },
+          onColumnFiltersChange: (updater) => {
+            filtersHook.current.handleColumnFiltersChange(
+              updater,
+              columnFilters
+            );
+            setColumnFilters(updater);
+          },
+          getCoreRowModel: getCoreRowModel(),
+          getFilteredRowModel: getFilteredRowModel(),
+          enableColumnFilters: true,
+        });
+
+        return { table, columnFilters };
+      });
+
+      // Use function updater to set filters
+      act(() => {
+        tableHook.current.table.setColumnFilters([
+          { id: "role", value: ["admin"] },
+        ]);
+      });
+
+      expect(tableHook.current.columnFilters).toEqual([
+        { id: "role", value: ["admin"] },
+      ]);
+    });
+
+    it("should handle optimistic async basic case", () => {
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: testColumns,
+          initialState: {
+            columnFilters: [{ id: "role", value: ["admin"] }],
+          },
+          optimisticAsync: true,
+        })
+      );
+
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "role", value: ["admin"] },
+      ]);
+    });
+  });
+
+  describe("optimisticAsync: false comprehensive tests", () => {
+    it("should only show non-loading filters when optimisticAsync is false", () => {
+      // Create columns with mixed loading states
+      const columnsWithLoading = testColumns.map((col) =>
+        col.accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      setWindowLocation(
+        "https://example.com/?table.role=admin&table.status=%5B%22active%22%5D"
+      );
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: columnsWithLoading,
+          persistence: {
+            urlNamespace: "table",
+          },
+          optimisticAsync: false, // Explicitly set to false
+        })
+      );
+
+      // Should only include status filter (not loading), role should be excluded
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "status", value: ["active"] },
+      ]);
+    });
+
+    it("should show filters as they finish loading with optimisticAsync false", () => {
+      const loadingColumns = testColumns.map((col) =>
+        col.accessorKey === "role" || col.accessorKey === "status"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      const { result, rerender } = renderHook(
+        ({ columns }) =>
+          usePersistingFiltersLogic({
+            columns,
+            initialState: {
+              columnFilters: [
+                { id: "role", value: ["admin"] },
+                { id: "status", value: ["active"] },
+              ],
+            },
+            optimisticAsync: false,
+          }),
+        { initialProps: { columns: loadingColumns } }
+      );
+
+      // Initially no filters should be shown (all are loading)
+      expect(result.current.initialColumnFiltersState).toEqual([]);
+
+      // Simulate role finishing loading
+      const roleLoadedColumns = loadingColumns.map((col) =>
+        col.accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: false },
+              },
+            }
+          : col
+      );
+
+      rerender({ columns: roleLoadedColumns });
+
+      // Now role should appear
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "role", value: ["admin"] },
+      ]);
+
+      // Simulate status finishing loading
+      const allLoadedColumns = testColumns;
+
+      rerender({ columns: allLoadedColumns });
+
+      // Now both filters should be present
+      expect(result.current.initialColumnFiltersState).toEqual(
+        expect.arrayContaining([
+          { id: "role", value: ["admin"] },
+          { id: "status", value: ["active"] },
+        ])
+      );
+    });
+
+    it("should handle initial state properly with optimisticAsync false and loading filters", () => {
+      const loadingColumns = testColumns.map((col) =>
+        col.accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: loadingColumns,
+          initialState: {
+            columnFilters: [
+              { id: "role", value: ["admin"] },
+              { id: "status", value: ["active"] },
+            ],
+          },
+          optimisticAsync: false,
+        })
+      );
+
+      // Should only include the non-loading filter from initial state
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "status", value: ["active"] },
+      ]);
+    });
+
+    it("should respect loading state changes during filter management", () => {
+      const loadingColumns = testColumns.map((col) =>
+        col.accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      const { result, rerender } = renderHook(
+        ({ columns }) =>
+          usePersistingFiltersLogic({
+            columns,
+            initialState: {
+              columnFilters: [
+                { id: "role", value: ["admin"] },
+                { id: "status", value: ["active"] },
+              ],
+            },
+            optimisticAsync: false,
+          }),
+        { initialProps: { columns: loadingColumns } }
+      );
+
+      // Initially only non-loading filters should show
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "status", value: ["active"] },
+      ]);
+
+      // Now finish loading role - should include both filters
+      const loadedColumns = testColumns;
+      rerender({ columns: loadedColumns });
+
+      expect(result.current.initialColumnFiltersState).toEqual(
+        expect.arrayContaining([
+          { id: "role", value: ["admin"] },
+          { id: "status", value: ["active"] },
+        ])
+      );
+    });
+
+    it("should handle conflicts between initial state and URL with optimisticAsync false", () => {
+      const loadingColumns = testColumns.map((col) =>
+        col.accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: { ...col.meta!.filter, isLoading: true },
+              },
+            }
+          : col
+      );
+
+      // URL has different role value than initial state
+      setWindowLocation(
+        "https://example.com/?table.role=user&table.status=%5B%22active%22%5D"
+      );
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: loadingColumns,
+          initialState: {
+            columnFilters: [
+              { id: "role", value: ["admin"] }, // Different from URL
+              { id: "status", value: ["active"] },
+            ],
+          },
+          persistence: {
+            urlNamespace: "table",
+          },
+          optimisticAsync: false,
+        })
+      );
+
+      // Should only include non-loading filters from URL/localStorage
+      expect(result.current.initialColumnFiltersState).toEqual([
+        { id: "status", value: ["active"] },
+      ]);
+    });
+
+    it("should handle empty options gracefully with optimisticAsync false", () => {
+      const columnsWithEmptyOptions = testColumns.map((col) =>
+        col.accessorKey === "role"
+          ? {
+              ...col,
+              meta: {
+                ...col.meta,
+                filter: {
+                  ...col.meta!.filter,
+                  isLoading: false,
+                  options: [], // Empty options
+                },
+              },
+            }
+          : col
+      );
+
+      setWindowLocation(
+        "https://example.com/?table.role=admin&table.status=%5B%22active%22%5D"
+      );
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: columnsWithEmptyOptions,
+          persistence: {
+            urlNamespace: "table",
+          },
+          optimisticAsync: false,
+        })
+      );
+
+      // Should include both filters even though role has empty options (not loading)
+      expect(result.current.initialColumnFiltersState).toEqual(
+        expect.arrayContaining([
+          { id: "role", value: ["admin"] },
+          { id: "status", value: ["active"] },
+        ])
+      );
+    });
+
+    it("should validate and sanitize filter values with optimisticAsync false", () => {
+      const columnsWithOptions = testColumns.map((col) => {
+        if (col.accessorKey === "role") {
+          return {
+            ...col,
+            meta: {
+              ...col.meta,
+              filter: {
+                ...col.meta!.filter,
+                isLoading: false,
+                options: [
+                  { value: "admin", label: "Admin", disabled: false },
+                  { value: "user", label: "User", disabled: false },
+                  // Note: "manager" is not in options
+                ],
+              },
+            },
+          };
+        }
+        return col;
+      });
+
+      // URL contains invalid role value
+      setWindowLocation(
+        "https://example.com/?table.role=admin%2Cmanager&table.status=%5B%22active%22%5D"
+      );
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: columnsWithOptions,
+          persistence: {
+            urlNamespace: "table",
+          },
+          optimisticAsync: false,
+        })
+      );
+
+      // Should sanitize role filter and keep only valid values
+      expect(result.current.initialColumnFiltersState).toEqual(
+        expect.arrayContaining([
+          { id: "role", value: ["admin"] }, // "manager" filtered out
+          { id: "status", value: ["active"] },
+        ])
+      );
+    });
+
+    it("should handle mixed persistence sources with optimisticAsync false", () => {
+      const loadingColumns = testColumns.map((col) => {
+        if (col.accessorKey === "role") {
+          return {
+            ...col,
+            meta: {
+              ...col.meta,
+              filter: { ...col.meta!.filter, isLoading: true },
+            },
+          };
+        }
+        if (col.accessorKey === "department") {
+          return {
+            ...col,
+            meta: {
+              title: "Department",
+              filter: {
+                isLoading: false,
+                variant: "select",
+                options: [
+                  {
+                    value: "Engineering",
+                    label: "Engineering",
+                    disabled: false,
+                  },
+                  { value: "Marketing", label: "Marketing", disabled: false },
+                ],
+                persistenceStorage: "localStorage",
+              },
+            },
+          };
+        }
+        return col;
+      });
+
+      setWindowLocation(
+        "https://example.com/?table.role=admin&table.status=%5B%22active%22%5D"
+      );
+      mockLocalStorage.setItem(
+        "mixed-filters",
+        JSON.stringify({ department: "Engineering" })
+      );
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic({
+          columns: loadingColumns,
+          persistence: {
+            urlNamespace: "table",
+            localStorageKey: "mixed-filters",
+          },
+          optimisticAsync: false,
+        })
+      );
+
+      // Should include non-loading filters from both URL and localStorage
+      expect(result.current.initialColumnFiltersState).toEqual(
+        expect.arrayContaining([
+          { id: "status", value: ["active"] }, // From URL (not loading)
+          { id: "department", value: "Engineering" }, // From localStorage (not loading)
+          // role excluded because it's loading
+        ])
+      );
+    });
+  });
 });

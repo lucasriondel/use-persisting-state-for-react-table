@@ -170,7 +170,9 @@ export function useAsyncFiltersManager<TData extends RowData>({
       }
     }
 
-    if (!hasAnyPatch) return;
+    if (!hasAnyPatch) {
+      return;
+    }
 
     // Update the state with the new filter values
     const stateUpdates: ColumnFiltersState = [];

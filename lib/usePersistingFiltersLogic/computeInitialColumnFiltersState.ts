@@ -26,12 +26,25 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
     if (!columnId) continue;
 
     const key = filterMeta.key ?? String(columnId);
-    const raw =
+    let raw =
       filterMeta.persistenceStorage === "url"
         ? urlBucket[key]
         : localBucket[key];
 
     if (isEmptyValue(raw)) continue;
+
+    // Apply codec parsing if the value appears to be a raw string that needs parsing
+    // This handles cases where useUrlState hasn't applied codecs yet due to timing issues
+    if (filterMeta.codec && typeof raw === "string") {
+      try {
+        const parsed = filterMeta.codec.parse(raw);
+        if (!isEmptyValue(parsed)) {
+          raw = parsed;
+        }
+      } catch {
+        // If parsing fails, continue with raw value
+      }
+    }
 
     bucketColumnIds.add(columnId);
 
@@ -45,6 +58,7 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
 
       if (selectableMeta.isLoading === false && hasAllowed) {
         const sanitized = sanitizeValue(filterMeta, raw);
+
         if (!isEmptyValue(sanitized))
           out.push({ id: columnId, value: sanitized });
         continue;
@@ -63,6 +77,8 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
     if (!isEmptyValue(sanitized)) out.push({ id: columnId, value: sanitized });
   }
 
+  // Always return processed filters if we have any, even if some loading filters were skipped
+  // This ensures non-loading filters are applied immediately
   if (out.length > 0) return out;
 
   // If no results, check if we should return empty array vs initialStateFilters
