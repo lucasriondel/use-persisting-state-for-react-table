@@ -1,5 +1,5 @@
 import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getColumnIdentifier } from "./getColumnIdentifier";
 import { MultiSelectMeta, SelectMeta } from "./types";
 import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
@@ -123,8 +123,18 @@ export function useAsyncFiltersManager<TData extends RowData>({
       localStorageKey,
     });
 
+  const hasColumnsFinishedLoading =
+    columns?.every((col) => (col.meta?.filter?.isLoading ?? false) === false) ??
+    true;
+
+  const [
+    hasFinishedProcessingAsyncFilters,
+    setHasFinishedProcessingAsyncFilters,
+  ] = useState(false);
+
   useEffect(() => {
     if (!columns || columns.length === 0) return;
+    if (!hasColumnsFinishedLoading) return;
 
     const flat = flattenColumns(columns);
     const urlPatch: Record<string, unknown> = {};
@@ -171,6 +181,7 @@ export function useAsyncFiltersManager<TData extends RowData>({
     }
 
     if (!hasAnyPatch) {
+      setHasFinishedProcessingAsyncFilters(true);
       return;
     }
 
@@ -223,5 +234,8 @@ export function useAsyncFiltersManager<TData extends RowData>({
         return [...filtered, ...newFilters];
       });
     }
-  }, [columns, urlBucket, localBucket, urlBucketApi, localBucketApi]);
+    setHasFinishedProcessingAsyncFilters(true);
+  }, [hasColumnsFinishedLoading]);
+
+  return hasFinishedProcessingAsyncFilters;
 }

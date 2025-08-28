@@ -324,13 +324,19 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     [rowSelection, handleRowSelectionChange]
   );
 
-  useAsyncFiltersManager({
+  const hasFinishedProcessingAsyncFilters = useAsyncFiltersManager({
     columns: validOptions.columns,
     urlNamespace: validOptions.persistence?.urlNamespace,
     localStorageKey: validOptions.persistence?.localStorageKey,
     setColumnFilters: (updater) =>
       dispatch({ type: "SET_COLUMN_FILTERS", updater }),
   });
+
+  console.log(
+    "hasFinishedProcessingAsyncFilters",
+    hasFinishedProcessingAsyncFilters,
+    columnFilters
+  );
 
   return {
     state,
