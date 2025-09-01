@@ -84,3 +84,6 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+playwright-report/
+test-results/
