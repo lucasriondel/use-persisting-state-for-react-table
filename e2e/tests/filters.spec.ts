@@ -18,24 +18,24 @@ test.describe('Filters Persistence', () => {
     await expect(page.getByTestId('data-table')).toBeVisible();
     
     // Check initial state
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 0');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 0');
     
     // Apply age filter
     await page.getByTestId('age-filter').fill('25');
     await page.getByTestId('age-filter').blur();
     
     // Check URL contains age filter
-    expect(page.url()).toContain('test-table-age-filter=25');
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 1');
+    expect(page.url()).toContain('test-table.age-filter=25');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 1');
     
     // Reload page and verify persistence
     await page.reload();
     await expect(page.getByTestId('age-filter')).toHaveValue('25');
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 1');
-    expect(page.url()).toContain('test-table-age-filter=25');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 1');
+    expect(page.url()).toContain('test-table.age-filter=25');
   });
 
-  test('should persist status filter in localStorage', async ({ page }) => {
+  test('should persist status filter in URL', async ({ page }) => {
     await page.goto('/');
     
     // Wait for the table to load
@@ -44,19 +44,15 @@ test.describe('Filters Persistence', () => {
     // Apply status filter
     await page.getByTestId('status-filter').selectOption('active');
     
-    // Check localStorage contains the filter
-    const statusFilter = await page.evaluate(() => {
-      const data = localStorage.getItem('e2e-test-table');
-      return data ? JSON.parse(data)['status-filter'] : null;
-    });
-    expect(statusFilter).toBe('active');
+    // Check URL contains the filter
+    expect(page.url()).toContain('test-table.status-filter=active');
     
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 1');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 1');
     
     // Reload page and verify persistence
     await page.reload();
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 1');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 1');
   });
 
   test('should persist global filter in URL', async ({ page }) => {
@@ -70,14 +66,14 @@ test.describe('Filters Persistence', () => {
     await page.getByTestId('global-filter').blur();
     
     // Check URL contains global filter
-    expect(page.url()).toContain('test-table-search=john');
-    await expect(page.getByTestId('current-state')).toContain('Global Filter: john');
+    expect(page.url()).toContain('test-table.search=john');
+    await expect(page.getByTestId('current-state')).toContainText('Global Filter: john');
     
     // Reload page and verify persistence
     await page.reload();
     await expect(page.getByTestId('global-filter')).toHaveValue('john');
-    await expect(page.getByTestId('current-state')).toContain('Global Filter: john');
-    expect(page.url()).toContain('test-table-search=john');
+    await expect(page.getByTestId('current-state')).toContainText('Global Filter: john');
+    expect(page.url()).toContain('test-table.search=john');
   });
 
   test('should filter data correctly', async ({ page }) => {
@@ -94,7 +90,7 @@ test.describe('Filters Persistence', () => {
     await page.getByTestId('status-filter').selectOption('active');
     
     // Should show 50 rows (every other user is active)
-    await expect(page.getByTestId('current-state')).toContain('Filtered Rows: 50');
+    await expect(page.getByTestId('current-state')).toContainText('Filtered Rows: 50');
     
     // All visible rows should have 'active' status
     const statusCells = page.locator('[data-testid^="cell-status-"]');
@@ -117,12 +113,12 @@ test.describe('Filters Persistence', () => {
     await page.getByTestId('global-filter').fill('john');
     
     // Check all filters are applied
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 2');
-    await expect(page.getByTestId('current-state')).toContain('Global Filter: john');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Global Filter: john');
     
     // Check URL and localStorage
-    expect(page.url()).toContain('test-table-age-filter=25');
-    expect(page.url()).toContain('test-table-search=john');
+    expect(page.url()).toContain('test-table.age-filter=25');
+    expect(page.url()).toContain('test-table.search=john');
     
     const statusFilter = await page.evaluate(() => {
       const data = localStorage.getItem('e2e-test-table');
@@ -135,8 +131,8 @@ test.describe('Filters Persistence', () => {
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
     await expect(page.getByTestId('age-filter')).toHaveValue('25');
     await expect(page.getByTestId('global-filter')).toHaveValue('john');
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 2');
-    await expect(page.getByTestId('current-state')).toContain('Global Filter: john');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Global Filter: john');
   });
 
   test('should reset pagination when filters change', async ({ page }) => {
@@ -170,27 +166,23 @@ test.describe('Filters Persistence', () => {
     await page.getByTestId('global-filter').fill('alice');
     
     // Verify filters are applied
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 2');
-    await expect(page.getByTestId('current-state')).toContain('Global Filter: alice');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Global Filter: alice');
     
     // Clear filters one by one
     await page.getByTestId('global-filter').clear();
-    await expect(page.getByTestId('current-state')).toContain('Global Filter: None');
-    expect(page.url()).not.toContain('test-table-search');
+    await expect(page.getByTestId('current-state')).toContainText('Global Filter: None');
+    expect(page.url()).not.toContain('test-table.search');
     
     await page.getByTestId('age-filter').clear();
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 1');
-    expect(page.url()).not.toContain('test-table-age-filter');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 1');
+    expect(page.url()).not.toContain('test-table.age-filter');
     
     await page.getByTestId('status-filter').selectOption('');
-    await expect(page.getByTestId('current-state')).toContain('Column Filters: 0');
+    await expect(page.getByTestId('current-state')).toContainText('Column Filters: 0');
     
-    // Check localStorage is cleared
-    const statusFilter = await page.evaluate(() => {
-      const data = localStorage.getItem('e2e-test-table');
-      return data ? JSON.parse(data)['status-filter'] : null;
-    });
-    expect(statusFilter).toBeNull();
+    // Check URL is cleared (status filter is now in URL)
+    expect(page.url()).not.toContain('test-table.status-filter');
   });
 
   test('should handle async filter processing', async ({ page }) => {
@@ -231,7 +223,7 @@ test.describe('Filters Persistence', () => {
     await expect(page.getByTestId('header-age')).toContain('🔼');
     
     // Verify URL contains all relevant parameters
-    expect(page.url()).toContain('test-table-search=alice');
+    expect(page.url()).toContain('test-table.search=alice');
     expect(page.url()).toContain('test-table-sort-col=age');
     expect(page.url()).toContain('test-table-page=0'); // Reset to first page
   });

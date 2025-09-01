@@ -18,33 +18,33 @@ test.describe('Sorting Persistence', () => {
     await expect(page.getByTestId('data-table')).toBeVisible();
     
     // Check initial state - no sorting
-    await expect(page.getByTestId('current-state')).toContain('Sorting: None');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: None');
     
     // Click on firstName column to sort
     await page.getByTestId('header-firstName').click();
     
     // Check URL contains sorting parameters
-    expect(page.url()).toContain('test-table-sort-col=firstName');
-    expect(page.url()).toContain('test-table-sort-dir=asc');
+    expect(page.url()).toContain('test-table.sort-col=firstName');
+    expect(page.url()).toContain('test-table.sort-dir=asc');
     
     // Check visual indicator
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
-    await expect(page.getByTestId('current-state')).toContain('Sorting: firstName (asc)');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: firstName (asc)');
     
     // Click again to reverse sort
     await page.getByTestId('header-firstName').click();
     
-    expect(page.url()).toContain('test-table-sort-col=firstName');
-    expect(page.url()).toContain('test-table-sort-dir=desc');
-    await expect(page.getByTestId('header-firstName')).toContain('🔽');
-    await expect(page.getByTestId('current-state')).toContain('Sorting: firstName (desc)');
+    expect(page.url()).toContain('test-table.sort-col=firstName');
+    expect(page.url()).toContain('test-table.sort-dir=desc');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔽');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: firstName (desc)');
     
     // Reload page and verify persistence
     await page.reload();
-    await expect(page.getByTestId('header-firstName')).toContain('🔽');
-    await expect(page.getByTestId('current-state')).toContain('Sorting: firstName (desc)');
-    expect(page.url()).toContain('test-table-sort-col=firstName');
-    expect(page.url()).toContain('test-table-sort-dir=desc');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔽');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: firstName (desc)');
+    expect(page.url()).toContain('test-table.sort-col=firstName');
+    expect(page.url()).toContain('test-table.sort-dir=desc');
   });
 
   test('should clear sorting when clicking sorted column third time', async ({ page }) => {
@@ -55,22 +55,22 @@ test.describe('Sorting Persistence', () => {
     
     // Sort ascending
     await page.getByTestId('header-age').click();
-    await expect(page.getByTestId('header-age')).toContain('🔼');
-    expect(page.url()).toContain('test-table-sort-col=age');
+    await expect(page.getByTestId('header-age')).toContainText('🔼');
+    expect(page.url()).toContain('test-table.sort-col=age');
     
     // Sort descending
     await page.getByTestId('header-age').click();
-    await expect(page.getByTestId('header-age')).toContain('🔽');
+    await expect(page.getByTestId('header-age')).toContainText('🔽');
     
     // Clear sorting
     await page.getByTestId('header-age').click();
-    await expect(page.getByTestId('header-age')).not.toContain('🔼');
-    await expect(page.getByTestId('header-age')).not.toContain('🔽');
-    await expect(page.getByTestId('current-state')).toContain('Sorting: None');
+    await expect(page.getByTestId('header-age')).not.toContainText('🔼');
+    await expect(page.getByTestId('header-age')).not.toContainText('🔽');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: None');
     
     // URL should not contain sorting params
-    expect(page.url()).not.toContain('test-table-sort-col');
-    expect(page.url()).not.toContain('test-table-sort-dir');
+    expect(page.url()).not.toContain('test-table.sort-col');
+    expect(page.url()).not.toContain('test-table.sort-dir');
   });
 
   test('should switch sorting between columns', async ({ page }) => {
@@ -81,16 +81,16 @@ test.describe('Sorting Persistence', () => {
     
     // Sort by firstName
     await page.getByTestId('header-firstName').click();
-    await expect(page.getByTestId('current-state')).toContain('Sorting: firstName (asc)');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: firstName (asc)');
     
     // Sort by age - should replace firstName sorting
     await page.getByTestId('header-age').click();
-    await expect(page.getByTestId('current-state')).toContain('Sorting: age (asc)');
-    await expect(page.getByTestId('header-firstName')).not.toContain('🔼');
-    await expect(page.getByTestId('header-age')).toContain('🔼');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: age (asc)');
+    await expect(page.getByTestId('header-firstName')).not.toContainText('🔼');
+    await expect(page.getByTestId('header-age')).toContainText('🔼');
     
     // URL should reflect the new sorting
-    expect(page.url()).toContain('test-table-sort-col=age');
+    expect(page.url()).toContain('test-table.sort-col=age');
     expect(page.url()).not.toContain('firstName');
   });
 
@@ -133,18 +133,18 @@ test.describe('Sorting Persistence', () => {
     
     // Sort by age ascending
     await page.getByTestId('header-age').click();
-    await expect(page.getByTestId('current-state')).toContain('Sorting: age (asc)');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: age (asc)');
     
     // Apply a filter
     await page.getByTestId('status-filter').selectOption('active');
     
     // Sorting should be maintained
-    await expect(page.getByTestId('current-state')).toContain('Sorting: age (asc)');
-    await expect(page.getByTestId('header-age')).toContain('🔼');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: age (asc)');
+    await expect(page.getByTestId('header-age')).toContainText('🔼');
     
     // URL should still contain sorting params
-    expect(page.url()).toContain('test-table-sort-col=age');
-    expect(page.url()).toContain('test-table-sort-dir=asc');
+    expect(page.url()).toContain('test-table.sort-col=age');
+    expect(page.url()).toContain('test-table.sort-dir=asc');
   });
 
   test('should handle sorting persistence after page reload', async ({ page }) => {
@@ -159,15 +159,15 @@ test.describe('Sorting Persistence', () => {
     await page.getByTestId('status-filter').selectOption('inactive'); // Filter
     
     // Check state before reload
-    await expect(page.getByTestId('current-state')).toContain('Sorting: lastName (asc)');
-    await expect(page.getByTestId('header-lastName')).toContain('🔼');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: lastName (asc)');
+    await expect(page.getByTestId('header-lastName')).toContainText('🔼');
     
     // Reload page
     await page.reload();
     
     // All state should be restored
-    await expect(page.getByTestId('current-state')).toContain('Sorting: lastName (asc)');
-    await expect(page.getByTestId('header-lastName')).toContain('🔼');
+    await expect(page.getByTestId('current-state')).toContainText('Sorting: lastName (asc)');
+    await expect(page.getByTestId('header-lastName')).toContainText('🔼');
     await expect(page.getByTestId('status-filter')).toHaveValue('inactive');
     await expect(page.getByTestId('page-info')).toContain('1 of'); // Page reset due to filter
   });

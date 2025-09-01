@@ -85,7 +85,7 @@ test.describe('Column Visibility Persistence', () => {
     
     await expect(page.getByTestId('header-email')).not.toBeVisible();
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
   });
 
   test('should not affect table functionality when columns are hidden', async ({ page }) => {
@@ -99,15 +99,15 @@ test.describe('Column Visibility Persistence', () => {
     
     // Verify other columns are still sortable and functional
     await page.getByTestId('header-firstName').click();
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
     
     // Verify filtering still works
     await page.getByTestId('status-filter').selectOption('active');
-    await expect(page.getByTestId('current-state')).toContain('Filtered Rows: 50');
+    await expect(page.getByTestId('current-state')).toContainText('Filtered Rows: 50');
     
     // Verify row selection still works
     await page.getByTestId('select-row-0').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 1');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 1');
     
     // The hidden email column should not interfere with any functionality
     await expect(page.getByTestId('header-email')).not.toBeVisible();
@@ -184,11 +184,11 @@ test.describe('Column Visibility Persistence', () => {
     
     // Sort by first name
     await page.getByTestId('header-firstName').click();
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
     
     // Apply status filter
     await page.getByTestId('status-filter').selectOption('active');
-    await expect(page.getByTestId('current-state')).toContain('Filtered Rows: 50');
+    await expect(page.getByTestId('current-state')).toContainText('Filtered Rows: 50');
     
     // Navigate to different page
     await page.getByTestId('page-size').selectOption('20');
@@ -199,7 +199,7 @@ test.describe('Column Visibility Persistence', () => {
     await expect(page.getByTestId('header-email')).not.toBeVisible();
     
     // All other functionality should work normally
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
     await expect(page.getByTestId('page-info')).toContain('2 of 3'); // 50 active / 20 per page = 3 pages
     
@@ -207,7 +207,7 @@ test.describe('Column Visibility Persistence', () => {
     await page.reload();
     
     await expect(page.getByTestId('header-email')).not.toBeVisible();
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
   });
 });

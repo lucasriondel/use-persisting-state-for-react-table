@@ -18,15 +18,15 @@ test.describe('Row Selection Persistence', () => {
     await expect(page.getByTestId('data-table')).toBeVisible();
     
     // Check initial state - no rows selected
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 0');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 0');
     
     // Select first row
     await page.getByTestId('select-row-0').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 1');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 1');
     
     // Select third row
     await page.getByTestId('select-row-2').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
     
     // Check localStorage contains the selections
     const selection = await page.evaluate(() => {
@@ -39,7 +39,7 @@ test.describe('Row Selection Persistence', () => {
     await page.reload();
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-2')).toBeChecked();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
   });
 
   test('should handle select all functionality', async ({ page }) => {
@@ -52,7 +52,7 @@ test.describe('Row Selection Persistence', () => {
     await page.getByTestId('select-all').check();
     
     // All visible rows should be selected (10 rows on page 1 with default page size)
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 10');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 10');
     
     // Check that all row checkboxes are checked
     for (let i = 0; i < 10; i++) {
@@ -74,7 +74,7 @@ test.describe('Row Selection Persistence', () => {
     // Reload and verify persistence
     await page.reload();
     await expect(page.getByTestId('select-all')).toBeChecked();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 10');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 10');
   });
 
   test('should deselect rows correctly', async ({ page }) => {
@@ -87,11 +87,11 @@ test.describe('Row Selection Persistence', () => {
     await page.getByTestId('select-row-0').check();
     await page.getByTestId('select-row-1').check();
     await page.getByTestId('select-row-2').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 3');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 3');
     
     // Deselect middle row
     await page.getByTestId('select-row-1').uncheck();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
     
     // Check localStorage is updated
     const selection = await page.evaluate(() => {
@@ -105,7 +105,7 @@ test.describe('Row Selection Persistence', () => {
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-1')).not.toBeChecked();
     await expect(page.getByTestId('select-row-2')).toBeChecked();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
   });
 
   test('should clear all selections', async ({ page }) => {
@@ -118,11 +118,11 @@ test.describe('Row Selection Persistence', () => {
     await page.getByTestId('select-row-0').check();
     await page.getByTestId('select-row-1').check();
     await page.getByTestId('select-row-2').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 3');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 3');
     
     // Clear all selections
     await page.getByTestId('clear-selection').click();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 0');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 0');
     
     // All checkboxes should be unchecked
     await expect(page.getByTestId('select-row-0')).not.toBeChecked();
@@ -157,7 +157,7 @@ test.describe('Row Selection Persistence', () => {
     await page.getByTestId('select-row-11').check();
     
     // Should now have 4 total selected rows
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 4');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 4');
     
     // Go back to first page
     await page.getByTestId('prev-page').click();
@@ -166,11 +166,11 @@ test.describe('Row Selection Persistence', () => {
     // Previously selected rows should still be selected
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-1')).toBeChecked();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 4');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 4');
     
     // Reload and verify selections persist across pages
     await page.reload();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 4');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 4');
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-1')).toBeChecked();
     
@@ -190,7 +190,7 @@ test.describe('Row Selection Persistence', () => {
     await page.getByTestId('select-row-0').check();
     await page.getByTestId('select-row-1').check();
     await page.getByTestId('select-row-2').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 3');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 3');
     
     // Apply a filter
     await page.getByTestId('status-filter').selectOption('active');
@@ -198,7 +198,7 @@ test.describe('Row Selection Persistence', () => {
     // Selected count should be maintained (even if some selected rows are now filtered out)
     // The behavior depends on how the hook handles filtered selections
     // For this test, we'll verify that the selection state is preserved
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 3');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 3');
     
     // Remove filter
     await page.getByTestId('status-filter').selectOption('');
@@ -207,7 +207,7 @@ test.describe('Row Selection Persistence', () => {
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-1')).toBeChecked();
     await expect(page.getByTestId('select-row-2')).toBeChecked();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 3');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 3');
   });
 
   test('should handle select all with filtering', async ({ page }) => {
@@ -218,18 +218,18 @@ test.describe('Row Selection Persistence', () => {
     
     // Apply a filter first
     await page.getByTestId('status-filter').selectOption('active');
-    await expect(page.getByTestId('current-state')).toContain('Filtered Rows: 50');
+    await expect(page.getByTestId('current-state')).toContainText('Filtered Rows: 50');
     
     // Select all visible rows (should be 10 active rows on current page)
     await page.getByTestId('select-all').check();
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 10');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 10');
     
     // Remove filter
     await page.getByTestId('status-filter').selectOption('');
     
     // Should still show 10 selected rows, but now we can see all 100 rows
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 10');
-    await expect(page.getByTestId('current-state')).toContain('Filtered Rows: 100');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 10');
+    await expect(page.getByTestId('current-state')).toContainText('Filtered Rows: 100');
     
     // The previously selected rows should remain selected
     // (This tests that selection persists across filter changes)
@@ -256,14 +256,14 @@ test.describe('Row Selection Persistence', () => {
     await page.getByTestId('first-page').click();
     
     // Selections should be maintained
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
     
     // Reload and verify everything persists
     await page.reload();
     
-    await expect(page.getByTestId('current-state')).toContain('Selected Rows: 2');
+    await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
-    await expect(page.getByTestId('header-firstName')).toContain('🔼');
+    await expect(page.getByTestId('header-firstName')).toContainText('🔼');
     await expect(page.getByTestId('page-size')).toHaveValue('20');
     await expect(page.getByTestId('global-filter')).toHaveValue('alice');
     
@@ -274,7 +274,7 @@ test.describe('Row Selection Persistence', () => {
     });
     
     expect(storage.selection).toEqual({ '0': true, '5': true });
-    expect(storage['status-filter']).toBe('active');
+    // Status filter is now in URL, not localStorage
     expect(storage.size).toBe(20);
     expect(storage.visibility).toBeDefined();
   });
