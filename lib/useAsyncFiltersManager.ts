@@ -16,6 +16,7 @@ interface UseAsyncFiltersManagerProps<TData extends RowData> {
   urlNamespace?: string | undefined;
   localStorageKey?: string | undefined;
   setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
+  currentColumnFilters: ColumnFiltersState;
 }
 
 /**
@@ -41,6 +42,7 @@ interface UseAsyncFiltersManagerProps<TData extends RowData> {
  * @param options - Configuration options extending PersistingTableOptions
  * @param options.columns - Column definitions with filter metadata
  * @param options.persistence - Persistence configuration (URL namespace, localStorage key)
+ * @param options.currentColumnFilters - Current column filters state for comparison
  * @param options.setColumnFilters - React state setter for updating column filters
  *
  * @example
@@ -115,6 +117,7 @@ export function useAsyncFiltersManager<TData extends RowData>({
   urlNamespace,
   localStorageKey,
   setColumnFilters,
+  currentColumnFilters,
 }: UseAsyncFiltersManagerProps<TData>) {
   const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
     useFilterBuckets({
@@ -173,7 +176,18 @@ export function useAsyncFiltersManager<TData extends RowData>({
           filterMeta.persistenceStorage === "url" ? urlPatch : localPatch;
         const equal = JSON.stringify(sanitized) === JSON.stringify(raw);
 
-        if (!equal) {
+        // Check if values need to be synced from buckets to state
+        const currentStateFilter = currentColumnFilters.find(
+          (f) => f.id === key
+        );
+        const stateValue = currentStateFilter?.value;
+        const stateValueStr = JSON.stringify(stateValue);
+        const sanitizedStr = JSON.stringify(sanitized);
+
+        const needsStateSync =
+          !equal || (sanitized !== undefined && stateValueStr !== sanitizedStr);
+
+        if (needsStateSync) {
           targetPatch[key] = sanitized === undefined ? undefined : sanitized;
           hasAnyPatch = true;
         }

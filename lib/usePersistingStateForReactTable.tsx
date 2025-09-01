@@ -313,15 +313,11 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     columns: validOptions.columns,
     urlNamespace: validOptions.persistence?.urlNamespace,
     localStorageKey: validOptions.persistence?.localStorageKey,
-    setColumnFilters: (updater) =>
-      dispatch({ type: "SET_COLUMN_FILTERS", updater }),
+    currentColumnFilters: state.columnFilters,
+    setColumnFilters: (updater) => {
+      dispatch({ type: "SET_COLUMN_FILTERS", updater });
+    },
   });
-
-  console.log(
-    "hasFinishedProcessingAsyncFilters",
-    hasFinishedProcessingAsyncFilters,
-    columnFilters
-  );
 
   return {
     state,
@@ -334,5 +330,6 @@ export function usePersistingStateForReactTable<TData extends RowData>(
       onRowSelectionChange: setRowSelection,
     },
     resetPagination,
+    hasFinishedProcessingAsyncFilters,
   };
 }

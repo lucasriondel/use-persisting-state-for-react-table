@@ -15,7 +15,7 @@ import {
   MultiSelectMeta,
   SelectMeta,
 } from "@tanstack/react-table";
-import type { FilterVariant } from "../../usePersistingStateForReactTable";
+import { FilterVariant } from "../../types";
 
 describe("sanitizeMultiSelectValue", () => {
   const basicConfig = {
