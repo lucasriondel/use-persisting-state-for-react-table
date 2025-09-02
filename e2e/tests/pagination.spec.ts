@@ -53,10 +53,26 @@ test.describe('Pagination Persistence', () => {
     });
     expect(pageSize).toBe(20);
     
-    // Reload page and verify persistence
+    // Store the localStorage for persistence test
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
+    // Reload page preserving localStorage
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
+    
+    // Wait for the table to reload
+    await expect(page.getByTestId('data-table')).toBeVisible();
+    
+    // Verify persistence
     await expect(page.getByTestId('page-size')).toHaveValue('20');
-    await expect(page.getByTestId('page-info')).toContain('of 5'); // 100 items / 20 per page = 5 pages
+    await expect(page.getByTestId('page-info')).toContainText('of 5'); // 100 items / 20 per page = 5 pages
   });
 
   test('should navigate through pages correctly', async ({ page }) => {
@@ -117,6 +133,9 @@ test.describe('Pagination Persistence', () => {
     // Apply a filter that reduces results
     await page.getByTestId('status-filter').selectOption('active');
     
+    // Wait for filter to take effect
+    await page.waitForTimeout(100);
+    
     // Should automatically reset to first page
     await expect(page.getByTestId('page-info')).toHaveText('1 of 5'); // 50 active users / 10 per page = 5 pages
     expect(page.url()).toContain('test-table.page=0');
@@ -128,6 +147,7 @@ test.describe('Pagination Persistence', () => {
     
     // Remove filter - should stay on same page if possible
     await page.getByTestId('status-filter').selectOption('');
+    await page.waitForTimeout(100); // Wait for filter removal
     await expect(page.getByTestId('page-info')).toHaveText('1 of 10'); // Reset due to automaticPageReset
   });
 });

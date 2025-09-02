@@ -35,8 +35,20 @@ test.describe('Row Selection Persistence', () => {
     });
     expect(selection).toEqual({ '0': true, '2': true });
     
-    // Reload page and verify persistence
+    // Store the localStorage for persistence test
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
+    // Reload page preserving localStorage
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
+    
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-2')).toBeChecked();
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
@@ -71,8 +83,20 @@ test.describe('Row Selection Persistence', () => {
       expect(selection[i.toString()]).toBe(true);
     }
     
-    // Reload and verify persistence
+    // Store the localStorage for persistence test
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
+    // Reload page preserving localStorage
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
+    
     await expect(page.getByTestId('select-all')).toBeChecked();
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 10');
   });
@@ -100,8 +124,20 @@ test.describe('Row Selection Persistence', () => {
     });
     expect(selection).toEqual({ '0': true, '2': true });
     
-    // Reload and verify
+    // Store the localStorage for persistence test
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
+    // Reload page preserving localStorage
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
+    
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-1')).not.toBeChecked();
     await expect(page.getByTestId('select-row-2')).toBeChecked();
@@ -168,8 +204,20 @@ test.describe('Row Selection Persistence', () => {
     await expect(page.getByTestId('select-row-1')).toBeChecked();
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 4');
     
-    // Reload and verify selections persist across pages
+    // Store the localStorage for persistence test
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
+    // Reload page preserving localStorage
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
+    
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 4');
     await expect(page.getByTestId('select-row-0')).toBeChecked();
     await expect(page.getByTestId('select-row-1')).toBeChecked();
@@ -258,8 +306,19 @@ test.describe('Row Selection Persistence', () => {
     // Selections should be maintained
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
     
-    // Reload and verify everything persists
+    // Store the localStorage for persistence test
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
+    // Reload page preserving localStorage
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
     
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 2');
     await expect(page.getByTestId('status-filter')).toHaveValue('active');

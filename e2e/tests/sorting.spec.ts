@@ -169,6 +169,6 @@ test.describe('Sorting Persistence', () => {
     await expect(page.getByTestId('current-state')).toContainText('Sorting: lastName (asc)');
     await expect(page.getByTestId('header-lastName')).toContainText('🔼');
     await expect(page.getByTestId('status-filter')).toHaveValue('inactive');
-    await expect(page.getByTestId('page-info')).toContain('1 of'); // Page reset due to filter
+    await expect(page.getByTestId('page-info')).toContainText('1 of'); // Page reset due to filter
   });
 });

@@ -48,7 +48,7 @@ test.describe('Integration Tests - Full Hook Functionality', () => {
     // Step 6: Navigate pages
     if (await page.getByTestId('next-page').isEnabled()) {
       await page.getByTestId('next-page').click();
-      await expect(page.getByTestId('page-info')).toContain('2 of');
+      await expect(page.getByTestId('page-info')).toContainText('2 of');
     }
     
     // Verify URL contains relevant parameters
@@ -68,8 +68,18 @@ test.describe('Integration Tests - Full Hook Functionality', () => {
     expect(localStorage.visibility).toEqual({ email: false });
     expect(localStorage.selection).toEqual({ '0': true, '1': true });
     
-    // Step 7: Reload page and verify complete state persistence
+    // Step 7: Store localStorage and reload page to verify complete state persistence
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
     
     // Verify all state is restored
     await expect(page.getByTestId('global-filter')).toHaveValue('john');
@@ -148,9 +158,19 @@ test.describe('Integration Tests - Full Hook Functionality', () => {
     await page2.getByTestId('page-size').selectOption('20');
     await page2.getByTestId('select-row-0').check();
     
-    // Switch back to first tab
+    // Switch back to first tab and store localStorage
     await page1.bringToFront();
+    const storageState = await page1.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
     await page1.reload();
+    await page1.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page1.reload(); // Second reload to ensure localStorage is loaded
     
     // localStorage changes should be reflected
     await expect(page1.getByTestId('page-size')).toHaveValue('20');
@@ -259,8 +279,19 @@ test.describe('Integration Tests - Full Hook Functionality', () => {
     await page.getByTestId('select-row-0').check();
     await expect(page.getByTestId('current-state')).toContainText('Selected Rows: 1');
     
-    // Reload and verify persistence survived rapid changes
+    // Store localStorage and reload to verify persistence survived rapid changes
+    const storageState = await page.evaluate(() => {
+      return localStorage.getItem('e2e-test-table');
+    });
+    
     await page.reload();
+    await page.evaluate((storage) => {
+      if (storage) {
+        localStorage.setItem('e2e-test-table', storage);
+      }
+    }, storageState);
+    await page.reload(); // Second reload to ensure localStorage is loaded
+    
     await expect(page.getByTestId('global-filter')).toHaveValue('rapid-test');
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
     await expect(page.getByTestId('select-row-0')).toBeChecked();

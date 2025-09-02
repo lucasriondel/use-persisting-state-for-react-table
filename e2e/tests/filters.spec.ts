@@ -116,15 +116,10 @@ test.describe('Filters Persistence', () => {
     await expect(page.getByTestId('current-state')).toContainText('Column Filters: 2');
     await expect(page.getByTestId('current-state')).toContainText('Global Filter: john');
     
-    // Check URL and localStorage
+    // Check URL contains URL-persisted filters
     expect(page.url()).toContain('test-table.age-filter=25');
     expect(page.url()).toContain('test-table.search=john');
-    
-    const statusFilter = await page.evaluate(() => {
-      const data = localStorage.getItem('e2e-test-table');
-      return data ? JSON.parse(data)['status-filter'] : null;
-    });
-    expect(statusFilter).toBe('active');
+    expect(page.url()).toContain('test-table.status-filter=active');
     
     // Reload and verify all filters persist
     await page.reload();
@@ -151,7 +146,7 @@ test.describe('Filters Persistence', () => {
     
     // Should reset to page 1
     await expect(page.getByTestId('page-info')).toHaveText('1 of 5');
-    expect(page.url()).toContain('test-table-page=0');
+    expect(page.url()).toContain('test-table.page=0');
   });
 
   test('should clear filters correctly', async ({ page }) => {
@@ -220,11 +215,12 @@ test.describe('Filters Persistence', () => {
     
     await expect(page.getByTestId('status-filter')).toHaveValue('active');
     await expect(page.getByTestId('global-filter')).toHaveValue('alice');
-    await expect(page.getByTestId('header-age')).toContain('🔼');
+    await expect(page.getByTestId('header-age')).toContainText('🔼');
     
     // Verify URL contains all relevant parameters
     expect(page.url()).toContain('test-table.search=alice');
-    expect(page.url()).toContain('test-table-sort-col=age');
-    expect(page.url()).toContain('test-table-page=0'); // Reset to first page
+    expect(page.url()).toContain('test-table.status-filter=active');
+    expect(page.url()).toContain('test-table.sort-col=age');
+    expect(page.url()).toContain('test-table.page=0'); // Reset to first page
   });
 });
