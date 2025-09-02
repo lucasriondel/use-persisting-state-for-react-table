@@ -1,8 +1,6 @@
-import { useLocalStorageState } from "@lucasriondel/use-local-storage-reacthook";
 import { RowData } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef } from "react";
-import { useUrlState } from "use-url-state-reacthook";
-import { PersistingTableOptions } from "../usePersistingStateForReactTable";
+import { PersistingTableOptions, SharedBuckets } from "../usePersistingStateForReactTable";
 
 // Import utility functions
 import { computeInitialGlobalFilterState } from "./computeInitialGlobalFilterState";
@@ -11,32 +9,15 @@ import { createGlobalFilterChangeHandler } from "./createGlobalFilterChangeHandl
 // Internal utilities - not exported to reduce API surface
 
 export function usePersistingGlobalFilterLogic<TData extends RowData>(
-  options: PersistingTableOptions<TData>
+  options: PersistingTableOptions<TData>,
+  sharedBuckets: SharedBuckets
 ) {
   const config = options.persistence?.globalFilter;
   const target = config?.persistenceStorage;
   const key = config?.key ?? "globalFilter";
   const shouldPersist = Boolean(target);
 
-  const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
-    {},
-    {
-      ...(options.persistence?.urlNamespace && {
-        namespace: options.persistence.urlNamespace,
-      }),
-      history: "replace",
-      debounceMs: 200,
-    }
-  );
-
-  const [localBucket, localBucketApi] = useLocalStorageState<
-    Record<string, unknown>
-  >(
-    {},
-    {
-      key: options.persistence?.localStorageKey ?? "globalFilter",
-    }
-  );
+  const { urlBucket, urlBucketApi, localBucket, localBucketApi } = sharedBuckets;
 
   const handleGlobalFilterChange = useMemo(() => {
     return createGlobalFilterChangeHandler(

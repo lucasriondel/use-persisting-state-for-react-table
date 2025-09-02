@@ -1,3 +1,4 @@
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import {
   ColumnFiltersState,
   PaginationState,
@@ -9,6 +10,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 import { useCallback, useReducer } from "react";
+import { UrlApiActions } from "use-url-state-reacthook";
 import { TableState, tableStateReducer } from "./tableStateReducer";
 import { PersistenceConfig } from "./types";
 import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
@@ -19,6 +21,14 @@ import { usePersistingGlobalFilterLogic } from "./usePersistingGlobalFilterLogic
 import { usePersistingPaginationLogic } from "./usePersistingPaginationLogic";
 import { usePersistingRowSelectionLogic } from "./usePersistingRowSelectionLogic";
 import { usePersistingSortingLogic } from "./usePersistingSortingLogic";
+import { useSharedBuckets } from "./useSharedBuckets";
+
+export type SharedBuckets = {
+  urlBucket: Record<string, unknown>;
+  urlBucketApi: UrlApiActions<Record<string, unknown>>;
+  localBucket: Record<string, unknown>;
+  localBucketApi: LocalStorageApiActions<Record<string, unknown>>;
+};
 
 export type PersistingTableOptions<TData extends RowData> = Pick<
   TableOptions<TData>,
@@ -190,23 +200,26 @@ export function usePersistingStateForReactTable<TData extends RowData>(
 
   const automaticPageReset = validOptions.automaticPageReset ?? true;
 
+  // Create centralized buckets to avoid multiple useUrlState conflicts
+  const sharedBuckets = useSharedBuckets(validOptions);
+
   const { handleColumnFiltersChange, initialColumnFiltersState } =
-    usePersistingFiltersLogic(validOptions);
+    usePersistingFiltersLogic(validOptions, sharedBuckets);
 
   const { handlePaginationChange, initialPaginationState } =
-    usePersistingPaginationLogic(validOptions);
+    usePersistingPaginationLogic(validOptions, sharedBuckets);
 
   const { handleSortingChange, initialSortingState } =
-    usePersistingSortingLogic(validOptions);
+    usePersistingSortingLogic(validOptions, sharedBuckets);
 
   const { handleColumnVisibilityChange, initialColumnVisibilityState } =
-    usePersistingColumnVisibilityLogic(validOptions);
+    usePersistingColumnVisibilityLogic(validOptions, sharedBuckets);
 
   const { handleGlobalFilterChange, initialGlobalFilterState } =
-    usePersistingGlobalFilterLogic(validOptions);
+    usePersistingGlobalFilterLogic(validOptions, sharedBuckets);
 
   const { handleRowSelectionChange, initialRowSelectionState } =
-    usePersistingRowSelectionLogic(validOptions);
+    usePersistingRowSelectionLogic(validOptions, sharedBuckets);
 
   // Initialize the state for the reducer
   const initialState: TableState = {
@@ -311,8 +324,7 @@ export function usePersistingStateForReactTable<TData extends RowData>(
 
   const hasFinishedProcessingAsyncFilters = useAsyncFiltersManager({
     columns: validOptions.columns,
-    urlNamespace: validOptions.persistence?.urlNamespace,
-    localStorageKey: validOptions.persistence?.localStorageKey,
+    sharedBuckets,
     currentColumnFilters: state.columnFilters,
     setColumnFilters: (updater) => {
       dispatch({ type: "SET_COLUMN_FILTERS", updater });

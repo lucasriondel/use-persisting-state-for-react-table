@@ -4,7 +4,7 @@ import { getColumnIdentifier } from "./getColumnIdentifier";
 import { MultiSelectMeta, SelectMeta } from "./types";
 import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
 import { sanitizeValue } from "./usePersistingFiltersLogic/sanitizeValues";
-import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
+import { SharedBuckets } from "./usePersistingStateForReactTable";
 
 /**
  * Props for the useAsyncFiltersManager hook.
@@ -13,8 +13,7 @@ import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
  */
 interface UseAsyncFiltersManagerProps<TData extends RowData> {
   columns: ColumnDef<TData, unknown>[];
-  urlNamespace?: string | undefined;
-  localStorageKey?: string | undefined;
+  sharedBuckets: SharedBuckets;
   setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
   currentColumnFilters: ColumnFiltersState;
 }
@@ -114,17 +113,11 @@ interface UseAsyncFiltersManagerProps<TData extends RowData> {
  */
 export function useAsyncFiltersManager<TData extends RowData>({
   columns,
-  urlNamespace,
-  localStorageKey,
+  sharedBuckets,
   setColumnFilters,
   currentColumnFilters,
 }: UseAsyncFiltersManagerProps<TData>) {
-  const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
-    useFilterBuckets({
-      columns,
-      urlNamespace,
-      localStorageKey,
-    });
+  const { urlBucket, urlBucketApi, localBucket, localBucketApi } = sharedBuckets;
 
   const hasColumnsFinishedLoading =
     columns?.every((col) => (col.meta?.filter?.isLoading ?? false) === false) ??

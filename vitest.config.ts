@@ -13,6 +13,7 @@ export default defineConfig({
         "lib/test/",
         "**/*.d.ts",
         "**/*.config.*",
+        "e2e/",
       ],
     },
   },

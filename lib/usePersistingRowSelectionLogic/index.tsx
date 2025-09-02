@@ -1,8 +1,6 @@
-import { useLocalStorageState } from "@lucasriondel/use-local-storage-reacthook";
 import { RowData } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef } from "react";
-import { useUrlState } from "use-url-state-reacthook";
-import { PersistingTableOptions } from "../usePersistingStateForReactTable";
+import { PersistingTableOptions, SharedBuckets } from "../usePersistingStateForReactTable";
 
 // Import utility functions
 import { computeInitialRowSelectionState } from "./computeInitialRowSelectionState";
@@ -11,32 +9,15 @@ import { createRowSelectionChangeHandler } from "./createRowSelectionChangeHandl
 // Internal utilities - not exported to reduce API surface
 
 export function usePersistingRowSelectionLogic<TData extends RowData>(
-  options: PersistingTableOptions<TData>
+  options: PersistingTableOptions<TData>,
+  sharedBuckets: SharedBuckets
 ) {
   const config = options.persistence?.rowSelection;
   const target = config?.persistenceStorage;
   const key = config?.key ?? "rowSelection";
   const shouldPersist = Boolean(target);
 
-  const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
-    {},
-    {
-      ...(options.persistence?.urlNamespace && {
-        namespace: options.persistence.urlNamespace,
-      }),
-      history: "replace",
-      debounceMs: 0,
-    }
-  );
-
-  const [localBucket, localBucketApi] = useLocalStorageState<
-    Record<string, unknown>
-  >(
-    {},
-    {
-      key: options.persistence?.localStorageKey ?? "rowSelection",
-    }
-  );
+  const { urlBucket, urlBucketApi, localBucket, localBucketApi } = sharedBuckets;
 
   const handleRowSelectionChange = useMemo(() => {
     if (!shouldPersist) return;

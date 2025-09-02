@@ -1,14 +1,11 @@
 import { ColumnDef, RowData } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef } from "react";
-import { PersistingTableOptions } from "../usePersistingStateForReactTable";
+import { PersistingTableOptions, SharedBuckets } from "../usePersistingStateForReactTable";
 
 // Import utility functions
 import { computeInitialColumnFiltersState } from "./computeInitialColumnFiltersState";
 import { createColumnFiltersChangeHandler } from "./createColumnFiltersChangeHandler";
 import { persistInitialColumnFilters } from "./persistInitialColumnFilters";
-
-// Import React Table filter meta types from main types file
-import { useFilterBuckets } from "./useFilterBuckets";
 
 // Only export utilities actually needed outside this module
 export { flattenColumns } from "./flattenColumns";
@@ -16,16 +13,12 @@ export { isEmptyValue } from "./isEmptyValue";
 export { sanitizeValue } from "./sanitizeValues";
 
 export function usePersistingFiltersLogic<TData extends RowData>(
-  options: PersistingTableOptions<TData>
+  options: PersistingTableOptions<TData>,
+  sharedBuckets: SharedBuckets
 ) {
   const columns = options.columns as Array<ColumnDef<TData, unknown>>;
 
-  const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
-    useFilterBuckets({
-      columns,
-      urlNamespace: options.persistence?.urlNamespace,
-      localStorageKey: options.persistence?.localStorageKey,
-    });
+  const { urlBucket, urlBucketApi, localBucket, localBucketApi } = sharedBuckets;
 
   const handleColumnFiltersChange = useMemo(() => {
     return createColumnFiltersChangeHandler(

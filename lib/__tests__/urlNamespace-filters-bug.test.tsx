@@ -266,7 +266,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
       ]);
     });
 
-    it("should handle filter clearing WITH urlNamespace", () => {
+    it.only("should handle filter clearing WITH urlNamespace", () => {
       // Start with filters in URL
       window.location.search =
         "?test-table.status-filter=active&test-table.age-filter=25";
@@ -305,6 +305,8 @@ describe("urlNamespace filter behavior bug investigation", () => {
       expect(mockReplaceState).toHaveBeenCalled();
       const lastCall =
         mockReplaceState.mock.calls[mockReplaceState.mock.calls.length - 1];
+
+      console.log(lastCall);
       expect(lastCall[2]).not.toContain("status-filter");
       expect(lastCall[2]).toContain("test-table.age-filter=25");
     });
@@ -420,6 +422,70 @@ describe("urlNamespace filter behavior bug investigation", () => {
 
       // Both should have called URL updates
       expect(mockReplaceState).toHaveBeenCalled();
+    });
+  });
+
+  describe("Codec investigation", () => {
+    it("should reveal codec issues - WITHOUT urlNamespace", () => {
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns, // columns with filter meta but NO codecs
+          persistence: {
+            localStorageKey: "test-table",
+            // NO urlNamespace
+          },
+        })
+      );
+
+      // Apply a filter
+      act(() => {
+        result.current.handlers.onColumnFiltersChange([
+          { id: "status", value: "active" },
+        ]);
+      });
+
+      // Check if URL was actually updated
+      console.log(
+        "WITHOUT urlNamespace - URL calls:",
+        mockReplaceState.mock.calls.length
+      );
+      if (mockReplaceState.mock.calls.length > 0) {
+        const lastCall =
+          mockReplaceState.mock.calls[mockReplaceState.mock.calls.length - 1];
+        console.log("WITHOUT urlNamespace - Last URL:", lastCall[2]);
+      }
+    });
+
+    it("should reveal codec issues - WITH urlNamespace", () => {
+      vi.clearAllMocks(); // Clear previous calls
+
+      const { result } = renderHook(() =>
+        usePersistingStateForReactTable({
+          columns, // columns with filter meta but NO codecs
+          persistence: {
+            urlNamespace: "test-table",
+            localStorageKey: "test-table",
+          },
+        })
+      );
+
+      // Apply a filter
+      act(() => {
+        result.current.handlers.onColumnFiltersChange([
+          { id: "status", value: "active" },
+        ]);
+      });
+
+      // Check if URL was actually updated
+      console.log(
+        "WITH urlNamespace - URL calls:",
+        mockReplaceState.mock.calls.length
+      );
+      if (mockReplaceState.mock.calls.length > 0) {
+        const lastCall =
+          mockReplaceState.mock.calls[mockReplaceState.mock.calls.length - 1];
+        console.log("WITH urlNamespace - Last URL:", lastCall[2]);
+      }
     });
   });
 

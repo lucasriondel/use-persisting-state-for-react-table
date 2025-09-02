@@ -1,6 +1,3 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -8,6 +5,11 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { act, renderHook } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { PersistingTableOptions } from "../../usePersistingStateForReactTable";
 import { usePersistingSortingLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -43,6 +45,8 @@ Object.defineProperty(window, "localStorage", {
   value: mockLocalStorage,
   writable: true,
 });
+
+// Helper function to create mock shared buckets
 
 // Mock history
 const mockHistory = {
@@ -81,14 +85,14 @@ const testColumns: ColumnDef<TestUser>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: "email", 
+    accessorKey: "email",
     header: "Email",
     cell: ({ row }) => row.getValue("email"),
     enableSorting: true,
   },
   {
     accessorKey: "role",
-    header: "Role", 
+    header: "Role",
     cell: ({ row }) => row.getValue("role"),
     enableSorting: true,
   },
@@ -108,11 +112,46 @@ const testColumns: ColumnDef<TestUser>[] = [
 
 // Mock data with varying values for sorting
 const mockUsers: TestUser[] = [
-  { id: "1", name: "Alice", email: "alice@example.com", role: "admin", status: "active", age: 25 },
-  { id: "2", name: "Bob", email: "bob@example.com", role: "user", status: "inactive", age: 30 },
-  { id: "3", name: "Charlie", email: "charlie@example.com", role: "manager", status: "active", age: 35 },
-  { id: "4", name: "Diana", email: "diana@example.com", role: "user", status: "active", age: 28 },
-  { id: "5", name: "Eve", email: "eve@example.com", role: "admin", status: "inactive", age: 22 },
+  {
+    id: "1",
+    name: "Alice",
+    email: "alice@example.com",
+    role: "admin",
+    status: "active",
+    age: 25,
+  },
+  {
+    id: "2",
+    name: "Bob",
+    email: "bob@example.com",
+    role: "user",
+    status: "inactive",
+    age: 30,
+  },
+  {
+    id: "3",
+    name: "Charlie",
+    email: "charlie@example.com",
+    role: "manager",
+    status: "active",
+    age: 35,
+  },
+  {
+    id: "4",
+    name: "Diana",
+    email: "diana@example.com",
+    role: "user",
+    status: "active",
+    age: 28,
+  },
+  {
+    id: "5",
+    name: "Eve",
+    email: "eve@example.com",
+    role: "admin",
+    status: "inactive",
+    age: 22,
+  },
 ];
 
 describe("usePersistingSortingLogic Integration Tests", () => {
@@ -126,16 +165,19 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("URL persistence", () => {
     it("persists sorting state to URL and retrieves it", () => {
-      const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: sortingHook } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -193,21 +235,26 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
     it("reads initial state from URL parameters", () => {
       // Set up URL with sorting parameters
-      setWindowLocation("https://example.com/?table.sortingColumn=email&table.sortingDirection=desc");
+      setWindowLocation(
+        "https://example.com/?table.sortingColumn=email&table.sortingDirection=desc"
+      );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "name", desc: false }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "name", desc: false }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should read from URL instead of initial state
@@ -217,18 +264,21 @@ describe("usePersistingSortingLogic Integration Tests", () => {
     });
 
     it("uses custom keys for URL parameters", () => {
-      const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-              sortingColumnKey: "col",
-              sortingDirectionKey: "dir",
-            },
-            urlNamespace: "custom",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
+            sortingColumnKey: "col",
+            sortingDirectionKey: "dir",
           },
-        })
+          urlNamespace: "custom",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: sortingHook } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -273,16 +323,19 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("localStorage persistence", () => {
     it("persists sorting state to localStorage and retrieves it", () => {
-      const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          persistence: {
-            sorting: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "table-sorting",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          sorting: {
+            persistenceStorage: "localStorage",
           },
-        })
+          localStorageKey: "table-sorting",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: sortingHook } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -317,30 +370,36 @@ describe("usePersistingSortingLogic Integration Tests", () => {
         expect.stringContaining('"sortingColumn":"age"')
       );
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "table-sorting", 
+        "table-sorting",
         expect.stringContaining('"sortingDirection":"desc"')
       );
     });
 
     it("reads initial state from localStorage", () => {
-      mockLocalStorage.setItem("sorting-store", JSON.stringify({ 
-        sortingColumn: "status", 
-        sortingDirection: "asc" 
-      }));
-
-      const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "name", desc: false }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "sorting-store",
-          },
+      mockLocalStorage.setItem(
+        "sorting-store",
+        JSON.stringify({
+          sortingColumn: "status",
+          sortingDirection: "asc",
         })
+      );
+
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "name", desc: false }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "sorting-store",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should read from localStorage instead of initial state
@@ -352,16 +411,19 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("sorting behaviors", () => {
     it("handles single column sorting with direction changes", () => {
-      const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: sortingHook } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -395,18 +457,18 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.sorting).toEqual([{ id: "name", desc: false }]);
-      
+
       // Verify data is sorted correctly
       const sortedRows = tableHook.current.table.getSortedRowModel().rows;
       expect(sortedRows[0].original.name).toBe("Alice"); // First alphabetically
-      
+
       // Toggle to descending
       act(() => {
         tableHook.current.table.getColumn("name")?.toggleSorting();
       });
 
       expect(tableHook.current.sorting).toEqual([{ id: "name", desc: true }]);
-      
+
       // Verify data is sorted descending
       const sortedRowsDesc = tableHook.current.table.getSortedRowModel().rows;
       expect(sortedRowsDesc[0].original.name).toBe("Eve"); // Last alphabetically
@@ -420,16 +482,19 @@ describe("usePersistingSortingLogic Integration Tests", () => {
     });
 
     it("handles switching between different columns", () => {
-      const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: sortingHook } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -477,16 +542,19 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("function updaters", () => {
     it("handles function-based sorting updates", () => {
-      const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: sortingHook } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -531,18 +599,22 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("initial state persistence", () => {
     it("persists initial state when no existing persisted values", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "name", desc: true }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "sorting",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "name", desc: true }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "localStorage",
-            },
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should use initial state
@@ -563,24 +635,30 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
     it("does not persist initial state when persisted values already exist", () => {
       // Pre-existing values
-      mockLocalStorage.setItem("existing-sorting", JSON.stringify({ 
-        sortingColumn: "age", 
-        sortingDirection: "asc" 
-      }));
-
-      const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "name", desc: false }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "existing-sorting",
-          },
+      mockLocalStorage.setItem(
+        "existing-sorting",
+        JSON.stringify({
+          sortingColumn: "age",
+          sortingDirection: "asc",
         })
+      );
+
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "name", desc: false }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "existing-sorting",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result } = renderHook(() =>
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should use existing values instead of initial state
@@ -598,21 +676,26 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("error handling", () => {
     it("handles malformed URL parameters gracefully", () => {
-      setWindowLocation("https://example.com/?table.sortingColumn=name&table.sortingDirection=invaliddir");
+      setWindowLocation(
+        "https://example.com/?table.sortingColumn=name&table.sortingDirection=invaliddir"
+      );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "email", desc: false }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "email", desc: false }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when direction is invalid
@@ -625,19 +708,22 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       // Only column, no direction
       setWindowLocation("https://example.com/?table.sortingColumn=name");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "email", desc: false }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "email", desc: false }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when incomplete
@@ -649,19 +735,22 @@ describe("usePersistingSortingLogic Integration Tests", () => {
     it("handles localStorage JSON parse errors gracefully", () => {
       mockLocalStorage.setItem("broken-sorting", "invalid json");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "role", desc: true }],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "broken-sorting",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "role", desc: true }],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "broken-sorting",
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage values are invalid
@@ -673,13 +762,16 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("no persistence configuration", () => {
     it("returns undefined handler when persistence is not configured", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [{ id: "name", desc: false }],
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [{ id: "name", desc: false }],
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       expect(result.current.handleSortingChange).toBeUndefined();
@@ -691,19 +783,22 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
   describe("real-world sorting scenarios", () => {
     it("simulates user sorting data in a complex table workflow", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          sorting: [],
+        },
+        persistence: {
+          sorting: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "users",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result: sortingHook } = renderHook(() =>
-        usePersistingSortingLogic({
-          columns: testColumns,
-          initialState: {
-            sorting: [],
-          },
-          persistence: {
-            sorting: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "users",
-          },
-        })
+        usePersistingSortingLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -729,7 +824,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.sorting).toEqual([]);
-      
+
       // Initial unsorted data
       const unsortedRows = tableHook.current.table.getCoreRowModel().rows;
       expect(unsortedRows[0].original.name).toBe("Alice");
@@ -740,7 +835,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.sorting).toEqual([{ id: "name", desc: false }]);
-      
+
       let sortedRows = tableHook.current.table.getSortedRowModel().rows;
       expect(sortedRows[0].original.name).toBe("Alice");
       expect(sortedRows[4].original.name).toBe("Eve");
@@ -757,7 +852,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.sorting).toEqual([{ id: "name", desc: true }]);
-      
+
       sortedRows = tableHook.current.table.getSortedRowModel().rows;
       expect(sortedRows[0].original.name).toBe("Eve");
       expect(sortedRows[4].original.name).toBe("Alice");
@@ -774,7 +869,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.sorting).toEqual([{ id: "age", desc: false }]);
-      
+
       sortedRows = tableHook.current.table.getSortedRowModel().rows;
       expect(sortedRows[0].original.age).toBe(22); // Eve - youngest
       expect(sortedRows[4].original.age).toBe(35); // Charlie - oldest
@@ -785,7 +880,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       });
 
       expect(tableHook.current.sorting).toEqual([]);
-      
+
       // Should remove URL parameters when no sorting
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),

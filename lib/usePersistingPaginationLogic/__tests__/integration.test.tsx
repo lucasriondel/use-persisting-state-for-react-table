@@ -7,6 +7,9 @@ import {
 import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+
+import { PersistingTableOptions } from "../../usePersistingStateForReactTable";
 import { usePersistingPaginationLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -42,6 +45,8 @@ Object.defineProperty(window, "localStorage", {
   value: mockLocalStorage,
   writable: true,
 });
+
+// Helper function to create mock shared buckets
 
 // Mock history
 const mockHistory = {
@@ -99,23 +104,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("URL persistence", () => {
     it("persists pagination state to URL and retrieves it", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 2,
+            pageSize: 20,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "url" },
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 2,
-              pageSize: 20,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       // Create a table instance with the pagination hook
@@ -180,24 +188,33 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
         "https://example.com/?table.pageIndex=3&table.pageSize=20"
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 0,
+            pageSize: 10,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "url" },
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 0,
-              pageSize: 10,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
+
+      expect(sharedBuckets.urlBucket).toEqual({
+        pageIndex: 3,
+        pageSize: 20,
+      });
 
       // Should read from URL instead of initial state
       expect(result.current.initialPaginationState).toEqual({
@@ -207,17 +224,20 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
     });
 
     it("uses custom keys for URL parameters", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url", key: "page" },
-              pageSize: { persistenceStorage: "url", key: "size" },
-            },
-            urlNamespace: "data",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url", key: "page" },
+            pageSize: { persistenceStorage: "url", key: "size" },
           },
-        })
+          urlNamespace: "data",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: paginationHook } = renderHook(() =>
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -269,23 +289,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("localStorage persistence", () => {
     it("persists pagination state to localStorage and retrieves it", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 1,
+            pageSize: 20,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "localStorage" },
+            pageSize: { persistenceStorage: "localStorage" },
+          },
+          localStorageKey: "test-pagination",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 1,
-              pageSize: 20,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "localStorage" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            localStorageKey: "test-pagination",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -347,23 +370,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
         JSON.stringify({ pageIndex: 7, pageSize: 50 })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 0,
+            pageSize: 10,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "localStorage" },
+            pageSize: { persistenceStorage: "localStorage" },
+          },
+          localStorageKey: "test-pagination",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 0,
-              pageSize: 10,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "localStorage" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            localStorageKey: "test-pagination",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       // Should read from localStorage instead of initial state
@@ -383,17 +409,20 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
         JSON.stringify({ pageSize: 50 })
       );
 
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            localStorageKey: "mixed-pagination",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "localStorage" },
           },
-        })
+          localStorageKey: "mixed-pagination",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: paginationHook } = renderHook(() =>
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -451,17 +480,20 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("partial persistence", () => {
     it("persists only pageIndex when pageSize is not configured", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              // pageSize not configured
-            },
-            urlNamespace: "partial",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            // pageSize not configured
           },
-        })
+          urlNamespace: "partial",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: paginationHook } = renderHook(() =>
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -515,17 +547,20 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("function updaters", () => {
     it("handles function-based pagination updates", () => {
-      const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "func",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "url" },
           },
-        })
+          urlNamespace: "func",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: paginationHook } = renderHook(() =>
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -586,25 +621,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("initial state persistence", () => {
     it("persists initial state when no existing persisted values", () => {
-      renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 5,
-              pageSize: 50,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 5,
+            pageSize: 50,
           },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            urlNamespace: "initial",
-            localStorageKey: "initial-pagination",
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "localStorage" },
           },
-        })
-      );
+          urlNamespace: "initial",
+          localStorageKey: "initial-pagination",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      renderHook(() => usePersistingPaginationLogic(options, sharedBuckets));
 
       // Allow useEffect to run
       act(() => {
@@ -632,27 +668,30 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
         JSON.stringify({ pageSize: 50 })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 1,
+            pageSize: 20,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: {
+              persistenceStorage: "localStorage",
+              allowedPageSizes: [10, 20, 50, 100],
+            },
+          },
+          urlNamespace: "existing",
+          localStorageKey: "existing-pagination",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 1,
-              pageSize: 20,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: {
-                persistenceStorage: "localStorage",
-                allowedPageSizes: [10, 20, 50, 100],
-              },
-            },
-            urlNamespace: "existing",
-            localStorageKey: "existing-pagination",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       // Should use existing values instead of initial state
@@ -683,23 +722,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
         "https://example.com/?table.pageIndex=invalid&table.pageSize=notanumber"
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 2,
+            pageSize: 20,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "url" },
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 2,
-              pageSize: 20,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when URL values are invalid
@@ -712,23 +754,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
     it("handles localStorage JSON parse errors gracefully", () => {
       mockLocalStorage.setItem("broken-pagination", "invalid-json{");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 3,
+            pageSize: 20,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "localStorage" },
+            pageSize: { persistenceStorage: "localStorage" },
+          },
+          localStorageKey: "broken-pagination",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 3,
-              pageSize: 20,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "localStorage" },
-              pageSize: { persistenceStorage: "localStorage" },
-            },
-            localStorageKey: "broken-pagination",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage is corrupted
@@ -741,23 +786,26 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
 
   describe("real-world pagination scenarios", () => {
     it("simulates user navigating through pages in a data table", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          pagination: {
+            pageIndex: 0,
+            pageSize: 10,
+          },
+        },
+        persistence: {
+          pagination: {
+            pageIndex: { persistenceStorage: "url" },
+            pageSize: { persistenceStorage: "url" },
+          },
+          urlNamespace: "users",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result: paginationHook } = renderHook(() =>
-        usePersistingPaginationLogic({
-          columns: testColumns,
-          initialState: {
-            pagination: {
-              pageIndex: 0,
-              pageSize: 10,
-            },
-          },
-          persistence: {
-            pagination: {
-              pageIndex: { persistenceStorage: "url" },
-              pageSize: { persistenceStorage: "url" },
-            },
-            urlNamespace: "users",
-          },
-        })
+        usePersistingPaginationLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {

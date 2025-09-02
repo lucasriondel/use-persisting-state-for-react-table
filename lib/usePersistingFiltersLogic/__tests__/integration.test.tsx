@@ -9,6 +9,8 @@ import {
 import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { PersistingTableOptions } from "../../usePersistingStateForReactTable";
 import { usePersistingFiltersLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -56,6 +58,8 @@ Object.defineProperty(window, "history", {
   value: mockHistory,
   writable: true,
 });
+
+// Helper function to create mock shared buckets
 
 // Test data interface
 interface TestUser {
@@ -331,13 +335,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("URL persistence", () => {
     it("persists multiSelect filters to URL and retrieves them", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -401,16 +409,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?table.role=manager&table.status=%5B%22active%22%5D"
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "role", value: ["admin"] }],
+        },
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "role", value: ["admin"] }],
-          },
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should read from URL instead of initial state
@@ -421,13 +433,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("handles dateRange filters", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -477,13 +493,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("handles numberRange filters", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -532,13 +552,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("localStorage persistence", () => {
     it("persists select filters to localStorage and retrieves them", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          localStorageKey: "table-filters",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            localStorageKey: "table-filters",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -596,16 +620,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         JSON.stringify({ department: "Marketing" })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "department", value: "Engineering" }],
+        },
+        persistence: {
+          localStorageKey: "filter-store",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "department", value: "Engineering" }],
-          },
-          persistence: {
-            localStorageKey: "filter-store",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should read from localStorage instead of initial state
@@ -626,14 +654,18 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       // Set up URL with role filter
       setWindowLocation("https://example.com/?table.role=admin%2Cmanager");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+          localStorageKey: "mixed-filters",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-            localStorageKey: "mixed-filters",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -681,13 +713,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("function updaters", () => {
     it("handles function-based column filter updates", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -747,20 +783,24 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("initial state persistence", () => {
     it("persists initial state when no existing persisted values", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [
+            { id: "role", value: ["admin", "manager"] },
+            { id: "department", value: "Engineering" },
+          ],
+        },
+        persistence: {
+          urlNamespace: "table",
+          localStorageKey: "initial-filters",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [
-              { id: "role", value: ["admin", "manager"] },
-              { id: "department", value: "Engineering" },
-            ],
-          },
-          persistence: {
-            urlNamespace: "table",
-            localStorageKey: "initial-filters",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should use initial state
@@ -791,17 +831,21 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         JSON.stringify({ department: "Sales" })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "role", value: ["admin"] }],
+        },
+        persistence: {
+          urlNamespace: "table",
+          localStorageKey: "existing-filters",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "role", value: ["admin"] }],
-          },
-          persistence: {
-            urlNamespace: "table",
-            localStorageKey: "existing-filters",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should use existing values instead of initial state
@@ -816,13 +860,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("filter sanitization and validation", () => {
     it("handles empty filter values correctly", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -869,16 +917,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     it("handles malformed URL parameters gracefully", () => {
       setWindowLocation("https://example.com/?table.role=invalidjson");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "role", value: ["admin"] }],
+        },
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "role", value: ["admin"] }],
-          },
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when URL values are invalid
@@ -890,16 +942,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     it("handles localStorage JSON parse errors gracefully", () => {
       mockLocalStorage.setItem("broken-filters", "invalid json");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "department", value: "Engineering" }],
+        },
+        persistence: {
+          localStorageKey: "broken-filters",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "department", value: "Engineering" }],
-          },
-          persistence: {
-            localStorageKey: "broken-filters",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage values are invalid
@@ -911,13 +967,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("no persistence configuration", () => {
     it("returns handler even when persistence is not configured", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "role", value: ["admin"] }],
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "role", value: ["admin"] }],
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       expect(result.current.handleColumnFiltersChange).toBeDefined();
@@ -929,13 +989,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("array order independence", () => {
     it("handles multiselect filter changes regardless of array order", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -1088,13 +1152,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("handles array order changes in status multiselect filter", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -1157,17 +1225,21 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("real-world filtering scenarios", () => {
     it("simulates user applying and modifying multiple filters", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [],
+        },
+        persistence: {
+          urlNamespace: "users",
+          localStorageKey: "user-filters",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [],
-          },
-          persistence: {
-            urlNamespace: "users",
-            localStorageKey: "user-filters",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -1268,19 +1340,23 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
   describe("useReducer synchronization regression tests", () => {
     it("should maintain filter state consistency throughout lifecycle", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [
+            { id: "role", value: ["admin"] },
+            { id: "status", value: ["active"] },
+          ],
+        },
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [
-              { id: "role", value: ["admin"] },
-              { id: "status", value: ["active"] },
-            ],
-          },
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -1326,13 +1402,17 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("should handle function updaters correctly", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: filtersHook } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          persistence: {
-            urlNamespace: "table",
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -1373,18 +1453,22 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
     });
 
     it("should handle optimistic async basic case", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnFilters: [{ id: "role", value: ["admin"] }],
+        },
+        persistence: {
+          filters: {
+            optimisticAsync: true,
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: testColumns,
-          initialState: {
-            columnFilters: [{ id: "role", value: ["admin"] }],
-          },
-          persistence: {
-            filters: {
-              optimisticAsync: true,
-            },
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       expect(result.current.initialColumnFiltersState).toEqual([
@@ -1412,16 +1496,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?table.role=admin&table.status=%5B%22active%22%5D"
       );
 
-      const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: columnsWithLoading as ColumnDef<TestUser>[],
-          persistence: {
-            urlNamespace: "table",
-            filters: {
-              optimisticAsync: false,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: columnsWithLoading as ColumnDef<TestUser>[],
+        persistence: {
+          urlNamespace: "table",
+          filters: {
+            optimisticAsync: false,
           },
-        })
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should only include status filter (not loading), role should be excluded
@@ -1444,22 +1532,32 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
           : col
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: loadingColumns as ColumnDef<TestUser>[],
+        initialState: {
+          columnFilters: [
+            { id: "role", value: ["admin"] },
+            { id: "status", value: ["active"] },
+          ],
+        },
+        persistence: {
+          filters: {
+            optimisticAsync: false,
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(
         ({ columns }) =>
-          usePersistingFiltersLogic({
-            columns: columns as ColumnDef<TestUser>[],
-            initialState: {
-              columnFilters: [
-                { id: "role", value: ["admin"] },
-                { id: "status", value: ["active"] },
-              ],
+          usePersistingFiltersLogic(
+            {
+              ...options,
+              columns: columns as ColumnDef<TestUser>[],
             },
-            persistence: {
-              filters: {
-                optimisticAsync: false,
-              },
-            },
-          }),
+            sharedBuckets
+          ),
         { initialProps: { columns: loadingColumns } }
       );
 
@@ -1482,7 +1580,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
       //     : col
       // );
 
-      // rerender({ columns: roleLoadedColumns });
+      // rerender({ columns: roleLoadedColumns }, sharedBuckets);
 
       // // Now role should appear
       // expect(result.current.initialColumnFiltersState).toEqual([
@@ -1521,17 +1619,27 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?role=admin&status=%5B%22active%22%5D"
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: loadingColumns as ColumnDef<TestUser>[],
+        initialState: {},
+        persistence: {
+          filters: {
+            optimisticAsync: false,
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result, rerender } = renderHook(
         ({ columns }) =>
-          usePersistingFiltersLogic({
-            columns: columns as ColumnDef<TestUser>[],
-            initialState: {},
-            persistence: {
-              filters: {
-                optimisticAsync: false,
-              },
+          usePersistingFiltersLogic(
+            {
+              ...options,
+              columns: columns as ColumnDef<TestUser>[],
             },
-          }),
+            sharedBuckets
+          ),
         { initialProps: { columns: loadingColumns } }
       );
 
@@ -1582,17 +1690,27 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?role=admin&status=%5B%22active%22%5D&"
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: loadingColumns as ColumnDef<TestUser>[],
+        initialState: {},
+        persistence: {
+          filters: {
+            optimisticAsync: false,
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result, rerender } = renderHook(
         ({ columns }) =>
-          usePersistingFiltersLogic({
-            columns: columns as ColumnDef<TestUser>[],
-            initialState: {},
-            persistence: {
-              filters: {
-                optimisticAsync: false,
-              },
+          usePersistingFiltersLogic(
+            {
+              ...options,
+              columns: columns as ColumnDef<TestUser>[],
             },
-          }),
+            sharedBuckets
+          ),
         { initialProps: { columns: loadingColumns } }
       );
 
@@ -1650,22 +1768,26 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?table.role=user&table.status=%5B%22active%22%5D"
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: loadingColumns as ColumnDef<TestUser>[],
+        initialState: {
+          columnFilters: [
+            { id: "role", value: ["admin"] }, // Different from URL
+            { id: "status", value: ["active"] },
+          ],
+        },
+        persistence: {
+          urlNamespace: "table",
+          filters: {
+            optimisticAsync: false,
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: loadingColumns as ColumnDef<TestUser>[],
-          initialState: {
-            columnFilters: [
-              { id: "role", value: ["admin"] }, // Different from URL
-              { id: "status", value: ["active"] },
-            ],
-          },
-          persistence: {
-            urlNamespace: "table",
-            filters: {
-              optimisticAsync: false,
-            },
-          },
-        })
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should only include non-loading filters from URL/localStorage
@@ -1695,16 +1817,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?table.role=admin&table.status=%5B%22active%22%5D"
       );
 
-      const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: columnsWithEmptyOptions as ColumnDef<TestUser>[],
-          persistence: {
-            urlNamespace: "table",
-            filters: {
-              optimisticAsync: false,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: columnsWithEmptyOptions as ColumnDef<TestUser>[],
+        persistence: {
+          urlNamespace: "table",
+          filters: {
+            optimisticAsync: false,
           },
-        })
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should include both filters even though role has empty options (not loading)
@@ -1743,16 +1869,20 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         "https://example.com/?table.role=admin%2Cmanager&table.status=%5B%22active%22%5D"
       );
 
-      const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: columnsWithOptions as ColumnDef<TestUser>[],
-          persistence: {
-            urlNamespace: "table",
-            filters: {
-              optimisticAsync: false,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: columnsWithOptions as ColumnDef<TestUser>[],
+        persistence: {
+          urlNamespace: "table",
+          filters: {
+            optimisticAsync: false,
           },
-        })
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should sanitize role filter and keep only valid values
@@ -1809,17 +1939,21 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
         JSON.stringify({ department: "Engineering" })
       );
 
-      const { result } = renderHook(() =>
-        usePersistingFiltersLogic({
-          columns: loadingColumns as ColumnDef<TestUser>[],
-          persistence: {
-            urlNamespace: "table",
-            localStorageKey: "mixed-filters",
-            filters: {
-              optimisticAsync: false,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: loadingColumns as ColumnDef<TestUser>[],
+        persistence: {
+          urlNamespace: "table",
+          localStorageKey: "mixed-filters",
+          filters: {
+            optimisticAsync: false,
           },
-        })
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result } = renderHook(() =>
+        usePersistingFiltersLogic(options, sharedBuckets)
       );
 
       // Should include non-loading filters from both URL and localStorage
