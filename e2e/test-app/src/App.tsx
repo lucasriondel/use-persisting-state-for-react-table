@@ -2,9 +2,6 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import React, { useMemo } from "react";
@@ -48,6 +45,10 @@ const columns = [
   columnHelper.accessor("age", {
     header: "Age",
     cell: (info) => info.getValue(),
+    filterFn: (row, columnId, filterValue) => {
+      const age = row.getValue(columnId) as number;
+      return age === filterValue;
+    },
     meta: {
       filter: {
         variant: "number" as const,
@@ -59,6 +60,10 @@ const columns = [
   columnHelper.accessor("status", {
     header: "Status",
     cell: (info) => info.getValue(),
+    filterFn: (row, columnId, filterValue) => {
+      const status = row.getValue(columnId) as string;
+      return status === filterValue;
+    },
     meta: {
       filter: {
         variant: "select" as const,
@@ -89,7 +94,7 @@ function App() {
     columns,
     automaticPageReset: true,
     persistence: {
-      urlNamespace: "test-table",
+      // urlNamespace: "test-table",
       localStorageKey: "e2e-test-table",
       pagination: {
         pageIndex: { persistenceStorage: "url", key: "page" },
@@ -124,10 +129,10 @@ function App() {
     state,
     ...handlers,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     enableRowSelection: true,
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
   });
 
   return (
@@ -235,6 +240,7 @@ function App() {
           Global Filter: {state.globalFilter || "None"}
           <br />
           Column Filters: {state.columnFilters.length}
+          Column Filters: {JSON.stringify(state.columnFilters, null, 2)}
           <br />
           Sorting:{" "}
           {state.sorting.length > 0
@@ -263,7 +269,7 @@ function App() {
                 const value = e.target.value
                   ? Number(e.target.value)
                   : undefined;
-                handlers.onColumnFiltersChange((prev) =>
+                table.setColumnFilters((prev) =>
                   prev
                     .filter((f) => f.id !== "age")
                     .concat(value !== undefined ? [{ id: "age", value }] : [])
@@ -284,7 +290,7 @@ function App() {
               }
               onChange={(e) => {
                 const value = e.target.value || undefined;
-                handlers.onColumnFiltersChange((prev) =>
+                table.setColumnFilters((prev) =>
                   prev
                     .filter((f) => f.id !== "status")
                     .concat(value ? [{ id: "status", value }] : [])
