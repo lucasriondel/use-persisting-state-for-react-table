@@ -1,7 +1,10 @@
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
+  ColumnFiltersState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import React, { useMemo } from "react";
@@ -17,15 +20,153 @@ type Person = {
   email: string;
 };
 
-// Sample data
-const sampleData: Person[] = Array.from({ length: 100 }, (_, i) => ({
-  id: i + 1,
-  firstName: ["John", "Jane", "Bob", "Alice", "Charlie"][i % 5],
-  lastName: ["Smith", "Doe", "Johnson", "Brown", "Davis"][i % 5],
-  age: 20 + (i % 60),
-  status: i % 2 === 0 ? "active" : "inactive",
-  email: `user${i + 1}@example.com`,
-}));
+// API Request/Response types
+export interface PersonsRequest {
+  pagination: {
+    pageIndex: number;
+    pageSize: number;
+  };
+  sorting: SortingState;
+  filters: ColumnFiltersState;
+  globalFilter: string;
+}
+
+export interface PersonsResponse {
+  data: Person[];
+  pageCount: number;
+  rowCount: number;
+}
+
+// Generate sample data
+const generateSampleData = (): Person[] => {
+  const firstNames = [
+    "John",
+    "Jane",
+    "Bob",
+    "Alice",
+    "Charlie",
+    "Diana",
+    "Eva",
+    "Frank",
+    "Grace",
+    "Henry",
+  ];
+  const lastNames = [
+    "Smith",
+    "Doe",
+    "Johnson",
+    "Brown",
+    "Davis",
+    "Wilson",
+    "Moore",
+    "Taylor",
+    "Anderson",
+    "Thomas",
+  ];
+
+  return Array.from({ length: 1000 }, (_, i) => ({
+    id: i + 1,
+    firstName: firstNames[i % firstNames.length],
+    lastName: lastNames[i % lastNames.length],
+    age: 18 + (i % 50), // Ages from 18 to 67
+    status: i % 3 === 0 ? "active" : "inactive", // 1/3 active, 2/3 inactive
+    email: `user${i + 1}@example.com`,
+  }));
+};
+
+// Store generated data
+let allPersons: Person[] = [];
+
+// Mock API function for fetching persons with server-side processing
+const fetchPersons = async (
+  request: PersonsRequest
+): Promise<PersonsResponse> => {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Generate data if not already done
+  if (allPersons.length === 0) {
+    allPersons = generateSampleData();
+  }
+
+  let filteredPersons = [...allPersons];
+
+  // Apply global filter first
+  if (request.globalFilter) {
+    const searchTerm = request.globalFilter.toLowerCase();
+    filteredPersons = filteredPersons.filter(
+      (person) =>
+        person.firstName.toLowerCase().includes(searchTerm) ||
+        person.lastName.toLowerCase().includes(searchTerm) ||
+        person.email.toLowerCase().includes(searchTerm) ||
+        person.status.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Apply column filters
+  request.filters.forEach((filter) => {
+    // Skip empty filters
+    if (isEmptyFilterValue(filter.value)) {
+      return;
+    }
+
+    if (filter.id === "age") {
+      const age = Number(filter.value);
+      if (!isNaN(age)) {
+        filteredPersons = filteredPersons.filter(
+          (person) => person.age === age
+        );
+      }
+    }
+
+    if (filter.id === "status") {
+      const status = filter.value as string;
+      filteredPersons = filteredPersons.filter(
+        (person) => person.status === status
+      );
+    }
+  });
+
+  // Apply sorting
+  if (request.sorting.length > 0) {
+    const sort = request.sorting[0];
+    filteredPersons.sort((a, b) => {
+      const aValue = a[sort.id as keyof Person];
+      const bValue = b[sort.id as keyof Person];
+
+      if (aValue < bValue) return sort.desc ? 1 : -1;
+      if (aValue > bValue) return sort.desc ? -1 : 1;
+      return 0;
+    });
+  }
+
+  // Calculate pagination
+  const { pageIndex, pageSize } = request.pagination;
+  const startRow = pageIndex * pageSize;
+  const endRow = startRow + pageSize;
+  const paginatedPersons = filteredPersons.slice(startRow, endRow);
+
+  return {
+    data: paginatedPersons,
+    pageCount: Math.ceil(filteredPersons.length / pageSize),
+    rowCount: filteredPersons.length,
+  };
+};
+
+// TanStack Query options factory for fetching persons
+const personsQueryOptions = (request: PersonsRequest) => ({
+  queryKey: ["persons", request] as const,
+  queryFn: () => fetchPersons(request),
+  placeholderData: keepPreviousData,
+});
+
+// Helper function to check if filter value is empty
+function isEmptyFilterValue(value: unknown) {
+  if (value === null || value === undefined) return true;
+  if (Array.isArray(value) && value.length === 0) return true;
+  if (typeof value === "string" && value.trim() === "") return true;
+  return false;
+}
 
 const columnHelper = createColumnHelper<Person>();
 
@@ -83,8 +224,6 @@ const columns = [
 ];
 
 function App() {
-  const data = useMemo(() => sampleData, []);
-
   const {
     state,
     handlers,
@@ -123,16 +262,39 @@ function App() {
     },
   });
 
+  // Build API request from current state
+  const apiRequest: PersonsRequest = useMemo(() => {
+    return {
+      pagination: state.pagination,
+      sorting: state.sorting,
+      filters: state.columnFilters,
+      globalFilter: state.globalFilter,
+    };
+  }, [state]);
+
+  // Fetch data using React Query
+  const {
+    data: apiResponse,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    ...personsQueryOptions(apiRequest),
+    enabled: hasFinishedProcessingAsyncFilters,
+  });
+
   const table = useReactTable({
-    data,
+    data: apiResponse?.data || [],
     columns,
     state,
+    pageCount: apiResponse?.pageCount,
     ...handlers,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
+    // Use actual person ID for row identification to ensure proper selection persistence across pages
+    getRowId: (row) => row.id.toString(),
   });
 
   return (
@@ -142,7 +304,7 @@ function App() {
     >
       <h1>E2E Test App - usePersistingStateForReactTable</h1>
 
-      {/* Loading indicator */}
+      {/* Loading indicators */}
       {!hasFinishedProcessingAsyncFilters && (
         <div
           data-testid="loading-filters"
@@ -153,6 +315,19 @@ function App() {
           }}
         >
           Processing async filters...
+        </div>
+      )}
+
+      {(isLoading || isFetching) && (
+        <div
+          data-testid="loading-data"
+          style={{
+            background: "#d1ecf1",
+            padding: "10px",
+            marginBottom: "20px",
+          }}
+        >
+          {isLoading ? "Loading data..." : "Refreshing data..."}
         </div>
       )}
 
@@ -231,16 +406,21 @@ function App() {
           <br />
           Page Size: {state.pagination.pageSize}
           <br />
-          Total Rows: {table.getPreFilteredRowModel().rows.length}
+          Total Rows: {apiResponse?.rowCount || 0}
           <br />
-          Filtered Rows: {table.getFilteredRowModel().rows.length}
+          Current Page Rows: {apiResponse?.data?.length || 0}
           <br />
           Selected Rows: {Object.keys(state.rowSelection).length}
           <br />
           Global Filter: {state.globalFilter || "None"}
           <br />
           Column Filters: {state.columnFilters.length}
-          Column Filters: {JSON.stringify(state.columnFilters, null, 2)}
+          {state.columnFilters.length > 0 && (
+            <>
+              <br />
+              Column Filters: {JSON.stringify(state.columnFilters, null, 2)}
+            </>
+          )}
           <br />
           Sorting:{" "}
           {state.sorting.length > 0
@@ -248,6 +428,9 @@ function App() {
                 state.sorting[0].desc ? "desc" : "asc"
               })`
             : "None"}
+          <br />
+          <strong>API Status:</strong>{" "}
+          {isLoading ? "Loading" : isFetching ? "Refreshing" : "Ready"}
         </div>
       </div>
 
@@ -351,27 +534,47 @@ function App() {
           ))}
         </thead>
         <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              <td style={{ border: "1px solid #ccc", padding: "8px" }}>
-                <input
-                  type="checkbox"
-                  data-testid={`select-row-${row.id}`}
-                  checked={row.getIsSelected()}
-                  onChange={row.getToggleSelectedHandler()}
-                />
+          {isLoading ? (
+            <tr>
+              <td
+                colSpan={columns.length + 1}
+                style={{ textAlign: "center", padding: "20px" }}
+              >
+                Loading data...
               </td>
-              {row.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  style={{ border: "1px solid #ccc", padding: "8px" }}
-                  data-testid={`cell-${cell.column.id}-${row.id}`}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
             </tr>
-          ))}
+          ) : table.getRowModel().rows.length === 0 ? (
+            <tr>
+              <td
+                colSpan={columns.length + 1}
+                style={{ textAlign: "center", padding: "20px" }}
+              >
+                No data found
+              </td>
+            </tr>
+          ) : (
+            table.getRowModel().rows.map((row) => (
+              <tr key={row.id}>
+                <td style={{ border: "1px solid #ccc", padding: "8px" }}>
+                  <input
+                    type="checkbox"
+                    data-testid={`select-row-${row.id}`}
+                    checked={row.getIsSelected()}
+                    onChange={row.getToggleSelectedHandler()}
+                  />
+                </td>
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    style={{ border: "1px solid #ccc", padding: "8px" }}
+                    data-testid={`cell-${cell.column.id}-${row.id}`}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 
@@ -406,6 +609,13 @@ function App() {
           <strong data-testid="page-info">
             {state.pagination.pageIndex + 1} of {table.getPageCount()}
           </strong>
+          {apiResponse && (
+            <span
+              style={{ marginLeft: "10px", fontSize: "12px", color: "#666" }}
+            >
+              ({apiResponse.rowCount} total rows)
+            </span>
+          )}
         </span>
         <button
           data-testid="next-page"
