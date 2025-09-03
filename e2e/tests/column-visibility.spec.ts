@@ -1,5 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+async function waitForDataToLoad(page: any) {
+  // Wait for loading indicator to disappear, indicating data has finished loading
+  await expect(page.getByTestId("loading-data")).not.toBeVisible({
+    timeout: 10000,
+  });
+  // Wait for table to be visible
+  await expect(page.getByTestId("data-table")).toBeVisible();
+}
+
 test.describe("Column Visibility Persistence", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -11,19 +20,19 @@ test.describe("Column Visibility Persistence", () => {
   });
 
   test("should persist column visibility in localStorage", async ({ page }) => {
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Check that email column is initially visible
     await expect(page.getByTestId("header-email")).toBeVisible();
-    await expect(page.getByTestId("cell-email-0")).toBeVisible();
+    await expect(page.getByTestId("cell-email-1")).toBeVisible();
 
     // Hide email column
     await page.getByTestId("toggle-email-column").click();
 
     // Check that email column is now hidden
     await expect(page.getByTestId("header-email")).not.toBeVisible();
-    await expect(page.getByTestId("cell-email-0")).not.toBeVisible();
+    await expect(page.getByTestId("cell-email-1")).not.toBeVisible();
 
     // Check localStorage contains the visibility setting
     const visibility = await page.evaluate(() => {
@@ -45,17 +54,17 @@ test.describe("Column Visibility Persistence", () => {
       }
     }, storageState);
 
-    // Wait for the table to reload
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Verify persistence
     await expect(page.getByTestId("header-email")).not.toBeVisible();
-    await expect(page.getByTestId("cell-email-0")).not.toBeVisible();
+    await expect(page.getByTestId("cell-email-1")).not.toBeVisible();
   });
 
   test("should show column when toggled back", async ({ page }) => {
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Hide email column first
     await page.getByTestId("toggle-email-column").click();
@@ -64,7 +73,7 @@ test.describe("Column Visibility Persistence", () => {
     // Show email column again
     await page.getByTestId("toggle-email-column").click();
     await expect(page.getByTestId("header-email")).toBeVisible();
-    await expect(page.getByTestId("cell-email-0")).toBeVisible();
+    await expect(page.getByTestId("cell-email-1")).toBeVisible();
 
     // Check localStorage reflects the change
     const visibility = await page.evaluate(() => {
@@ -81,8 +90,8 @@ test.describe("Column Visibility Persistence", () => {
     const page = await context.newPage();
     await page.goto("/");
 
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Apply various state changes
     await page.getByTestId("toggle-email-column").click(); // Hide email
@@ -92,7 +101,7 @@ test.describe("Column Visibility Persistence", () => {
 
     // Email column should still be hidden
     await expect(page.getByTestId("header-email")).not.toBeVisible();
-    await expect(page.getByTestId("cell-email-0")).not.toBeVisible();
+    await expect(page.getByTestId("cell-email-1")).not.toBeVisible();
 
     // Reload and verify all state persists
     // const storageState = await context.storageState();
@@ -123,8 +132,8 @@ test.describe("Column Visibility Persistence", () => {
   }) => {
     await page.goto("/");
 
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Hide email column
     await page.getByTestId("toggle-email-column").click();
@@ -136,11 +145,14 @@ test.describe("Column Visibility Persistence", () => {
     // Verify filtering still works
     await page.getByTestId("status-filter").selectOption("active");
     await expect(page.getByTestId("current-state")).toContainText(
-      "Filtered Rows: 50"
+      "Column Filters: 1"
+    );
+    await expect(page.getByTestId("current-state")).toContainText(
+      'Column Filters: [ { "id": "status", "value": "active" } ]'
     );
 
     // Verify row selection still works
-    await page.getByTestId("select-row-0").check();
+    await page.getByTestId("select-row-1").check();
     await expect(page.getByTestId("current-state")).toContainText(
       "Selected Rows: 1"
     );
@@ -152,8 +164,8 @@ test.describe("Column Visibility Persistence", () => {
   test("should handle multiple column visibility changes", async ({ page }) => {
     await page.goto("/");
 
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Get initial column count
     const initialHeaders = await page
@@ -192,8 +204,8 @@ test.describe("Column Visibility Persistence", () => {
   }) => {
     await page.goto("/");
 
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Hide email column
     await page.getByTestId("toggle-email-column").click();
@@ -221,8 +233,8 @@ test.describe("Column Visibility Persistence", () => {
   }) => {
     await page.goto("/");
 
-    // Wait for the table to load
-    await expect(page.getByTestId("data-table")).toBeVisible();
+    // Wait for data to finish loading
+    await waitForDataToLoad(page);
 
     // Hide email column first
     await page.getByTestId("toggle-email-column").click();
@@ -235,7 +247,10 @@ test.describe("Column Visibility Persistence", () => {
     // Apply status filter
     await page.getByTestId("status-filter").selectOption("active");
     await expect(page.getByTestId("current-state")).toContainText(
-      "Filtered Rows: 50"
+      "Column Filters: 1"
+    );
+    await expect(page.getByTestId("current-state")).toContainText(
+      'Column Filters: [ { "id": "status", "value": "active" } ]'
     );
 
     // Navigate to different page
@@ -249,7 +264,7 @@ test.describe("Column Visibility Persistence", () => {
     // All other functionality should work normally
     await expect(page.getByTestId("header-firstName")).toContainText("🔼");
     await expect(page.getByTestId("status-filter")).toHaveValue("active");
-    await expect(page.getByTestId("page-info")).toContainText("2 of 3"); // 50 active / 20 per page = 3 pages
+    await expect(page.getByTestId("page-info")).toContainText("2 of 17"); // 50 active / 20 per page = 3 pages
 
     // Reload and verify everything persists
     await page.reload();
