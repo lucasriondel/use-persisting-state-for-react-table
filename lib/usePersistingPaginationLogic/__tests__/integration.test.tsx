@@ -77,12 +77,12 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
 ];
 
@@ -539,6 +539,7 @@ describe("usePersistingPaginationLogic Integration Tests", () => {
       // Should not contain pageSize in any calls to replaceState
       const allCalls = mockHistory.replaceState.mock.calls;
       const hasPageSize = allCalls.some(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         (call) => call[2] && call[2].includes("pageSize")
       );
       expect(hasPageSize).toBe(false);

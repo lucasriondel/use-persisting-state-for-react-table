@@ -1,4 +1,4 @@
-import { createColumnHelper } from "@tanstack/react-table";
+import { ColumnFilter, createColumnHelper } from "@tanstack/react-table";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -16,8 +16,14 @@ function setWindowLocation(href: string) {
 
 // Mock history
 const mockHistory = {
-  pushState: vi.fn(),
-  replaceState: vi.fn(),
+  pushState: vi.fn<
+    [data: any, unused: string, url?: string | URL | null],
+    void
+  >(),
+  replaceState: vi.fn<
+    [data: any, unused: string, url?: string | URL | null],
+    void
+  >(),
   state: {},
 };
 
@@ -135,7 +141,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall[2]).toContain("status-filter=active");
+      expect(lastCall?.[2]).toContain("status-filter=active");
     });
 
     it("should handle multiple column filters without urlNamespace", () => {
@@ -175,8 +181,8 @@ describe("urlNamespace filter behavior bug investigation", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall[2]).toContain("status-filter=active");
-      expect(lastCall[2]).toContain("age-filter=25");
+      expect(lastCall?.[2]).toContain("status-filter=active");
+      expect(lastCall?.[2]).toContain("age-filter=25");
     });
   });
 
@@ -219,7 +225,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall[2]).toContain("test-table.status-filter=active");
+      expect(lastCall?.[2]).toContain("test-table.status-filter=active");
     });
 
     it("should handle multiple column filters WITH urlNamespace", () => {
@@ -259,8 +265,8 @@ describe("urlNamespace filter behavior bug investigation", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall[2]).toContain("test-table.status-filter=active");
-      expect(lastCall[2]).toContain("test-table.age-filter=25");
+      expect(lastCall?.[2]).toContain("test-table.status-filter=active");
+      expect(lastCall?.[2]).toContain("test-table.age-filter=25");
     });
 
     it("should load initial state from URL with urlNamespace", () => {
@@ -331,15 +337,15 @@ describe("urlNamespace filter behavior bug investigation", () => {
 
       console.log(
         "Filter clearing test - URL after removing status filter:",
-        lastCall[2]
+        lastCall?.[2]
       );
 
       // The URL should not contain status-filter anymore
-      expect(lastCall[2]).not.toContain("status-filter");
+      expect(lastCall?.[2]).not.toContain("status-filter");
       // The URL should still contain the age filter
       // Note: This might be failing due to a bug in filter removal logic
-      if (lastCall[2] !== "https://example.com/") {
-        expect(lastCall[2]).toContain("test-table.age-filter=25");
+      if (lastCall?.[2] !== "https://example.com/") {
+        expect(lastCall?.[2]).toContain("test-table.age-filter=25");
       } else {
         console.warn(
           "URL was completely cleared when it should have retained age filter"
@@ -411,8 +417,8 @@ describe("urlNamespace filter behavior bug investigation", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall[2]).toContain("test-table.status-filter=active");
-      expect(lastCall[2]).not.toContain("age-filter"); // age is in localStorage
+      expect(lastCall?.[2]).toContain("test-table.status-filter=active");
+      expect(lastCall?.[2]).not.toContain("age-filter"); // age is in localStorage
 
       // localStorage should have age filter
       console.log(
@@ -428,7 +434,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
       console.log("Filtered test-table localStorage calls:", testTableCalls);
 
       if (testTableCalls.length > 0) {
-        expect(testTableCalls[0][1]).toContain('"age-filter":25');
+        expect(testTableCalls[0]?.[1]).toContain('"age-filter":25');
       } else {
         console.warn(
           "No localStorage calls found for test-table key. This might indicate a bug in localStorage persistence for mixed storage types."
@@ -440,7 +446,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
 
         // Check if the localStorage filter is in the state at all
         const ageFilter = result.current.state.columnFilters.find(
-          (f) => f.id === "age"
+          (f: ColumnFilter) => f.id === "age"
         );
         if (ageFilter) {
           expect(ageFilter.value).toBe(25);
@@ -540,7 +546,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
           mockHistory.replaceState.mock.calls[
             mockHistory.replaceState.mock.calls.length - 1
           ];
-        console.log("WITHOUT urlNamespace - Last URL:", lastCall[2]);
+        console.log("WITHOUT urlNamespace - Last URL:", lastCall?.[2]);
       }
     });
 
@@ -576,7 +582,7 @@ describe("urlNamespace filter behavior bug investigation", () => {
           mockHistory.replaceState.mock.calls[
             mockHistory.replaceState.mock.calls.length - 1
           ];
-        console.log("WITH urlNamespace - Last URL:", lastCall[2]);
+        console.log("WITH urlNamespace - Last URL:", lastCall?.[2]);
       }
     });
   });
@@ -627,8 +633,8 @@ describe("urlNamespace filter behavior bug investigation", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall[2]).not.toContain("status-filter");
-      expect(lastCall[2]).not.toContain("age-filter");
+      expect(lastCall?.[2]).not.toContain("status-filter");
+      expect(lastCall?.[2]).not.toContain("age-filter");
     });
 
     it("should handle filter updates that trigger other state changes", () => {
@@ -681,25 +687,29 @@ describe("urlNamespace filter behavior bug investigation", () => {
 
       console.log(
         "Edge case test - Final URL after filter update and pagination reset:",
-        lastCall[2]
+        lastCall?.[2]
       );
       console.log(
         "Edge case test - All URL calls:",
-        mockHistory.replaceState.mock.calls.map((call) => call[2])
+        mockHistory.replaceState.mock.calls.map((call) => call?.[2])
       );
 
       // Check for filter first with defensive coding
-      if (lastCall[2].includes("test-table.status-filter=active")) {
+      // @ts-expect-error - TODO need to fix this
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      if (lastCall?.[2]?.includes("test-table.status-filter=active")) {
         expect(lastCall[2]).toContain("test-table.status-filter=active");
       } else {
         console.warn(
           "Filter not found in final URL. Checking if it was persisted earlier and then lost..."
         );
         const allUrls = mockHistory.replaceState.mock.calls.map(
-          (call) => call[2]
+          (call) => call?.[2]
         );
         const filterUrls = allUrls.filter((url) =>
-          url.includes("test-table.status-filter=active")
+          // @ts-expect-error - TODO need to fix this
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          url?.includes("test-table.status-filter=active")
         );
         console.log("URLs containing filter:", filterUrls);
 
@@ -710,7 +720,9 @@ describe("urlNamespace filter behavior bug investigation", () => {
       }
 
       // Check for pagination reset
-      if (lastCall[2].includes("test-table.page=0")) {
+      // @ts-expect-error - TODO need to fix this
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      if (lastCall?.[2]?.includes("test-table.page=0")) {
         expect(lastCall[2]).toContain("test-table.page=0");
       } else {
         console.warn(

@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 
-async function waitForDataToLoad(page: any) {
+async function waitForDataToLoad(page: Page) {
   // Wait for loading indicator to disappear, indicating data has finished loading
   await expect(page.getByTestId("loading-data")).not.toBeVisible({
     timeout: 10000,
@@ -85,7 +85,7 @@ test.describe("Filters Persistence", () => {
     await page.getByTestId("global-filter").blur();
 
     // Check URL contains global filter
-    expect(page.url()).toContain("test-table.search=john");
+    await expect(page.url()).toContain("test-table.search=john");
     await expect(page.getByTestId("current-state")).toContainText(
       "Global Filter: john"
     );
@@ -107,7 +107,7 @@ test.describe("Filters Persistence", () => {
 
     // Get initial row count
     const initialRows = await page.getByTestId("current-state").textContent();
-    expect(initialRows).toContain("Column Filters: 0");
+    await expect(initialRows).toContain("Column Filters: 0");
 
     // Apply status filter to 'active'
     await page.getByTestId("status-filter").selectOption("active");

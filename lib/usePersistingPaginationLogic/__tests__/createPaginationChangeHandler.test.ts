@@ -18,16 +18,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true, // shouldPersistPageIndex
-        true, // shouldPersistPageSize
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const updaterFn = vi.fn((old: PaginationState) => ({
@@ -48,16 +49,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const updaterFn = (old: PaginationState) => ({
@@ -75,16 +77,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "localStorage",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 3, pageSize: 50 };
       const updaterFn = (old: PaginationState) => ({
@@ -102,16 +105,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const updaterFn = () => ({ pageIndex: 99, pageSize: 500 });
@@ -126,16 +130,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const updaterFn = () => ({
@@ -156,16 +161,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 7, pageSize: 50 };
@@ -180,16 +186,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const partialState = { pageIndex: 3 } as PaginationState;
@@ -205,16 +212,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const emptyState = {} as PaginationState;
@@ -232,16 +240,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true, // shouldPersistPageIndex
-        false, // shouldPersistPageSize
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: false,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 8, pageSize: 100 };
@@ -257,16 +266,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        false, // shouldPersistPageIndex
-        true, // shouldPersistPageSize
-        "url",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 8, pageSize: 100 };
@@ -282,16 +292,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        false,
-        false,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 8, pageSize: 100 };
@@ -308,16 +319,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "currentPage",
-        "localStorage",
-        "itemsPerPage",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "currentPage",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "itemsPerPage",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 3, pageSize: 50 };
@@ -332,16 +344,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "page-index.v2",
-        "url",
-        "page_size_setting",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "page-index.v2",
+        pageSizeTarget: "url",
+        pageSizeKey: "page_size_setting",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 1, pageSize: 20 };
@@ -358,16 +371,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 2, pageSize: 20 };
       const newState: PaginationState = { pageIndex: 5, pageSize: 100 };
@@ -384,16 +398,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "localStorage",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "localStorage",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 1, pageSize: 15 };
       const newState: PaginationState = { pageIndex: 3, pageSize: 30 };
@@ -412,16 +427,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const newState: PaginationState = {
@@ -440,16 +456,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const newState: PaginationState = {
@@ -468,16 +485,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const newState: PaginationState = {
@@ -497,16 +515,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const newState: PaginationState = { pageIndex: 0, pageSize: 0 };
@@ -521,16 +540,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 5, pageSize: 25 };
       const newState: PaginationState = { pageIndex: -1, pageSize: -10 };
@@ -545,16 +565,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 999999, pageSize: 10000 };
@@ -569,16 +590,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 3.7, pageSize: 25.5 };
@@ -593,16 +615,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = {
@@ -620,16 +643,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: NaN, pageSize: NaN };
@@ -649,16 +673,17 @@ describe("createPaginationChangeHandler", () => {
         throw new Error("URL API error");
       });
 
-      const handler = createPaginationChangeHandler(
-        true,
-        false,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: false,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 5, pageSize: 50 };
@@ -673,16 +698,17 @@ describe("createPaginationChangeHandler", () => {
         throw new Error("LocalStorage API error");
       });
 
-      const handler = createPaginationChangeHandler(
-        false,
-        true,
-        "url",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 5, pageSize: 50 };
@@ -696,16 +722,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const badUpdater = () => {
@@ -723,16 +750,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentTableState: PaginationState = {
         pageIndex: 10,
@@ -757,16 +785,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 3, pageSize: 30 };
       const updaterFn = (old: PaginationState) => ({
@@ -787,16 +816,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        true,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: true,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const stateWithExtra = {
@@ -817,17 +847,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        false,
-        true, // shouldPersistPageSize
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi
-        // No allowedPageSizes provided, should not validate
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: undefined,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 0, pageSize: 15 }; // Any value should be allowed
@@ -843,20 +873,20 @@ describe("createPaginationChangeHandler", () => {
       const mockLocalApi = createMockBucketApi();
       const customAllowed = [5, 15, 25, 100];
 
-      const handler = createPaginationChangeHandler(
-        false,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi,
-        customAllowed
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: customAllowed,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
-      
+
       // Test valid value
       handler({ pageIndex: 0, pageSize: 15 }, currentState);
       expect(mockUrlApi.patch).toHaveBeenCalledWith({ pageSize: 15 });
@@ -874,17 +904,17 @@ describe("createPaginationChangeHandler", () => {
       const mockLocalApi = createMockBucketApi();
       const customAllowed = [5, 15, 25, 100];
 
-      const handler = createPaginationChangeHandler(
-        false,
-        true,
-        "url",
-        "pageIndex",
-        "localStorage",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi,
-        customAllowed
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "localStorage",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: customAllowed,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 0, pageSize: 30 }; // Invalid
@@ -901,17 +931,17 @@ describe("createPaginationChangeHandler", () => {
       const mockLocalApi = createMockBucketApi();
       const customAllowed = [5, 15, 25, 100];
 
-      const handler = createPaginationChangeHandler(
-        false,
-        false, // shouldPersistPageSize disabled
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi,
-        customAllowed
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: false,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: customAllowed,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 0, pageSize: 999 }; // Invalid but won't be persisted
@@ -928,17 +958,17 @@ describe("createPaginationChangeHandler", () => {
       const mockLocalApi = createMockBucketApi();
       const customAllowed = [10, 20, 50];
 
-      const handler = createPaginationChangeHandler(
-        false,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi,
-        customAllowed
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: customAllowed,
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const updaterFn = vi.fn((old: PaginationState) => ({
@@ -957,17 +987,17 @@ describe("createPaginationChangeHandler", () => {
       const mockUrlApi = createMockBucketApi();
       const mockLocalApi = createMockBucketApi();
 
-      const handler = createPaginationChangeHandler(
-        false,
-        true,
-        "url",
-        "pageIndex",
-        "url",
-        "pageSize",
-        mockUrlApi,
-        mockLocalApi,
-        [] // Empty allowed values
-      );
+      const handler = createPaginationChangeHandler({
+        shouldPersistPageIndex: false,
+        shouldPersistPageSize: true,
+        pageIndexTarget: "url",
+        pageIndexKey: "pageIndex",
+        pageSizeTarget: "url",
+        pageSizeKey: "pageSize",
+        urlBucketApi: mockUrlApi,
+        localBucketApi: mockLocalApi,
+        allowedPageSizes: [], // Empty allowed values
+      });
 
       const currentState: PaginationState = { pageIndex: 0, pageSize: 10 };
       const newState: PaginationState = { pageIndex: 0, pageSize: 25 };

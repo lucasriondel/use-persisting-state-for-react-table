@@ -265,6 +265,7 @@ describe("computeInitialColumnFiltersState", () => {
                 variant: "select",
                 persistenceStorage: "url",
                 isLoading: false,
+                // @ts-expect-error - this is normal, we're testing the type coercion
                 options: undefined,
               },
             },

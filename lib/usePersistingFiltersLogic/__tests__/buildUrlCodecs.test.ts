@@ -49,8 +49,8 @@ describe("buildUrlCodecs", () => {
   describe("codec extraction", () => {
     it("extracts codec for URL persistence column", () => {
       const testCodec = {
-        parse: (s: string) => JSON.parse(s),
-        format: (v: unknown) => JSON.stringify(v),
+        parse: (s: string) => JSON.parse(s) as string,
+        format: (v: string) => JSON.stringify(v),
       };
 
       const columns: ColumnDef<TestData, unknown>[] = [
@@ -454,7 +454,7 @@ describe("buildUrlCodecs", () => {
       const complexCodec = {
         parse: (s: string) => {
           try {
-            return JSON.parse(s);
+            return JSON.parse(s) as string;
           } catch {
             return s;
           }
@@ -463,6 +463,7 @@ describe("buildUrlCodecs", () => {
           if (typeof v === "object") {
             return JSON.stringify(v);
           }
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           return String(v);
         },
         metadata: { type: "complex" },

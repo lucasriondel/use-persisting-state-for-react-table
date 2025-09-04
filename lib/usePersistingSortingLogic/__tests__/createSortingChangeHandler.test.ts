@@ -1,6 +1,7 @@
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
+import { SortingState } from "@tanstack/react-table";
+import { UrlApiActions } from "use-url-state-reacthook";
 import { describe, expect, it, Mock, vi } from "vitest";
-import { UrlApiActions } from "../../useUrlState";
-import { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
 import { createSortingChangeHandler } from "../createSortingChangeHandler";
 
 describe("createSortingChangeHandler", () => {
@@ -20,7 +21,7 @@ describe("createSortingChangeHandler", () => {
         "sortColumn",
         "sortDirection"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [{ id: "name", desc: true }];
 
       handler(newState, currentState);
@@ -74,7 +75,7 @@ describe("createSortingChangeHandler", () => {
         "sortDirection"
       );
       const currentState = [{ id: "name", desc: true }];
-      const newState = [];
+      const newState: SortingState = [];
 
       handler(newState, currentState);
 
@@ -127,7 +128,7 @@ describe("createSortingChangeHandler", () => {
         "sortColumn",
         "sortDirection"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [
         { id: "name", desc: true },
         { id: "age", desc: false },
@@ -156,7 +157,7 @@ describe("createSortingChangeHandler", () => {
         "sortColumn",
         "sortDirection"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [{ id: "email", desc: false }];
 
       handler(newState, currentState);
@@ -212,7 +213,7 @@ describe("createSortingChangeHandler", () => {
         "sortColumn",
         "sortDirection"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [{ id: "name", desc: true }];
 
       handler(newState, currentState);
@@ -240,7 +241,7 @@ describe("createSortingChangeHandler", () => {
         "sortDirection"
       );
       const currentState = [{ id: "name", desc: true }];
-      const newState = [];
+      const newState: SortingState = [];
 
       handler(newState, currentState);
 
@@ -268,7 +269,7 @@ describe("createSortingChangeHandler", () => {
         "customCol",
         "customDir"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [{ id: "name", desc: false }];
 
       handler(newState, currentState);
@@ -294,7 +295,7 @@ describe("createSortingChangeHandler", () => {
         "sortColumn",
         "sortDirection"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [{ id: "nested.field.name", desc: true }];
 
       handler(newState, currentState);
@@ -351,10 +352,10 @@ describe("createSortingChangeHandler", () => {
         "sortDirection"
       );
       const currentState = [{ id: "name", desc: false }];
-      const updater = vi.fn((old) => {
+      const updater = vi.fn((old: SortingState) => {
         // Toggle sort direction
-        return old.length > 0 && old[0].id === "name"
-          ? [{ id: "name", desc: !old[0].desc }]
+        return old.length > 0 && old[0]?.id === "name"
+          ? [{ id: "name", desc: !old[0]?.desc }]
           : [{ id: "name", desc: false }];
       });
 
@@ -438,7 +439,7 @@ describe("createSortingChangeHandler", () => {
         "sortColumn",
         "sortDirection"
       );
-      const currentState = [];
+      const currentState: SortingState = [];
       const newState = [{ id: "", desc: false }];
 
       handler(newState, currentState);

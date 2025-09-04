@@ -1,7 +1,7 @@
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
+import { UrlApiActions } from "use-url-state-reacthook";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { UrlApiActions } from "../../useUrlState";
-import { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
 import { persistInitialColumnFilters } from "../persistInitialColumnFilters";
 
 interface TestData {
@@ -261,6 +261,12 @@ describe("persistInitialColumnFilters", () => {
             filter: {
               variant: "select",
               persistenceStorage: "localStorage",
+              options: [
+                {
+                  value: "active",
+                  label: "Active",
+                },
+              ],
             },
           },
         },
@@ -292,6 +298,16 @@ describe("persistInitialColumnFilters", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "url",
+              options: [
+                {
+                  value: "tag1",
+                  label: "Tag 1",
+                },
+                {
+                  value: "tag2",
+                  label: "Tag 2",
+                },
+              ],
             },
           },
         },
@@ -333,6 +349,18 @@ describe("persistInitialColumnFilters", () => {
             filter: {
               variant: "select",
               persistenceStorage: "localStorage",
+              options: [
+                {
+                  // @ts-expect-error - this is normal, we're testing the type coercion
+                  value: true,
+                  label: "True",
+                },
+                {
+                  // @ts-expect-error - this is normal, we're testing the type coercion
+                  value: false,
+                  label: "False",
+                },
+              ],
             },
           },
         },
@@ -451,6 +479,12 @@ describe("persistInitialColumnFilters", () => {
             filter: {
               variant: "select",
               persistenceStorage: "url",
+              options: [
+                {
+                  value: "active",
+                  label: "Active",
+                },
+              ],
             },
           },
         },
@@ -616,6 +650,12 @@ describe("persistInitialColumnFilters", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "url",
+              options: [
+                {
+                  value: "tag1",
+                  label: "Tag 1",
+                },
+              ],
             },
           },
         },
@@ -846,6 +886,20 @@ describe("persistInitialColumnFilters", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "localStorage",
+              options: [
+                {
+                  value: "tag1",
+                  label: "Tag 1",
+                },
+                {
+                  value: "tag2",
+                  label: "Tag 2",
+                },
+                {
+                  value: "tag3",
+                  label: "Tag 3",
+                },
+              ],
             },
           },
         },

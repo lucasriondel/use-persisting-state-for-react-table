@@ -81,7 +81,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
     meta: {
       filter: {
         variant: "text",
@@ -93,12 +93,12 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
     meta: {
       filter: {
         variant: "select",
@@ -115,7 +115,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
     meta: {
       filter: {
         variant: "select",
@@ -134,8 +134,11 @@ const mockUsers: TestUser[] = Array.from({ length: 100 }, (_, i) => ({
   id: `user-${i + 1}`,
   name: `User ${i + 1}`,
   email: `user${i + 1}@example.com`,
-  role: (["admin", "user", "guest"] as const)[i % 3],
-  status: (["active", "inactive"] as const)[i % 2],
+  role: (["admin", "user", "guest"] as const)[i % 3] as
+    | "admin"
+    | "user"
+    | "guest",
+  status: (["active", "inactive"] as const)[i % 2] as "active" | "inactive",
   createdAt: new Date(2023, i % 12, (i % 28) + 1),
 }));
 
@@ -912,7 +915,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
 
       // Test with updater function
       act(() => {
-        result.current.handlers.onPaginationChange((prev) => ({
+        result.current.handlers.onPaginationChange((prev: PaginationState) => ({
           ...prev,
           pageIndex: prev.pageIndex + 1,
         }));

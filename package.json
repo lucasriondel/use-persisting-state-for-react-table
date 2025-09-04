@@ -26,8 +26,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "type-check": "tsc --noEmit",
-    "lint": "eslint lib --ext .ts,.tsx",
-    "lint:fix": "eslint lib --ext .ts,.tsx --fix",
+    "lint": "eslint lib e2e --ext .ts,.tsx",
+    "lint:fix": "eslint lib e2e --ext .ts,.tsx --fix",
     "clean": "rimraf dist",
     "prepublishOnly": "pnpm run clean && pnpm run build"
   },
@@ -82,6 +82,6 @@
   "dependencies": {
     "@lucasriondel/use-local-storage-reacthook": "^0.0.1",
     "@tanstack/react-query": "^5.85.9",
-    "use-url-state-reacthook": "^0.0.1"
+    "use-url-state-reacthook": "file:../use-url-state-reacthook"
   }
 }

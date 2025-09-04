@@ -1,6 +1,6 @@
+import type { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
+import type { UrlApiActions } from "use-url-state-reacthook";
 import { describe, expect, it, vi } from "vitest";
-import type { UrlApiActions } from "../../useUrlState";
-import type { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
 import { createGlobalFilterChangeHandler } from "../createGlobalFilterChangeHandler";
 
 // Mock bucket API for testing

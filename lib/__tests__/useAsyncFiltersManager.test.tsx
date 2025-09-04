@@ -1,6 +1,6 @@
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, MockContext, vi } from "vitest";
 import { MultiSelectMeta, SelectMeta } from "../types";
 import { useAsyncFiltersManager } from "../useAsyncFiltersManager";
 
@@ -39,7 +39,7 @@ describe("useAsyncFiltersManager", () => {
     mockGetColumnIdentifier.mockImplementation((col) => {
       if (col.id) return col.id;
       if ("accessorKey" in col && col.accessorKey)
-        return String((col as any).accessorKey);
+        return String(col.accessorKey);
       throw new Error(
         "Column must have either an 'id' or 'accessorKey' property defined"
       );
@@ -49,7 +49,7 @@ describe("useAsyncFiltersManager", () => {
   describe("Basic functionality", () => {
     it("should not run validation when columns are empty", () => {
       const sharedBuckets = createMockSharedBuckets();
-      
+
       renderHook(() =>
         useAsyncFiltersManager({
           columns: [],
@@ -66,10 +66,11 @@ describe("useAsyncFiltersManager", () => {
 
     it("should not run validation when columns are undefined", () => {
       const sharedBuckets = createMockSharedBuckets();
-      
+
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: undefined as any,
+          // @ts-expect-error - this is normal, we're testing the type coercion
+          columns: undefined,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -97,7 +98,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -128,7 +129,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -160,7 +161,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -190,7 +191,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -232,7 +233,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -240,10 +241,12 @@ describe("useAsyncFiltersManager", () => {
       );
 
       expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
+        columns[0]?.meta?.filter,
         "invalidRole"
       );
-      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({ role: undefined });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: undefined,
+      });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
     });
 
@@ -275,7 +278,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [{ id: "role", value: "admin" }], // State already matches bucket
           setColumnFilters: mockSetColumnFilters,
@@ -283,7 +286,7 @@ describe("useAsyncFiltersManager", () => {
       );
 
       expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
+        columns[0]?.meta?.filter,
         "admin"
       );
       expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
@@ -316,7 +319,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -325,7 +328,7 @@ describe("useAsyncFiltersManager", () => {
 
       expect(mockGetColumnIdentifier).not.toHaveBeenCalled(); // Should use filter key instead
       expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
+        columns[0]?.meta?.filter,
         "invalidRole"
       );
       expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
@@ -363,14 +366,14 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockSanitizeValue).toHaveBeenCalledWith(columns[0].meta?.filter, [
+      expect(mockSanitizeValue).toHaveBeenCalledWith(columns[0]?.meta?.filter, [
         "admin",
         "invalidRole",
         "user",
@@ -409,14 +412,16 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({ role: undefined });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: undefined,
+      });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
     });
   });
@@ -447,7 +452,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -495,19 +500,22 @@ describe("useAsyncFiltersManager", () => {
 
       mockSanitizeValue.mockReturnValue(undefined);
       mockGetColumnIdentifier.mockImplementation((col) =>
-        String((col as any).accessorKey)
+        // @ts-expect-error - TODO need to fix this
+        String(col.accessorKey)
       );
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({ role: undefined });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: undefined,
+      });
       expect(sharedBuckets.localBucketApi.patch).toHaveBeenCalledWith({
         department: undefined,
       });
@@ -540,7 +548,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -548,12 +556,46 @@ describe("useAsyncFiltersManager", () => {
       );
 
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
-
       // Test the function passed to setColumnFilters
-      const setterFunction = mockSetColumnFilters.mock.calls[0][0];
+      expect(mockSetColumnFilters).toHaveBeenCalledTimes(1);
+
+      if (!mockSetColumnFilters.mock.calls) {
+        throw new Error("mockSetColumnFilters.mock.calls is not defined");
+      }
+      if (!Array.isArray(mockSetColumnFilters.mock.calls)) {
+        throw new Error("mockSetColumnFilters.mock.calls is not an array");
+      }
+      if (mockSetColumnFilters.mock.calls.length < 1) {
+        throw new Error("mockSetColumnFilters.mock.calls has no values");
+      }
+
+      const firstCall = mockSetColumnFilters.mock.calls[0] as Array<
+        MockContext<unknown, unknown>["calls"][number]
+      >;
+      if (!firstCall) {
+        throw new Error("first call is not defined");
+      }
+      if (!Array.isArray(firstCall)) {
+        throw new Error("first call is not an array");
+      }
+      if (firstCall.length < 1) {
+        throw new Error("first call has no values");
+      }
+
+      const setterFunction = firstCall[0];
+      if (!setterFunction) {
+        throw new Error("setterFunction is not defined");
+      }
+      if (typeof setterFunction !== "function") {
+        throw new Error("setterFunction is not a function");
+      }
 
       // Test with undefined previous filters
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result1 = setterFunction(undefined);
+      if (!Array.isArray(result1)) {
+        throw new Error("result1 is not an array");
+      }
       expect(result1).toEqual([]);
 
       // Test with existing filters that should be preserved
@@ -561,6 +603,7 @@ describe("useAsyncFiltersManager", () => {
         { id: "name", value: "test" },
         { id: "role", value: "oldValue" }, // This should be removed
       ];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result2 = setterFunction(existingFilters);
       expect(result2).toEqual([{ id: "name", value: "test" }]);
     });
@@ -593,7 +636,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -601,11 +644,31 @@ describe("useAsyncFiltersManager", () => {
       );
 
       // Test the function passed to setColumnFilters
-      const setterFunction = mockSetColumnFilters.mock.calls[0][0];
+      const firstCall = mockSetColumnFilters.mock.calls[0] as Array<
+        MockContext<unknown, unknown>["calls"][number]
+      >;
+      if (!firstCall) {
+        throw new Error("first call is not defined");
+      }
+      if (!Array.isArray(firstCall)) {
+        throw new Error("first call is not an array");
+      }
+      if (firstCall.length < 1) {
+        throw new Error("first call has no values");
+      }
+
+      const setterFunction = firstCall[0];
+      if (!setterFunction) {
+        throw new Error("setterFunction is not defined");
+      }
+      if (typeof setterFunction !== "function") {
+        throw new Error("setterFunction is not a function");
+      }
 
       const existingFilters: ColumnFiltersState = [
         { id: "name", value: "test" },
       ];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = setterFunction(existingFilters);
       expect(result).toEqual([
         { id: "name", value: "test" },
@@ -640,7 +703,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [], // Empty state but bucket has value
           setColumnFilters: mockSetColumnFilters,
@@ -648,7 +711,9 @@ describe("useAsyncFiltersManager", () => {
       );
 
       // Should sync the value from bucket to state even though raw === sanitized
-      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({ role: "admin" });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: "admin",
+      });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
     });
 
@@ -677,7 +742,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [{ id: "role", value: "admin" }], // State already matches
           setColumnFilters: mockSetColumnFilters,
@@ -717,7 +782,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [
             { id: "role", value: ["admin", "invalidRole"] },
@@ -727,7 +792,9 @@ describe("useAsyncFiltersManager", () => {
       );
 
       // Should sync both bucket and state
-      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({ role: ["admin"] });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: ["admin"],
+      });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
     });
   });
@@ -758,7 +825,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -789,7 +856,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
       // Ensure the bucket is actually empty for this specific key
       delete sharedBuckets.urlBucket.role;
-      
+
       // Reset the mock to ensure clean state
       mockSanitizeValue.mockReset();
       mockSanitizeValue.mockReturnValue(undefined);
@@ -797,7 +864,7 @@ describe("useAsyncFiltersManager", () => {
 
       renderHook(() =>
         useAsyncFiltersManager({
-          columns: columns as any,
+          columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
@@ -806,7 +873,7 @@ describe("useAsyncFiltersManager", () => {
 
       // Debug: Check what sanitizeValue was called with
       expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
+        columns[0]?.meta?.filter,
         undefined
       );
 
@@ -838,7 +905,7 @@ describe("useAsyncFiltersManager", () => {
       const { rerender } = renderHook(
         ({ columns }) =>
           useAsyncFiltersManager({
-            columns: columns as any,
+            columns: columns,
             sharedBuckets,
             currentColumnFilters: [],
             setColumnFilters: mockSetColumnFilters,

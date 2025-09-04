@@ -70,17 +70,17 @@ export function usePersistingPaginationLogic<TData extends RowData>(
     sharedBuckets;
 
   const handlePaginationChange = useMemo(() => {
-    return createPaginationChangeHandler(
+    return createPaginationChangeHandler({
       shouldPersistPageIndex,
       shouldPersistPageSize,
-      pageIndexTarget ?? "url",
+      pageIndexTarget: pageIndexTarget ?? "url",
       pageIndexKey,
-      pageSizeTarget ?? "url",
+      pageSizeTarget: pageSizeTarget ?? "url",
       pageSizeKey,
       urlBucketApi,
       localBucketApi,
-      allowedPageSizes
-    );
+      allowedPageSizes,
+    });
   }, [
     shouldPersistPageIndex,
     shouldPersistPageSize,

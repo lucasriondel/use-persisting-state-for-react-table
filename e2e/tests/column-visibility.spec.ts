@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 
-async function waitForDataToLoad(page: any) {
+async function waitForDataToLoad(page: Page) {
   // Wait for loading indicator to disappear, indicating data has finished loading
   await expect(page.getByTestId("loading-data")).not.toBeVisible({
     timeout: 10000,
@@ -104,20 +104,7 @@ test.describe("Column Visibility Persistence", () => {
     await expect(page.getByTestId("cell-email-1")).not.toBeVisible();
 
     // Reload and verify all state persists
-    // const storageState = await context.storageState();
-
-    const storageStateFromLS = await page.evaluate(() => {
-      return localStorage.getItem("e2e-test-table");
-    });
-
-    // console.log(storageState.origins[0].localStorage);
-    console.log(storageStateFromLS);
-
     await page.reload();
-    // const storageState2 = await context.storageState();
-
-    // console.log(storageState.origins[0].localStorage);
-    // console.log(storageState2.origins[0].localStorage);
 
     await expect(page.getByTestId("header-email")).not.toBeVisible();
     await expect(page.getByTestId("status-filter")).toHaveValue("active");

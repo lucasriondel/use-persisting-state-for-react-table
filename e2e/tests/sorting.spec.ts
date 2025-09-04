@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 
-async function waitForDataToLoad(page: any) {
+async function waitForDataToLoad(page: Page) {
   // Wait for loading indicator to disappear, indicating data has finished loading
   await expect(page.getByTestId("loading-data")).not.toBeVisible({
     timeout: 10000,
@@ -127,9 +127,7 @@ test.describe("Sorting Persistence", () => {
     await waitForDataToLoad(page);
 
     // Get first row data before sorting
-    const firstRowBeforeSort = await page
-      .getByTestId("cell-firstName-1")
-      .textContent();
+    await page.getByTestId("cell-firstName-1").textContent();
 
     // Sort by firstName ascending
     await page.getByTestId("header-firstName").click();

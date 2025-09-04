@@ -81,31 +81,31 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
     enableSorting: true,
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
     enableSorting: true,
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
     enableSorting: true,
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
     enableSorting: true,
   },
   {
     accessorKey: "age",
     header: "Age",
-    cell: ({ row }) => row.getValue("age"),
+    cell: ({ row }) => row.getValue<number>("age"),
     enableSorting: true,
   },
 ];
@@ -460,7 +460,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
       // Verify data is sorted correctly
       const sortedRows = tableHook.current.table.getSortedRowModel().rows;
-      expect(sortedRows[0].original.name).toBe("Alice"); // First alphabetically
+      expect(sortedRows[0]?.original.name).toBe("Alice"); // First alphabetically
 
       // Toggle to descending
       act(() => {
@@ -471,7 +471,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
       // Verify data is sorted descending
       const sortedRowsDesc = tableHook.current.table.getSortedRowModel().rows;
-      expect(sortedRowsDesc[0].original.name).toBe("Eve"); // Last alphabetically
+      expect(sortedRowsDesc[0]?.original.name).toBe("Eve"); // Last alphabetically
 
       // Clear sorting
       act(() => {
@@ -535,8 +535,8 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
       // Verify age sorting
       const sortedByAge = tableHook.current.table.getSortedRowModel().rows;
-      expect(sortedByAge[0].original.age).toBe(22); // Youngest first
-      expect(sortedByAge[sortedByAge.length - 1].original.age).toBe(35); // Oldest last
+      expect(sortedByAge[0]?.original.age).toBe(22); // Youngest first
+      expect(sortedByAge[sortedByAge.length - 1]?.original.age).toBe(35); // Oldest last
     });
   });
 
@@ -827,7 +827,7 @@ describe("usePersistingSortingLogic Integration Tests", () => {
 
       // Initial unsorted data
       const unsortedRows = tableHook.current.table.getCoreRowModel().rows;
-      expect(unsortedRows[0].original.name).toBe("Alice");
+      expect(unsortedRows[0]?.original.name).toBe("Alice");
 
       // Sort by name ascending
       act(() => {
@@ -837,8 +837,8 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       expect(tableHook.current.sorting).toEqual([{ id: "name", desc: false }]);
 
       let sortedRows = tableHook.current.table.getSortedRowModel().rows;
-      expect(sortedRows[0].original.name).toBe("Alice");
-      expect(sortedRows[4].original.name).toBe("Eve");
+      expect(sortedRows[0]?.original.name).toBe("Alice");
+      expect(sortedRows[4]?.original.name).toBe("Eve");
 
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),
@@ -854,8 +854,8 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       expect(tableHook.current.sorting).toEqual([{ id: "name", desc: true }]);
 
       sortedRows = tableHook.current.table.getSortedRowModel().rows;
-      expect(sortedRows[0].original.name).toBe("Eve");
-      expect(sortedRows[4].original.name).toBe("Alice");
+      expect(sortedRows[0]?.original.name).toBe("Eve");
+      expect(sortedRows[4]?.original.name).toBe("Alice");
 
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),
@@ -871,8 +871,8 @@ describe("usePersistingSortingLogic Integration Tests", () => {
       expect(tableHook.current.sorting).toEqual([{ id: "age", desc: false }]);
 
       sortedRows = tableHook.current.table.getSortedRowModel().rows;
-      expect(sortedRows[0].original.age).toBe(22); // Eve - youngest
-      expect(sortedRows[4].original.age).toBe(35); // Charlie - oldest
+      expect(sortedRows[0]?.original.age).toBe(22); // Eve - youngest
+      expect(sortedRows[4]?.original.age).toBe(35); // Charlie - oldest
 
       // Clear all sorting
       act(() => {

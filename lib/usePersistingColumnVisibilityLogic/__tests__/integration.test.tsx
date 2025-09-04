@@ -77,22 +77,22 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
   },
 ];
 

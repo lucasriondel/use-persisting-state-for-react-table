@@ -1,7 +1,7 @@
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
-import { describe, expect, it, vi } from "vitest";
-import { UrlApiActions } from "../../useUrlState";
-import { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
+import { UrlApiActions } from "use-url-state-reacthook";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createColumnFiltersChangeHandler } from "../createColumnFiltersChangeHandler";
 
 interface TestData {
@@ -243,6 +243,11 @@ describe("createColumnFiltersChangeHandler", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "url",
+              options: [
+                { value: "tag1", label: "Tag 1" },
+                { value: "tag2", label: "Tag 2" },
+                { value: "tag3", label: "Tag 3" },
+              ],
             },
           },
         },
@@ -336,6 +341,11 @@ describe("createColumnFiltersChangeHandler", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "url",
+              options: [
+                { value: "tag1", label: "Tag 1" },
+                { value: "tag2", label: "Tag 2" },
+                { value: "tag3", label: "Tag 3" },
+              ],
             },
           },
         },
@@ -402,6 +412,18 @@ describe("createColumnFiltersChangeHandler", () => {
             filter: {
               variant: "select",
               persistenceStorage: "localStorage",
+              options: [
+                {
+                  // @ts-expect-error - this is normal, we're testing the type coercion
+                  value: false,
+                  label: "False",
+                },
+                {
+                  // @ts-expect-error - this is normal, we're testing the type coercion
+                  value: true,
+                  label: "True",
+                },
+              ],
             },
           },
         },
@@ -511,6 +533,10 @@ describe("createColumnFiltersChangeHandler", () => {
             filter: {
               variant: "select",
               persistenceStorage: "url",
+              options: [
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ],
             },
           },
         },
@@ -613,6 +639,10 @@ describe("createColumnFiltersChangeHandler", () => {
             filter: {
               variant: "select",
               persistenceStorage: "url",
+              options: [
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ],
             },
           },
         },

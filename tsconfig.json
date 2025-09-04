@@ -29,14 +29,15 @@
     "exactOptionalPropertyTypes": true
   },
   "include": [
-    "lib/**/*"
+    "lib/**/*",
+    "e2e/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
+    // "**/*.test.ts",
+    // "**/*.test.tsx",
+    // "**/*.spec.ts",
+    // "**/*.spec.tsx"
   ]
 }

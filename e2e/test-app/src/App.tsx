@@ -1,12 +1,13 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
+  ColumnFilter,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { usePersistingStateForReactTable } from "../../../lib/index";
 import { Person, PersonsRequest, fetchPersons } from "./api";
 
@@ -36,7 +37,7 @@ const columns = [
     header: "Age",
     cell: (info) => info.getValue(),
     filterFn: (row, columnId, filterValue) => {
-      const age = row.getValue(columnId) as number;
+      const age = row.getValue(columnId);
       return age === filterValue;
     },
     meta: {
@@ -51,7 +52,7 @@ const columns = [
     header: "Status",
     cell: (info) => info.getValue(),
     filterFn: (row, columnId, filterValue) => {
-      const status = row.getValue(columnId) as string;
+      const status = row.getValue(columnId);
       return status === filterValue;
     },
     meta: {
@@ -135,7 +136,7 @@ function App() {
     data: apiResponse?.data || [],
     columns,
     state,
-    pageCount: apiResponse?.pageCount,
+    pageCount: apiResponse?.pageCount ?? 0,
     ...handlers,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
@@ -294,7 +295,7 @@ function App() {
               data-testid="age-filter"
               type="number"
               value={
-                (state.columnFilters.find((f) => f.id === "age")
+                (state.columnFilters.find((f: ColumnFilter) => f.id === "age")
                   ?.value as number) || ""
               }
               onChange={(e) => {
@@ -317,8 +318,9 @@ function App() {
               id="status-filter"
               data-testid="status-filter"
               value={
-                (state.columnFilters.find((f) => f.id === "status")
-                  ?.value as string) || ""
+                (state.columnFilters.find(
+                  (f: ColumnFilter) => f.id === "status"
+                )?.value as string) || ""
               }
               onChange={(e) => {
                 const value = e.target.value || undefined;

@@ -5,8 +5,7 @@ import typescriptParser from "@typescript-eslint/parser";
 export default [
   js.configs.recommended,
   {
-    files: ["lib/**/*.{ts,tsx}"],
-    ignores: ["lib/**/*.test.{ts,tsx}", "lib/**/*.spec.{ts,tsx}"],
+    files: ["lib/**/*.{ts,tsx}", "e2e/**/*.{ts,tsx}"],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -30,6 +29,7 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-non-null-assertion": "warn",
       "@typescript-eslint/no-unsafe-argument": "warn",
       "prefer-const": "error",

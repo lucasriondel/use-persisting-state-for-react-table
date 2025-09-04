@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 
-async function waitForDataToLoad(page: any) {
+async function waitForDataToLoad(page: Page) {
   // Wait for loading indicator to disappear, indicating data has finished loading
   await expect(page.getByTestId("loading-data")).not.toBeVisible({
     timeout: 10000,

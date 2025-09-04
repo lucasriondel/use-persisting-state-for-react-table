@@ -80,27 +80,27 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
   },
   {
     accessorKey: "department",
     header: "Department",
-    cell: ({ row }) => row.getValue("department"),
+    cell: ({ row }) => row.getValue<string>("department"),
   },
 ];
 
@@ -393,7 +393,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
       // Should filter to only Alice Smith
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "table-filter",
@@ -480,7 +480,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       // Filter by email domain
       act(() => {
@@ -621,7 +621,9 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       // Use function updater
       act(() => {
-        tableHook.current.table.setGlobalFilter((prev) => prev + "Sales");
+        tableHook.current.table.setGlobalFilter(
+          (prev: string) => prev + "Sales"
+        );
       });
 
       expect(tableHook.current.globalFilter).toBe("Sales");
@@ -911,7 +913,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       // Search by partial email
       act(() => {
@@ -920,7 +922,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.email).toBe("bob@example.com");
+      expect(filteredRows[0]?.original.email).toBe("bob@example.com");
 
       // Clear search
       act(() => {
@@ -990,7 +992,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       // Search with special characters
       act(() => {

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { ColumnDef } from "@tanstack/react-table";
+import { describe, expect, it } from "vitest";
 import { flattenColumns } from "../flattenColumns";
 
 type ColumnDefMaybeGroup<TData> = ColumnDef<TData, unknown> & {
@@ -22,7 +22,7 @@ describe("flattenColumns", () => {
 
     it("returns single column as-is", () => {
       const columns: ColumnDef<TestData, unknown>[] = [
-        { id: "name", accessorKey: "name" }
+        { id: "name", accessorKey: "name" },
       ];
       const result = flattenColumns(columns);
       expect(result).toEqual(columns);
@@ -32,7 +32,7 @@ describe("flattenColumns", () => {
       const columns: ColumnDef<TestData, unknown>[] = [
         { id: "name", accessorKey: "name" },
         { id: "age", accessorKey: "age" },
-        { id: "email", accessorKey: "email" }
+        { id: "email", accessorKey: "email" },
       ];
       const result = flattenColumns(columns);
       expect(result).toEqual(columns);
@@ -46,12 +46,12 @@ describe("flattenColumns", () => {
         header: "Personal Info",
         columns: [
           { id: "name", accessorKey: "name" },
-          { id: "age", accessorKey: "age" }
-        ]
+          { id: "age", accessorKey: "age" },
+        ],
       };
       const columns = [groupColumn];
       const result = flattenColumns(columns);
-      
+
       expect(result).toHaveLength(3);
       expect(result[0]).toEqual(groupColumn);
       expect(result[1]).toEqual({ id: "name", accessorKey: "name" });
@@ -64,19 +64,17 @@ describe("flattenColumns", () => {
         header: "Personal",
         columns: [
           { id: "name", accessorKey: "name" },
-          { id: "age", accessorKey: "age" }
-        ]
+          { id: "age", accessorKey: "age" },
+        ],
       };
       const contactGroup: ColumnDefMaybeGroup<TestData> = {
         id: "contact",
         header: "Contact",
-        columns: [
-          { id: "email", accessorKey: "email" }
-        ]
+        columns: [{ id: "email", accessorKey: "email" }],
       };
       const columns = [personalGroup, contactGroup];
       const result = flattenColumns(columns);
-      
+
       expect(result).toHaveLength(5);
       expect(result[0]).toEqual(personalGroup);
       expect(result[1]).toEqual({ id: "name", accessorKey: "name" });
@@ -95,14 +93,14 @@ describe("flattenColumns", () => {
             header: "Subgroup",
             columns: [
               { id: "name", accessorKey: "name" },
-              { id: "age", accessorKey: "age" }
-            ]
-          } as ColumnDefMaybeGroup<TestData>
-        ]
+              { id: "age", accessorKey: "age" },
+            ],
+          } as ColumnDefMaybeGroup<TestData>,
+        ],
       };
       const columns = [nestedGroup];
       const result = flattenColumns(columns);
-      
+
       expect(result).toHaveLength(4);
       expect(result[0]).toEqual(nestedGroup);
       expect(result[1]).toEqual({
@@ -110,26 +108,29 @@ describe("flattenColumns", () => {
         header: "Subgroup",
         columns: [
           { id: "name", accessorKey: "name" },
-          { id: "age", accessorKey: "age" }
-        ]
+          { id: "age", accessorKey: "age" },
+        ],
       });
       expect(result[2]).toEqual({ id: "name", accessorKey: "name" });
       expect(result[3]).toEqual({ id: "age", accessorKey: "age" });
     });
 
     it("handles mixed columns and groups", () => {
-      const standaloneColumn: ColumnDef<TestData, unknown> = { id: "id", accessorKey: "id" };
+      const standaloneColumn: ColumnDef<TestData, unknown> = {
+        id: "id",
+        accessorKey: "id",
+      };
       const group: ColumnDefMaybeGroup<TestData> = {
         id: "info",
         header: "Info",
         columns: [
           { id: "name", accessorKey: "name" },
-          { id: "email", accessorKey: "email" }
-        ]
+          { id: "email", accessorKey: "email" },
+        ],
       };
       const columns = [standaloneColumn, group];
       const result = flattenColumns(columns);
-      
+
       expect(result).toHaveLength(4);
       expect(result[0]).toEqual(standaloneColumn);
       expect(result[1]).toEqual(group);
@@ -143,24 +144,22 @@ describe("flattenColumns", () => {
       const emptyGroup: ColumnDefMaybeGroup<TestData> = {
         id: "empty",
         header: "Empty Group",
-        columns: []
+        columns: [],
       };
       const columns = [emptyGroup];
       const result = flattenColumns(columns);
-      
+
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(emptyGroup);
     });
-
     it("handles groups with undefined columns", () => {
       const undefinedGroup: ColumnDefMaybeGroup<TestData> = {
         id: "undefined",
         header: "Undefined Group",
-        columns: undefined
       };
       const columns = [undefinedGroup];
       const result = flattenColumns(columns);
-      
+
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(undefinedGroup);
     });
@@ -176,19 +175,24 @@ describe("flattenColumns", () => {
             {
               id: "subgroup1",
               header: "Subgroup 1",
-              columns: [
-                { id: "col3", accessorKey: "age" }
-              ]
-            } as ColumnDefMaybeGroup<TestData>
-          ]
+              columns: [{ id: "col3", accessorKey: "age" }],
+            } as ColumnDefMaybeGroup<TestData>,
+          ],
         },
-        { id: "col4", accessorKey: "email" }
+        { id: "col4", accessorKey: "email" },
       ];
-      
+
       const result = flattenColumns(complexStructure);
-      const ids = result.map(col => col.id);
-      
-      expect(ids).toEqual(["col1", "group1", "col2", "subgroup1", "col3", "col4"]);
+      const ids = result.map((col) => col.id);
+
+      expect(ids).toEqual([
+        "col1",
+        "group1",
+        "col2",
+        "subgroup1",
+        "col3",
+        "col4",
+      ]);
     });
 
     it("handles deeply nested groups", () => {
@@ -198,24 +202,27 @@ describe("flattenColumns", () => {
         columns: [
           {
             id: "level2",
-            header: "Level 2", 
+            header: "Level 2",
             columns: [
               {
                 id: "level3",
                 header: "Level 3",
-                columns: [
-                  { id: "deepCol", accessorKey: "name" }
-                ]
-              } as ColumnDefMaybeGroup<TestData>
-            ]
-          } as ColumnDefMaybeGroup<TestData>
-        ]
+                columns: [{ id: "deepCol", accessorKey: "name" }],
+              } as ColumnDefMaybeGroup<TestData>,
+            ],
+          } as ColumnDefMaybeGroup<TestData>,
+        ],
       };
-      
+
       const result = flattenColumns([deeplyNested]);
-      
+
       expect(result).toHaveLength(4);
-      expect(result.map(col => col.id)).toEqual(["level1", "level2", "level3", "deepCol"]);
+      expect(result.map((col) => col.id)).toEqual([
+        "level1",
+        "level2",
+        "level3",
+        "deepCol",
+      ]);
     });
 
     it("maintains reference equality for columns", () => {
@@ -223,11 +230,11 @@ describe("flattenColumns", () => {
       const group: ColumnDefMaybeGroup<TestData> = {
         id: "group",
         header: "Group",
-        columns: [originalColumn]
+        columns: [originalColumn],
       };
-      
+
       const result = flattenColumns([group]);
-      
+
       expect(result[1]).toBe(originalColumn); // Same reference
     });
   });
@@ -237,11 +244,11 @@ describe("flattenColumns", () => {
       interface CustomData {
         customField: string;
       }
-      
+
       const customColumns: ColumnDef<CustomData, unknown>[] = [
-        { id: "custom", accessorKey: "customField" }
+        { id: "custom", accessorKey: "customField" },
       ];
-      
+
       const result = flattenColumns(customColumns);
       expect(result).toEqual(customColumns);
     });

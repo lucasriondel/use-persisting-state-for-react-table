@@ -85,17 +85,17 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
     meta: {
       title: "Role",
       filter: {
@@ -114,14 +114,16 @@ const testColumns: ColumnDef<TestUser>[] = [
       },
     },
     filterFn: (row, id, value) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!value || value.length === 0) return true;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return value.includes(row.getValue(id));
     },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
     meta: {
       title: "Status",
       filter: {
@@ -140,14 +142,16 @@ const testColumns: ColumnDef<TestUser>[] = [
       },
     },
     filterFn: (row, id, value) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!value || value.length === 0) return true;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return value.includes(row.getValue(id));
     },
   },
   {
     accessorKey: "department",
     header: "Department",
-    cell: ({ row }) => row.getValue("department"),
+    cell: ({ row }) => row.getValue<string>("department"),
     meta: {
       title: "Department",
       filter: {
@@ -170,7 +174,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "birthDate",
     header: "Birth Date",
-    cell: ({ row }) => row.getValue("birthDate"),
+    cell: ({ row }) => row.getValue<string>("birthDate"),
     meta: {
       title: "Birth Date",
       filter: {
@@ -185,11 +189,13 @@ const testColumns: ColumnDef<TestUser>[] = [
       },
     },
     filterFn: (row, id, value) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!value || value.length !== 2) return true;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const [start, end] = value;
       if (!start && !end) return true;
 
-      const rowDate = new Date(row.getValue(id) as string);
+      const rowDate = new Date(row.getValue(id));
       if (start && rowDate < new Date(start)) return false;
       if (end && rowDate > new Date(end)) return false;
       return true;
@@ -198,7 +204,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "salary",
     header: "Salary",
-    cell: ({ row }) => row.getValue("salary"),
+    cell: ({ row }) => row.getValue<string>("salary"),
     meta: {
       title: "Salary",
       filter: {
@@ -215,9 +221,12 @@ const testColumns: ColumnDef<TestUser>[] = [
       },
     },
     filterFn: (row, id, value) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!value || value.length !== 2) return true;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const [min, max] = value;
-      const rowValue = row.getValue(id) as number;
+
+      const rowValue = row.getValue<number>(id);
 
       if (min !== undefined && rowValue < min) return false;
       if (max !== undefined && rowValue > max) return false;
@@ -227,7 +236,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "projects",
     header: "Projects",
-    cell: ({ row }) => row.getValue("projects"),
+    cell: ({ row }) => row.getValue<string>("projects"),
     // No filter meta - should not be filterable
   },
 ];
@@ -766,7 +775,7 @@ describe("usePersistingFiltersLogic Integration Tests", () => {
 
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1); // Only Alice is admin and active
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       expect(mockHistory.replaceState).toHaveBeenCalledWith(
         expect.any(Object),
