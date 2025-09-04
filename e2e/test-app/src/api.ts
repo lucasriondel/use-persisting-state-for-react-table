@@ -9,8 +9,10 @@ export type Person = {
   age: number;
   status: "active" | "inactive";
   email: string;
-  birthdate?: string;
-  hiringDate?: string;
+  birthdate: string;
+  hiringDate: string;
+  salary: number;
+  teams: string[];
 };
 
 // API Request/Response types
@@ -63,7 +65,8 @@ export const fetchPersons = async (
         person.firstName.toLowerCase().includes(searchTerm) ||
         person.lastName.toLowerCase().includes(searchTerm) ||
         person.email.toLowerCase().includes(searchTerm) ||
-        person.status.toLowerCase().includes(searchTerm)
+        person.status.toLowerCase().includes(searchTerm) ||
+        person.teams.some(team => team.toLowerCase().includes(searchTerm))
     );
   }
 
@@ -88,6 +91,55 @@ export const fetchPersons = async (
       filteredPersons = filteredPersons.filter(
         (person) => person.status === status
       );
+    }
+
+    if (filter.id === "birthdate") {
+      const filterDate = new Date(filter.value as string);
+      filteredPersons = filteredPersons.filter((person) => {
+        const birthdate = new Date(person.birthdate);
+        return birthdate.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    if (filter.id === "hiringDate") {
+      const { from, to } = filter.value as { from?: string; to?: string };
+      filteredPersons = filteredPersons.filter((person) => {
+        const hiringDate = new Date(person.hiringDate);
+        
+        if (from && to) {
+          const fromDate = new Date(from);
+          const toDate = new Date(to);
+          return hiringDate >= fromDate && hiringDate <= toDate;
+        } else if (from) {
+          const fromDate = new Date(from);
+          return hiringDate >= fromDate;
+        } else if (to) {
+          const toDate = new Date(to);
+          return hiringDate <= toDate;
+        }
+        return true;
+      });
+    }
+
+    if (filter.id === "salary") {
+      const { min, max } = filter.value as { min?: number; max?: number };
+      filteredPersons = filteredPersons.filter((person) => {
+        if (min !== undefined && max !== undefined) {
+          return person.salary >= min && person.salary <= max;
+        } else if (min !== undefined) {
+          return person.salary >= min;
+        } else if (max !== undefined) {
+          return person.salary <= max;
+        }
+        return true;
+      });
+    }
+
+    if (filter.id === "teams") {
+      const selectedTeams = filter.value as string[];
+      filteredPersons = filteredPersons.filter((person) => {
+        return selectedTeams.some(team => person.teams.includes(team));
+      });
     }
   });
 

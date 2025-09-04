@@ -71,6 +71,96 @@ const columns = [
     header: "Email",
     cell: (info) => info.getValue(),
   }),
+  columnHelper.accessor("birthdate", {
+    header: "Birth Date",
+    cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+    filterFn: (row, columnId, filterValue) => {
+      const birthdate = new Date(row.getValue(columnId));
+      const filterDate = new Date(filterValue);
+      return birthdate.toDateString() === filterDate.toDateString();
+    },
+    meta: {
+      filter: {
+        variant: "date" as const,
+        persistenceStorage: "url" as const,
+        key: "birthdate-filter",
+      },
+    },
+  }),
+  columnHelper.accessor("hiringDate", {
+    header: "Hiring Date",
+    cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+    filterFn: (row, columnId, filterValue) => {
+      const hiringDate = new Date(row.getValue(columnId));
+      const { from, to } = filterValue as { from?: string; to?: string };
+      
+      if (from && to) {
+        const fromDate = new Date(from);
+        const toDate = new Date(to);
+        return hiringDate >= fromDate && hiringDate <= toDate;
+      } else if (from) {
+        const fromDate = new Date(from);
+        return hiringDate >= fromDate;
+      } else if (to) {
+        const toDate = new Date(to);
+        return hiringDate <= toDate;
+      }
+      return true;
+    },
+    meta: {
+      filter: {
+        variant: "dateRange" as const,
+        persistenceStorage: "url" as const,
+        key: "hiring-date-filter",
+      },
+    },
+  }),
+  columnHelper.accessor("salary", {
+    header: "Salary",
+    cell: (info) => `$${info.getValue().toLocaleString()}`,
+    filterFn: (row, columnId, filterValue) => {
+      const salary = row.getValue(columnId) as number;
+      const { min, max } = filterValue as { min?: number; max?: number };
+      
+      if (min !== undefined && max !== undefined) {
+        return salary >= min && salary <= max;
+      } else if (min !== undefined) {
+        return salary >= min;
+      } else if (max !== undefined) {
+        return salary <= max;
+      }
+      return true;
+    },
+    meta: {
+      filter: {
+        variant: "numberRange" as const,
+        persistenceStorage: "url" as const,
+        key: "salary-filter",
+      },
+    },
+  }),
+  columnHelper.accessor("teams", {
+    header: "Teams",
+    cell: (info) => info.getValue().join(", "),
+    filterFn: (row, columnId, filterValue) => {
+      const teams = row.getValue(columnId) as string[];
+      const selectedTeams = filterValue as string[];
+      return selectedTeams.some(team => teams.includes(team));
+    },
+    meta: {
+      filter: {
+        variant: "multiSelect" as const,
+        persistenceStorage: "url" as const,
+        key: "teams-filter",
+        options: [
+          { value: "finance", label: "Finance" },
+          { value: "sales", label: "Sales" },
+          { value: "hr", label: "HR" },
+          { value: "dev", label: "Development" },
+        ],
+      },
+    },
+  }),
 ];
 
 function App() {
@@ -287,7 +377,7 @@ function App() {
       {/* Column Filters */}
       <div style={{ marginBottom: "20px" }}>
         <strong>Column Filters:</strong>
-        <div style={{ display: "flex", gap: "15px", marginTop: "10px" }}>
+        <div style={{ display: "flex", gap: "15px", marginTop: "10px", flexWrap: "wrap" }}>
           <div>
             <label htmlFor="age-filter">Age: </label>
             <input
@@ -336,6 +426,160 @@ function App() {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+          </div>
+
+          <div>
+            <label htmlFor="birthdate-filter">Birth Date: </label>
+            <input
+              id="birthdate-filter"
+              data-testid="birthdate-filter"
+              type="date"
+              value={
+                (state.columnFilters.find((f: ColumnFilter) => f.id === "birthdate")
+                  ?.value as string) || ""
+              }
+              onChange={(e) => {
+                const value = e.target.value || undefined;
+                table.setColumnFilters((prev) =>
+                  prev
+                    .filter((f) => f.id !== "birthdate")
+                    .concat(value ? [{ id: "birthdate", value }] : [])
+                );
+              }}
+              style={{ padding: "5px" }}
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <label>Hiring Date Range:</label>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <input
+                id="hiring-date-from-filter"
+                data-testid="hiring-date-from-filter"
+                type="date"
+                placeholder="From"
+                value={
+                  ((state.columnFilters.find((f: ColumnFilter) => f.id === "hiringDate")
+                    ?.value as { from?: string; to?: string })?.from) || ""
+                }
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find((f: ColumnFilter) => f.id === "hiringDate")?.value as { from?: string; to?: string } || {};
+                  const value = e.target.value ? { ...currentFilter, from: e.target.value } : { ...currentFilter, from: undefined };
+                  
+                  table.setColumnFilters((prev) =>
+                    prev
+                      .filter((f) => f.id !== "hiringDate")
+                      .concat((value.from || value.to) ? [{ id: "hiringDate", value }] : [])
+                  );
+                }}
+                style={{ padding: "5px", fontSize: "12px" }}
+              />
+              <input
+                id="hiring-date-to-filter"
+                data-testid="hiring-date-to-filter"
+                type="date"
+                placeholder="To"
+                value={
+                  ((state.columnFilters.find((f: ColumnFilter) => f.id === "hiringDate")
+                    ?.value as { from?: string; to?: string })?.to) || ""
+                }
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find((f: ColumnFilter) => f.id === "hiringDate")?.value as { from?: string; to?: string } || {};
+                  const value = e.target.value ? { ...currentFilter, to: e.target.value } : { ...currentFilter, to: undefined };
+                  
+                  table.setColumnFilters((prev) =>
+                    prev
+                      .filter((f) => f.id !== "hiringDate")
+                      .concat((value.from || value.to) ? [{ id: "hiringDate", value }] : [])
+                  );
+                }}
+                style={{ padding: "5px", fontSize: "12px" }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <label>Salary Range:</label>
+            <div style={{ display: "flex", gap: "5px" }}>
+              <input
+                id="salary-min-filter"
+                data-testid="salary-min-filter"
+                type="number"
+                placeholder="Min"
+                value={
+                  ((state.columnFilters.find((f: ColumnFilter) => f.id === "salary")
+                    ?.value as { min?: number; max?: number })?.min) || ""
+                }
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find((f: ColumnFilter) => f.id === "salary")?.value as { min?: number; max?: number } || {};
+                  const value = e.target.value ? { ...currentFilter, min: Number(e.target.value) } : { ...currentFilter, min: undefined };
+                  
+                  table.setColumnFilters((prev) =>
+                    prev
+                      .filter((f) => f.id !== "salary")
+                      .concat((value.min !== undefined || value.max !== undefined) ? [{ id: "salary", value }] : [])
+                  );
+                }}
+                style={{ padding: "5px", width: "80px", fontSize: "12px" }}
+              />
+              <input
+                id="salary-max-filter"
+                data-testid="salary-max-filter"
+                type="number"
+                placeholder="Max"
+                value={
+                  ((state.columnFilters.find((f: ColumnFilter) => f.id === "salary")
+                    ?.value as { min?: number; max?: number })?.max) || ""
+                }
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find((f: ColumnFilter) => f.id === "salary")?.value as { min?: number; max?: number } || {};
+                  const value = e.target.value ? { ...currentFilter, max: Number(e.target.value) } : { ...currentFilter, max: undefined };
+                  
+                  table.setColumnFilters((prev) =>
+                    prev
+                      .filter((f) => f.id !== "salary")
+                      .concat((value.min !== undefined || value.max !== undefined) ? [{ id: "salary", value }] : [])
+                  );
+                }}
+                style={{ padding: "5px", width: "80px", fontSize: "12px" }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <label>Teams:</label>
+            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+              {["finance", "sales", "hr", "dev"].map((team) => {
+                const currentTeams = (state.columnFilters.find((f: ColumnFilter) => f.id === "teams")?.value as string[]) || [];
+                const isChecked = currentTeams.includes(team);
+                
+                return (
+                  <label key={team} style={{ display: "flex", alignItems: "center", fontSize: "12px" }}>
+                    <input
+                      type="checkbox"
+                      data-testid={`teams-filter-${team}`}
+                      checked={isChecked}
+                      onChange={(e) => {
+                        let newTeams: string[];
+                        if (e.target.checked) {
+                          newTeams = [...currentTeams, team];
+                        } else {
+                          newTeams = currentTeams.filter(t => t !== team);
+                        }
+                        
+                        table.setColumnFilters((prev) =>
+                          prev
+                            .filter((f) => f.id !== "teams")
+                            .concat(newTeams.length > 0 ? [{ id: "teams", value: newTeams }] : [])
+                        );
+                      }}
+                      style={{ marginRight: "3px" }}
+                    />
+                    {team.charAt(0).toUpperCase() + team.slice(1)}
+                  </label>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
