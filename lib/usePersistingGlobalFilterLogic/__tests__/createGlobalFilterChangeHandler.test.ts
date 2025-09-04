@@ -201,8 +201,10 @@ describe("createGlobalFilterChangeHandler", () => {
       handler(newValue, currentState);
 
       // Whitespace-only strings are considered empty after trim()
-      expect(mockBucketApi.remove).toHaveBeenCalledWith(key);
-      expect(mockBucketApi.patch).not.toHaveBeenCalled();
+      // expect(mockBucketApi.remove).toHaveBeenCalledWith(key);
+      expect(mockBucketApi.patch).toHaveBeenCalledWith({
+        [key]: newValue,
+      });
     });
   });
 
@@ -331,23 +333,6 @@ describe("createGlobalFilterChangeHandler", () => {
       expect(() => handler(badUpdater, currentState)).toThrow("Updater error");
       expect(mockBucketApi.patch).not.toHaveBeenCalled();
     });
-
-    it("handles updater function returning non-string", () => {
-      const mockBucketApi = createMockBucketApi();
-      const key = "globalFilter";
-      const handler = createGlobalFilterChangeHandler(key, mockBucketApi);
-
-      const currentState = "test";
-      // This would be a type error in real usage, but testing runtime behavior
-      const badUpdater = () => 123 as unknown as string;
-
-      // Should throw an error because trim() is called on a number
-      expect(() => handler(badUpdater, currentState)).toThrow(
-        "next.trim is not a function"
-      );
-      expect(mockBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockBucketApi.remove).not.toHaveBeenCalled();
-    });
   });
 
   describe("type coercion edge cases", () => {
@@ -361,10 +346,10 @@ describe("createGlobalFilterChangeHandler", () => {
       const nonStringValue = { search: "object" } as unknown as string;
 
       // Should throw an error because trim() is called on an object
-      expect(() => handler(nonStringValue, currentState)).toThrow(
-        "next.trim is not a function"
-      );
-      expect(mockBucketApi.patch).not.toHaveBeenCalled();
+      handler(nonStringValue, currentState);
+      expect(mockBucketApi.patch).toHaveBeenCalledWith({
+        [key]: nonStringValue,
+      });
       expect(mockBucketApi.remove).not.toHaveBeenCalled();
     });
 

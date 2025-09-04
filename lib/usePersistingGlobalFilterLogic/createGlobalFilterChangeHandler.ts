@@ -25,7 +25,7 @@ export function createGlobalFilterChangeHandler(
 
     // If the value is empty, remove the key from the bucket
     // If the value has content, update the bucket
-    if (!next || next.trim() === "") {
+    if (!next) {
       bucketApi.remove(key);
     } else {
       bucketApi.patch({ [key]: next });
