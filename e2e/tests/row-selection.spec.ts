@@ -1,13 +1,5 @@
-import { expect, Page, test } from "@playwright/test";
-
-async function waitForDataToLoad(page: Page) {
-  // Wait for loading indicator to disappear, indicating data has finished loading
-  await expect(page.getByTestId("loading-data")).not.toBeVisible({
-    timeout: 10000,
-  });
-  // Wait for table to be visible
-  await expect(page.getByTestId("data-table")).toBeVisible();
-}
+import { expect, test } from "@playwright/test";
+import { waitForDataToLoad } from "./helpers";
 
 test.describe("Row Selection Persistence", () => {
   test.beforeEach(async ({ page }) => {

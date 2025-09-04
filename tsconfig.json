@@ -29,8 +29,7 @@
     "exactOptionalPropertyTypes": true
   },
   "include": [
-    "lib/**/*",
-    "e2e/**/*"
+    "lib/**/*"
   ],
   "exclude": [
     "node_modules",

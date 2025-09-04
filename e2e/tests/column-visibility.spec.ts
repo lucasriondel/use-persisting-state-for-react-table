@@ -1,13 +1,5 @@
-import { expect, Page, test } from "@playwright/test";
-
-async function waitForDataToLoad(page: Page) {
-  // Wait for loading indicator to disappear, indicating data has finished loading
-  await expect(page.getByTestId("loading-data")).not.toBeVisible({
-    timeout: 10000,
-  });
-  // Wait for table to be visible
-  await expect(page.getByTestId("data-table")).toBeVisible();
-}
+import { expect, test } from "@playwright/test";
+import { waitForDataToLoad } from "./helpers";
 
 test.describe("Column Visibility Persistence", () => {
   test.beforeEach(async ({ page }) => {
@@ -35,10 +27,10 @@ test.describe("Column Visibility Persistence", () => {
     await expect(page.getByTestId("cell-email-1")).not.toBeVisible();
 
     // Check localStorage contains the visibility setting
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const visibility = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+
       return data ? JSON.parse(data).visibility : null;
     });
     expect(visibility).toEqual({ email: false });
@@ -78,11 +70,10 @@ test.describe("Column Visibility Persistence", () => {
     await expect(page.getByTestId("cell-email-1")).toBeVisible();
 
     // Check localStorage reflects the change
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const visibility = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return data ? JSON.parse(data).visibility : null;
     });
     expect(visibility).toEqual({ email: true });
@@ -184,10 +175,10 @@ test.describe("Column Visibility Persistence", () => {
     expect(afterShowHeaders).toBe(6);
 
     // Check that localStorage reflects the final state
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const visibility = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+
       return data ? JSON.parse(data).visibility : null;
     });
     expect(visibility).toEqual({ email: true });
@@ -205,10 +196,10 @@ test.describe("Column Visibility Persistence", () => {
     await page.getByTestId("toggle-email-column").click();
 
     // Verify visibility is stored in localStorage
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     let visibility = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+
       return data ? JSON.parse(data).visibility : null;
     });
     expect(visibility).toEqual({ email: false });
@@ -217,10 +208,10 @@ test.describe("Column Visibility Persistence", () => {
     await page.getByTestId("toggle-email-column").click();
 
     // When back to default, the visibility setting should be cleaned up or set to true
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     visibility = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+
       return data ? JSON.parse(data).visibility : null;
     });
     expect(visibility).toEqual({ email: true });
