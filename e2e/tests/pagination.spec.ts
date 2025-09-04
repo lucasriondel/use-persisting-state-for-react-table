@@ -57,8 +57,10 @@ test.describe("Pagination Persistence", () => {
     await page.getByTestId("page-size").selectOption("20");
 
     // Check localStorage contains the page size
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const pageSize = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return data ? JSON.parse(data).size : null;
     });
     expect(pageSize).toBe(20);

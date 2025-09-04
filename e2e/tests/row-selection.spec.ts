@@ -44,8 +44,10 @@ test.describe("Row Selection Persistence", () => {
     );
 
     // Check localStorage contains the selections
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const selection = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return data ? JSON.parse(data).selection : null;
     });
     expect(selection).toEqual({ "1": true, "2": true });
@@ -91,14 +93,17 @@ test.describe("Row Selection Persistence", () => {
     }
 
     // Check localStorage contains all selections
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const selection = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return data ? JSON.parse(data).selection : null;
     });
 
     // Should have 10 entries (0-9)
     expect(Object.keys(selection).length).toBe(10);
     for (let i = 1; i < 10; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(selection[i.toString()]).toBe(true);
     }
 
@@ -143,8 +148,10 @@ test.describe("Row Selection Persistence", () => {
     );
 
     // Check localStorage is updated
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const selection = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return data ? JSON.parse(data).selection : null;
     });
     expect(selection).toEqual({ "2": true, "3": true });
@@ -198,8 +205,10 @@ test.describe("Row Selection Persistence", () => {
     await expect(page.getByTestId("select-all")).not.toBeChecked();
 
     // Check localStorage is cleared
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const selection = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       return data ? JSON.parse(data).selection : null;
     });
     expect(selection).toBeUndefined();
@@ -382,14 +391,19 @@ test.describe("Row Selection Persistence", () => {
     await expect(page.getByTestId("global-filter")).toHaveValue("alice");
 
     // Check localStorage contains all the state
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const storage = await page.evaluate(() => {
       const data = localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return data ? JSON.parse(data) : null;
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(storage.selection).toEqual({ "1": true, "5": true });
     // Status filter is now in URL, not localStorage
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(storage.size).toBe(20);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(storage.visibility).toBeUndefined();
   });
 });

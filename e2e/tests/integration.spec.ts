@@ -77,24 +77,32 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     expect(page.url()).toContain("test-table.sort-dir=asc");
 
     // Verify localStorage contains relevant data
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const localStorage = await page.evaluate(() => {
       const data = window.localStorage.getItem("e2e-test-table");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return data ? JSON.parse(data) : null;
     });
 
     // Status filter is now in URL, not localStorage
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(localStorage.size).toBe(20);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(localStorage.visibility).toEqual({ email: false });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(localStorage.selection).toEqual({ "61": true, "73": true });
 
     // Step 7: Store localStorage and reload page to verify complete state persistence
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const storageState = await page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       return localStorage.getItem("e2e-test-table");
     });
 
     await page.reload();
     await page.evaluate((storage) => {
       if (storage) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         localStorage.setItem("e2e-test-table", storage);
       }
     }, storageState);

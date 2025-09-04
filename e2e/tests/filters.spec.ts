@@ -85,7 +85,7 @@ test.describe("Filters Persistence", () => {
     await page.getByTestId("global-filter").blur();
 
     // Check URL contains global filter
-    await expect(page.url()).toContain("test-table.search=john");
+    expect(page.url()).toContain("test-table.search=john");
     await expect(page.getByTestId("current-state")).toContainText(
       "Global Filter: john"
     );
@@ -107,7 +107,7 @@ test.describe("Filters Persistence", () => {
 
     // Get initial row count
     const initialRows = await page.getByTestId("current-state").textContent();
-    await expect(initialRows).toContain("Column Filters: 0");
+    expect(initialRows).toContain("Column Filters: 0");
 
     // Apply status filter to 'active'
     await page.getByTestId("status-filter").selectOption("active");
