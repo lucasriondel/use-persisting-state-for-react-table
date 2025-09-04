@@ -7,8 +7,10 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+
 import React, { useMemo } from "react";
 import { usePersistingStateForReactTable } from "../../../lib/index";
+import { users } from "./users";
 
 // Sample data type
 type Person = {
@@ -38,41 +40,41 @@ export interface PersonsResponse {
 }
 
 // Generate sample data
-const generateSampleData = (): Person[] => {
-  const firstNames = [
-    "John",
-    "Jane",
-    "Bob",
-    "Alice",
-    "Charlie",
-    "Diana",
-    "Eva",
-    "Frank",
-    "Grace",
-    "Henry",
-  ];
-  const lastNames = [
-    "Smith",
-    "Doe",
-    "Johnson",
-    "Brown",
-    "Davis",
-    "Wilson",
-    "Moore",
-    "Taylor",
-    "Anderson",
-    "Thomas",
-  ];
+// const generateSampleData = (): Person[] => {
+//   const firstNames = [
+//     "John",
+//     "Jane",
+//     "Bob",
+//     "Alice",
+//     "Charlie",
+//     "Diana",
+//     "Eva",
+//     "Frank",
+//     "Grace",
+//     "Henry",
+//   ];
+//   const lastNames = [
+//     "Smith",
+//     "Doe",
+//     "Johnson",
+//     "Brown",
+//     "Davis",
+//     "Wilson",
+//     "Moore",
+//     "Taylor",
+//     "Anderson",
+//     "Thomas",
+//   ];
 
-  return Array.from({ length: 1000 }, (_, i) => ({
-    id: i + 1,
-    firstName: firstNames[i % firstNames.length],
-    lastName: lastNames[i % lastNames.length],
-    age: 18 + (i % 50), // Ages from 18 to 67
-    status: i % 3 === 0 ? "active" : "inactive", // 1/3 active, 2/3 inactive
-    email: `user${i + 1}@example.com`,
-  }));
-};
+//   return Array.from({ length: 1000 }, (_, i) => ({
+//     id: i + 1,
+//     firstName: firstNames[i % firstNames.length],
+//     lastName: lastNames[i % lastNames.length],
+//     age: 18 + (i % 50), // Ages from 18 to 67
+//     status: i % 3 === 0 ? "active" : "inactive", // 1/3 active, 2/3 inactive
+//     email: `user${i + 1}@example.com`,
+//   }));
+// };
 
 // Store generated data
 let allPersons: Person[] = [];
@@ -86,7 +88,9 @@ const fetchPersons = async (
 
   // Generate data if not already done
   if (allPersons.length === 0) {
-    allPersons = generateSampleData();
+    allPersons = users as Person[];
+    // allPersons = generateSampleData();
+    console.log(JSON.stringify(allPersons));
   }
 
   let filteredPersons = [...allPersons];
@@ -233,7 +237,7 @@ function App() {
     columns,
     automaticPageReset: true,
     persistence: {
-      // urlNamespace: "test-table",
+      urlNamespace: "test-table",
       localStorageKey: "e2e-test-table",
       pagination: {
         pageIndex: { persistenceStorage: "url", key: "page" },
