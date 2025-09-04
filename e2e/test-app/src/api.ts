@@ -51,7 +51,6 @@ export const fetchPersons = async (
   // Generate data if not already done
   if (allPersons.length === 0) {
     allPersons = users as Person[];
-    console.log(JSON.stringify(allPersons));
   }
 
   let filteredPersons = [...allPersons];
