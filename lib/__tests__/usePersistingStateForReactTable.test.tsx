@@ -81,29 +81,27 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
     meta: {
       filter: {
         variant: "text",
         persistenceStorage: "url",
-        key: "name-filter",
       },
     },
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
     meta: {
       filter: {
         variant: "select",
         persistenceStorage: "localStorage",
-        key: "role-filter",
         options: [
           { value: "admin", label: "Admin" },
           { value: "user", label: "User" },
@@ -115,7 +113,7 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
     meta: {
       filter: {
         variant: "select",
@@ -134,8 +132,11 @@ const mockUsers: TestUser[] = Array.from({ length: 100 }, (_, i) => ({
   id: `user-${i + 1}`,
   name: `User ${i + 1}`,
   email: `user${i + 1}@example.com`,
-  role: (["admin", "user", "guest"] as const)[i % 3],
-  status: (["active", "inactive"] as const)[i % 2],
+  role: (["admin", "user", "guest"] as const)[i % 3] as
+    | "admin"
+    | "user"
+    | "guest",
+  status: (["active", "inactive"] as const)[i % 2] as "active" | "inactive",
   createdAt: new Date(2023, i % 12, (i % 28) + 1),
 }));
 
@@ -153,6 +154,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -188,6 +192,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -216,6 +223,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         usePersistingStateForReactTable({
           columns: testColumns,
           initialState,
+          persistence: {
+            localStorageKey: "test-table-initial",
+          },
         })
       );
 
@@ -246,6 +256,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
               pageIndex: { persistenceStorage: "url" },
               pageSize: { persistenceStorage: "url" },
             },
+            localStorageKey: "url-pagination-test",
           },
         })
       );
@@ -270,6 +281,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
           columns: testColumns,
           persistence: {
             sorting: { persistenceStorage: "url" },
+            localStorageKey: "url-sorting-test",
           },
         })
       );
@@ -291,6 +303,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -310,6 +325,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -329,6 +347,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
           columns: testColumns,
           persistence: {
             globalFilter: { persistenceStorage: "url" },
+            localStorageKey: "url-global-filter-test",
           },
         })
       );
@@ -347,6 +366,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
           columns: testColumns,
           persistence: {
             rowSelection: { persistenceStorage: "url" },
+            localStorageKey: "url-row-selection-test",
           },
         })
       );
@@ -398,6 +418,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -425,6 +448,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -451,6 +477,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         usePersistingStateForReactTable({
           columns: testColumns,
           automaticPageReset: false,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -479,6 +508,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         usePersistingStateForReactTable({
           columns: testColumns,
           automaticPageReset: false,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -513,6 +545,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
               pageSize: { persistenceStorage: "url" },
             },
             urlNamespace: "reset-test",
+            localStorageKey: "url-reset-test",
           },
         })
       );
@@ -602,7 +635,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
               pageSize: { persistenceStorage: "localStorage" },
             },
             urlNamespace: "mixed-reset",
-            localStorageKey: "mixed-test",
+            localStorageKey: "mixed-reset-test",
           },
         })
       );
@@ -636,7 +669,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         mockHistory.replaceState.mock.calls.length;
       expect(totalCalls).toBeGreaterThan(0);
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "mixed-test",
+        "mixed-reset-test",
         expect.stringContaining('"pageSize":50')
       );
     });
@@ -645,6 +678,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -672,6 +708,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -726,6 +765,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
           columns: testColumns,
           persistence: {
             urlNamespace: "my-table",
+            localStorageKey: "my-table-test",
             pagination: {
               pageIndex: { persistenceStorage: "url" },
               pageSize: { persistenceStorage: "url" },
@@ -757,6 +797,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
               pageIndex: { persistenceStorage: "localStorage" },
               pageSize: { persistenceStorage: "localStorage" },
             },
+            localStorageKey: "pagination-test",
           },
         })
       );
@@ -777,6 +818,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
           columns: testColumns,
           persistence: {
             sorting: { persistenceStorage: "localStorage" },
+            localStorageKey: "sorting-test",
           },
         })
       );
@@ -798,6 +840,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
               pageSize: { persistenceStorage: "url", key: "size" },
             },
             globalFilter: { persistenceStorage: "url", key: "q" },
+            localStorageKey: "custom-keys-test",
           },
         })
       );
@@ -822,6 +865,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const TestComponent = () => {
         const tableState = usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         });
 
         const table = useReactTable({
@@ -859,12 +905,15 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
       // Test with updater function
       act(() => {
-        result.current.handlers.onPaginationChange((prev) => ({
+        result.current.handlers.onPaginationChange((prev: PaginationState) => ({
           ...prev,
           pageIndex: prev.pageIndex + 1,
         }));
@@ -904,6 +953,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
             },
             sorting: { persistenceStorage: "url" },
             globalFilter: { persistenceStorage: "url" },
+            localStorageKey: "url-init-test",
           },
         })
       );
@@ -929,19 +979,20 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
           columns: testColumns,
           persistence: {
             columnVisibility: { persistenceStorage: "localStorage" },
+            localStorageKey: "visibility-test",
           },
         })
       );
 
       // The hook should initialize and try to read from localStorage
       expect(result.current.state.columnVisibility).toBeDefined();
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("data-table");
+      expect(mockLocalStorage.getItem).toHaveBeenCalledWith("visibility-test");
     });
 
     it("should handle mixed persistence sources", () => {
       setWindowLocation("https://example.com/?pageIndex=2&globalFilter=search");
       mockLocalStorage.setItem(
-        "data-table",
+        "mixed-test",
         JSON.stringify({
           columnVisibility: { email: false },
         })
@@ -956,6 +1007,7 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
               pageSize: { persistenceStorage: "localStorage" },
             },
             columnVisibility: { persistenceStorage: "localStorage" },
+            localStorageKey: "mixed-test",
             globalFilter: { persistenceStorage: "url" },
           },
         })
@@ -974,6 +1026,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -985,6 +1040,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: [],
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -997,6 +1055,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         })
       );
 
@@ -1014,6 +1075,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result } = renderHook(() =>
         usePersistingStateForReactTable<TestUser>({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "type-safety-test",
+          },
         })
       );
 
@@ -1043,6 +1107,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
         renderCount++;
         return usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "test-table",
+          },
         });
       };
 
@@ -1060,6 +1127,9 @@ describe("usePersistingStateForReactTable Integration Tests", () => {
       const { result, rerender } = renderHook(() =>
         usePersistingStateForReactTable({
           columns: testColumns,
+          persistence: {
+            localStorageKey: "stability-test",
+          },
         })
       );
 

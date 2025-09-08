@@ -1,24 +1,19 @@
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MultiSelectMeta, SelectMeta } from "../types";
-import { useAsyncFiltersManager } from "../useAsyncFiltersManager";
+import { beforeEach, describe, expect, it, MockContext, vi } from "vitest";
+import { MultiSelectMeta, SelectMeta } from "../../types";
+import { useAsyncFiltersPersistencePostLoading } from "../useAsyncFiltersPersistencePostLoading";
 
 // Mock the dependencies
-vi.mock("../usePersistingFiltersLogic/useFilterBuckets");
-vi.mock("../usePersistingFiltersLogic/flattenColumns");
-vi.mock("../usePersistingFiltersLogic/sanitizeValues");
-vi.mock("../getColumnIdentifier");
+vi.mock("../sanitizeValues");
+vi.mock("../../getColumnIdentifier");
 
 // Import the mocked modules for type support
-import { getColumnIdentifier } from "../getColumnIdentifier";
-import { flattenColumns } from "../usePersistingFiltersLogic/flattenColumns";
-import { sanitizeValue } from "../usePersistingFiltersLogic/sanitizeValues";
-import { useFilterBuckets } from "../usePersistingFiltersLogic/useFilterBuckets";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { getColumnIdentifier } from "../../getColumnIdentifier";
+import { sanitizeValue } from "../sanitizeValues";
 
 // Type the mocked functions
-const mockUseFilterBuckets = vi.mocked(useFilterBuckets);
-const mockFlattenColumns = vi.mocked(flattenColumns);
 const mockSanitizeValue = vi.mocked(sanitizeValue);
 const mockGetColumnIdentifier = vi.mocked(getColumnIdentifier);
 
@@ -30,36 +25,12 @@ interface TestUser {
   department: string;
 }
 
-describe("useAsyncFiltersManager", () => {
-  // Mock bucket APIs
-  const mockUrlBucketApi = {
-    patch: vi.fn(),
-    set: vi.fn(),
-    update: vi.fn(),
-  };
-
-  const mockLocalBucketApi = {
-    patch: vi.fn(),
-    set: vi.fn(),
-    update: vi.fn(),
-  };
-
+describe("useAsyncFiltersPersistencePostLoading", () => {
   // Mock setColumnFilters function
   const mockSetColumnFilters = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Default mock implementation for useFilterBuckets
-    mockUseFilterBuckets.mockReturnValue({
-      urlBucket: {},
-      urlBucketApi: mockUrlBucketApi,
-      localBucket: {},
-      localBucketApi: mockLocalBucketApi,
-    });
-
-    // Default mock implementation for flattenColumns
-    mockFlattenColumns.mockImplementation((columns) => columns);
 
     // Default mock implementation for sanitizeValue (returns unchanged value)
     mockSanitizeValue.mockImplementation((_, value) => value);
@@ -77,32 +48,37 @@ describe("useAsyncFiltersManager", () => {
 
   describe("Basic functionality", () => {
     it("should not run validation when columns are empty", () => {
+      const sharedBuckets = createMockSharedBuckets();
+
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: [],
-          persistence: { urlNamespace: "test" },
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockFlattenColumns).not.toHaveBeenCalled();
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
     it("should not run validation when columns are undefined", () => {
+      const sharedBuckets = createMockSharedBuckets();
+
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns: undefined as any,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          // @ts-expect-error - this is normal, we're testing the type coercion
+          columns: undefined,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockFlattenColumns).not.toHaveBeenCalled();
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
@@ -118,19 +94,19 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      mockFlattenColumns.mockReturnValue(columns);
+      const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockFlattenColumns).toHaveBeenCalledWith(columns);
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
@@ -149,18 +125,19 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      mockFlattenColumns.mockReturnValue(columns);
+      const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
@@ -180,18 +157,19 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      mockFlattenColumns.mockReturnValue(columns);
+      const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
@@ -209,18 +187,19 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      mockFlattenColumns.mockReturnValue(columns);
+      const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
   });
@@ -245,31 +224,29 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: "invalidRole" };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = "invalidRole";
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(undefined); // Invalid value gets sanitized to undefined
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
       expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
+        columns[0]?.meta?.filter,
         "invalidRole"
       );
-      expect(mockUrlBucketApi.patch).toHaveBeenCalledWith({ role: undefined });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: undefined,
+      });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
     });
 
@@ -292,79 +269,29 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: "admin" };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = "admin";
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue("admin"); // Valid value remains the same
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [{ id: "role", value: "admin" }], // State already matches bucket
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
       expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
+        columns[0]?.meta?.filter,
         "admin"
       );
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
-    });
-
-    it("should use filter key when available", () => {
-      const columns: ColumnDef<TestUser>[] = [
-        {
-          accessorKey: "role",
-          header: "Role",
-          meta: {
-            filter: {
-              variant: "select",
-              key: "customRoleKey",
-              isLoading: false,
-              persistenceStorage: "url",
-              options: [{ value: "admin", label: "Admin" }],
-            } as SelectMeta,
-          },
-        },
-      ];
-
-      const urlBucket = { customRoleKey: "invalidRole" };
-
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
-      mockSanitizeValue.mockReturnValue(undefined);
-
-      renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
-          setColumnFilters: mockSetColumnFilters,
-        })
-      );
-
-      expect(mockGetColumnIdentifier).not.toHaveBeenCalled(); // Should use filter key instead
-      expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0].meta?.filter,
-        "invalidRole"
-      );
-      expect(mockUrlBucketApi.patch).toHaveBeenCalledWith({
-        customRoleKey: undefined,
-      });
     });
   });
 
@@ -388,32 +315,28 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: ["admin", "invalidRole", "user"] };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = ["admin", "invalidRole", "user"];
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(["admin", "user"]); // Invalid option removed
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockSanitizeValue).toHaveBeenCalledWith(columns[0].meta?.filter, [
+      expect(mockSanitizeValue).toHaveBeenCalledWith(columns[0]?.meta?.filter, [
         "admin",
         "invalidRole",
         "user",
       ]);
-      expect(mockUrlBucketApi.patch).toHaveBeenCalledWith({
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
         role: ["admin", "user"],
       });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
@@ -438,27 +361,25 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: ["invalidRole1", "invalidRole2"] };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = ["invalidRole1", "invalidRole2"];
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(undefined); // All values invalid
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockUrlBucketApi.patch).toHaveBeenCalledWith({ role: undefined });
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: undefined,
+      });
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
     });
   });
@@ -480,30 +401,26 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const localBucket = { role: "invalidRole" };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the local bucket
+      sharedBuckets.localBucket.role = "invalidRole";
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket: {},
-        urlBucketApi: mockUrlBucketApi,
-        localBucket,
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(undefined);
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { localStorageKey: "test-filters" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockLocalBucketApi.patch).toHaveBeenCalledWith({
+      expect(sharedBuckets.localBucketApi.patch).toHaveBeenCalledWith({
         role: undefined,
       });
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
     });
 
     it("should handle both URL and localStorage filters in the same hook", () => {
@@ -534,34 +451,30 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: "invalidRole" };
-      const localBucket = { department: ["invalidDept"] };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in both buckets
+      sharedBuckets.urlBucket.role = "invalidRole";
+      sharedBuckets.localBucket.department = ["invalidDept"];
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket,
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(undefined);
       mockGetColumnIdentifier.mockImplementation((col) =>
+        // @ts-expect-error - TODO need to fix this
         String(col.accessorKey)
       );
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: {
-            urlNamespace: "test",
-            localStorageKey: "test-filters",
-          },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      expect(mockUrlBucketApi.patch).toHaveBeenCalledWith({ role: undefined });
-      expect(mockLocalBucketApi.patch).toHaveBeenCalledWith({
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: undefined,
+      });
+      expect(sharedBuckets.localBucketApi.patch).toHaveBeenCalledWith({
         department: undefined,
       });
     });
@@ -584,33 +497,63 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: "invalidRole" };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = "invalidRole";
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(undefined);
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
       expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
-
       // Test the function passed to setColumnFilters
-      const setterFunction = mockSetColumnFilters.mock.calls[0][0];
+      expect(mockSetColumnFilters).toHaveBeenCalledTimes(1);
+
+      if (!mockSetColumnFilters.mock.calls) {
+        throw new Error("mockSetColumnFilters.mock.calls is not defined");
+      }
+      if (!Array.isArray(mockSetColumnFilters.mock.calls)) {
+        throw new Error("mockSetColumnFilters.mock.calls is not an array");
+      }
+      if (mockSetColumnFilters.mock.calls.length < 1) {
+        throw new Error("mockSetColumnFilters.mock.calls has no values");
+      }
+
+      const firstCall = mockSetColumnFilters.mock.calls[0] as Array<
+        MockContext<unknown, unknown>["calls"][number]
+      >;
+      if (!firstCall) {
+        throw new Error("first call is not defined");
+      }
+      if (!Array.isArray(firstCall)) {
+        throw new Error("first call is not an array");
+      }
+      if (firstCall.length < 1) {
+        throw new Error("first call has no values");
+      }
+
+      const setterFunction = firstCall[0];
+      if (!setterFunction) {
+        throw new Error("setterFunction is not defined");
+      }
+      if (typeof setterFunction !== "function") {
+        throw new Error("setterFunction is not a function");
+      }
 
       // Test with undefined previous filters
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result1 = setterFunction(undefined);
+      if (!Array.isArray(result1)) {
+        throw new Error("result1 is not an array");
+      }
       expect(result1).toEqual([]);
 
       // Test with existing filters that should be preserved
@@ -618,6 +561,7 @@ describe("useAsyncFiltersManager", () => {
         { id: "name", value: "test" },
         { id: "role", value: "oldValue" }, // This should be removed
       ];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result2 = setterFunction(existingFilters);
       expect(result2).toEqual([{ id: "name", value: "test" }]);
     });
@@ -641,32 +585,48 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: ["admin", "invalidRole", "user"] };
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = ["admin", "invalidRole", "user"];
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
       mockSanitizeValue.mockReturnValue(["admin", "user"]); // Invalid option removed
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
       // Test the function passed to setColumnFilters
-      const setterFunction = mockSetColumnFilters.mock.calls[0][0];
+      const firstCall = mockSetColumnFilters.mock.calls[0] as Array<
+        MockContext<unknown, unknown>["calls"][number]
+      >;
+      if (!firstCall) {
+        throw new Error("first call is not defined");
+      }
+      if (!Array.isArray(firstCall)) {
+        throw new Error("first call is not an array");
+      }
+      if (firstCall.length < 1) {
+        throw new Error("first call has no values");
+      }
+
+      const setterFunction = firstCall[0];
+      if (!setterFunction) {
+        throw new Error("setterFunction is not defined");
+      }
+      if (typeof setterFunction !== "function") {
+        throw new Error("setterFunction is not a function");
+      }
 
       const existingFilters: ColumnFiltersState = [
         { id: "name", value: "test" },
       ];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const result = setterFunction(existingFilters);
       expect(result).toEqual([
         { id: "name", value: "test" },
@@ -675,8 +635,130 @@ describe("useAsyncFiltersManager", () => {
     });
   });
 
+  describe("State synchronization", () => {
+    it("should sync bucket values to state when state is empty but bucket has valid values", () => {
+      const columns: ColumnDef<TestUser>[] = [
+        {
+          accessorKey: "role",
+          header: "Role",
+          meta: {
+            filter: {
+              variant: "select",
+              isLoading: false,
+              persistenceStorage: "url",
+              options: [{ value: "admin", label: "Admin" }],
+            } as SelectMeta,
+          },
+        },
+      ];
+
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = "admin";
+
+      mockSanitizeValue.mockReturnValue("admin"); // Valid value remains the same
+      mockGetColumnIdentifier.mockReturnValue("role");
+
+      renderHook(() =>
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [], // Empty state but bucket has value
+          setColumnFilters: mockSetColumnFilters,
+        })
+      );
+
+      // Should sync the value from bucket to state even though raw === sanitized
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: "admin",
+      });
+      expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
+    });
+
+    it("should not sync when state already matches bucket values", () => {
+      const columns: ColumnDef<TestUser>[] = [
+        {
+          accessorKey: "role",
+          header: "Role",
+          meta: {
+            filter: {
+              variant: "select",
+              isLoading: false,
+              persistenceStorage: "url",
+              options: [{ value: "admin", label: "Admin" }],
+            } as SelectMeta,
+          },
+        },
+      ];
+
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = "admin";
+
+      mockSanitizeValue.mockReturnValue("admin");
+      mockGetColumnIdentifier.mockReturnValue("role");
+
+      renderHook(() =>
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [{ id: "role", value: "admin" }], // State already matches
+          setColumnFilters: mockSetColumnFilters,
+        })
+      );
+
+      // Should not update anything since state already matches
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(mockSetColumnFilters).not.toHaveBeenCalled();
+    });
+
+    it("should sync when state has different values than sanitized bucket values", () => {
+      const columns: ColumnDef<TestUser>[] = [
+        {
+          accessorKey: "role",
+          header: "Role",
+          meta: {
+            filter: {
+              variant: "multiSelect",
+              isLoading: false,
+              persistenceStorage: "url",
+              options: [
+                { value: "admin", label: "Admin" },
+                { value: "user", label: "User" },
+              ],
+            } as MultiSelectMeta,
+          },
+        },
+      ];
+
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = ["admin", "invalidRole"];
+
+      mockSanitizeValue.mockReturnValue(["admin"]); // Invalid option removed
+      mockGetColumnIdentifier.mockReturnValue("role");
+
+      renderHook(() =>
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [
+            { id: "role", value: ["admin", "invalidRole"] },
+          ], // State has different value
+          setColumnFilters: mockSetColumnFilters,
+        })
+      );
+
+      // Should sync both bucket and state
+      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
+        role: ["admin"],
+      });
+      expect(mockSetColumnFilters).toHaveBeenCalledWith(expect.any(Function));
+    });
+  });
+
   describe("Edge cases", () => {
-    it("should handle columns without id or accessorKey gracefully", () => {
+    it("should handle columns without id or accessorKey with error throwing", () => {
       const columns: ColumnDef<TestUser>[] = [
         {
           header: "Custom Column",
@@ -691,23 +773,24 @@ describe("useAsyncFiltersManager", () => {
         } as ColumnDef<TestUser>,
       ];
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockGetColumnIdentifier.mockImplementation(() => {
-        throw new Error(
-          "Column must have either an 'id' or 'accessorKey' property defined"
-        );
-      });
+      const sharedBuckets = createMockSharedBuckets();
 
-      renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
-          setColumnFilters: mockSetColumnFilters,
-        })
+      expect(() => {
+        renderHook(() =>
+          useAsyncFiltersPersistencePostLoading({
+            columns: columns,
+            sharedBuckets,
+            currentColumnFilters: [],
+            setColumnFilters: mockSetColumnFilters,
+          })
+        );
+      }).toThrow(
+        "Column must have either an 'id' or 'accessorKey' property defined"
       );
 
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
-      expect(mockLocalBucketApi.patch).not.toHaveBeenCalled();
+      expect(mockGetColumnIdentifier).toHaveBeenCalledWith(columns[0]);
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
@@ -727,28 +810,32 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = {}; // No stored value for role
+      const sharedBuckets = createMockSharedBuckets();
+      // Ensure the bucket is actually empty for this specific key
+      delete sharedBuckets.urlBucket.role;
 
-      mockFlattenColumns.mockReturnValue(columns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
+      // Reset the mock to ensure clean state
+      mockSanitizeValue.mockReset();
       mockSanitizeValue.mockReturnValue(undefined);
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
-          columns,
-          persistence: { urlNamespace: "test" },
+        useAsyncFiltersPersistencePostLoading({
+          columns: columns,
+          sharedBuckets,
+          currentColumnFilters: [],
           setColumnFilters: mockSetColumnFilters,
         })
       );
 
-      // Should not update anything since undefined === undefined
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
+      // Debug: Check what sanitizeValue was called with
+      expect(mockSanitizeValue).toHaveBeenCalledWith(
+        columns[0]?.meta?.filter,
+        undefined
+      );
+
+      // Should not update anything since undefined === undefined and state is consistent
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
 
@@ -768,28 +855,23 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      const urlBucket = { role: "admin" };
-
-      mockFlattenColumns.mockReturnValue(initialColumns);
-      mockUseFilterBuckets.mockReturnValue({
-        urlBucket,
-        urlBucketApi: mockUrlBucketApi,
-        localBucket: {},
-        localBucketApi: mockLocalBucketApi,
-      });
+      const sharedBuckets = createMockSharedBuckets();
+      // Set up the test data in the URL bucket
+      sharedBuckets.urlBucket.role = "admin";
 
       const { rerender } = renderHook(
         ({ columns }) =>
-          useAsyncFiltersManager({
-            columns,
-            persistence: { urlNamespace: "test" },
+          useAsyncFiltersPersistencePostLoading({
+            columns: columns,
+            sharedBuckets,
+            currentColumnFilters: [],
             setColumnFilters: mockSetColumnFilters,
           }),
         { initialProps: { columns: initialColumns } }
       );
 
       // Initially should not validate (isLoading: true)
-      expect(mockUrlBucketApi.patch).not.toHaveBeenCalled();
+      expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
 
       // Update columns to finish loading
       const updatedColumns: ColumnDef<TestUser>[] = [
@@ -807,7 +889,6 @@ describe("useAsyncFiltersManager", () => {
         },
       ];
 
-      mockFlattenColumns.mockReturnValue(updatedColumns);
       mockSanitizeValue.mockReturnValue("admin");
       mockGetColumnIdentifier.mockReturnValue("role");
 

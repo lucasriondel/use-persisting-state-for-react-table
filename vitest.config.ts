@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    include: ["lib/**/*.test.{ts,tsx}", "lib/**/*.spec.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
@@ -13,6 +14,7 @@ export default defineConfig({
         "lib/test/",
         "**/*.d.ts",
         "**/*.config.*",
+        "e2e/",
       ],
     },
   },

@@ -4,17 +4,29 @@ import { UrlApiActions } from "use-url-state-reacthook";
 import { PersistenceStorage } from "../types";
 import { validatePageSize } from "./validatePageSize";
 
-export function createPaginationChangeHandler(
-  shouldPersistPageIndex: boolean,
-  shouldPersistPageSize: boolean,
-  pageIndexTarget: PersistenceStorage,
-  pageIndexKey: string,
-  pageSizeTarget: PersistenceStorage,
-  pageSizeKey: string,
-  urlBucketApi: UrlApiActions<Record<string, unknown>>,
-  localBucketApi: LocalStorageApiActions<Record<string, unknown>>,
-  allowedPageSizes: number[] | undefined
-) {
+export interface CreatePaginationChangeHandlerParams {
+  shouldPersistPageIndex: boolean;
+  shouldPersistPageSize: boolean;
+  pageIndexTarget: PersistenceStorage;
+  pageIndexKey: string;
+  pageSizeTarget: PersistenceStorage;
+  pageSizeKey: string;
+  urlBucketApi: UrlApiActions<Record<string, unknown>>;
+  localBucketApi: LocalStorageApiActions<Record<string, unknown>>;
+  allowedPageSizes: number[] | undefined;
+}
+
+export function createPaginationChangeHandler({
+  shouldPersistPageIndex,
+  shouldPersistPageSize,
+  pageIndexTarget,
+  pageIndexKey,
+  pageSizeTarget,
+  pageSizeKey,
+  urlBucketApi,
+  localBucketApi,
+  allowedPageSizes,
+}: CreatePaginationChangeHandlerParams) {
   return (
     updater: Updater<PaginationState>,
     currentTableState?: PaginationState

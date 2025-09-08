@@ -7,6 +7,8 @@ import {
 import { act, renderHook } from "@testing-library/react";
 import * as React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { PersistingTableOptions } from "../../usePersistingStateForReactTable";
 import { usePersistingGlobalFilterLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -43,6 +45,8 @@ Object.defineProperty(window, "localStorage", {
   writable: true,
 });
 
+// Helper function to create mock shared buckets
+
 // Mock history
 const mockHistory = {
   pushState: vi.fn(),
@@ -76,27 +80,27 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
   },
   {
     accessorKey: "department",
     header: "Department",
-    cell: ({ row }) => row.getValue("department"),
+    cell: ({ row }) => row.getValue<string>("department"),
   },
 ];
 
@@ -179,16 +183,20 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("URL persistence", () => {
     it("persists global filter state to URL and retrieves it", async () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -249,19 +257,23 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
       // Set up URL with global filter parameter
       setWindowLocation("https://example.com/?table.globalFilter=admin");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "user",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "user",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should read from URL instead of initial state
@@ -269,17 +281,21 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
     });
 
     it("uses custom key for URL parameters", async () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-              key: "search",
-            },
-            urlNamespace: "custom",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
+            key: "search",
           },
-        })
+          urlNamespace: "custom",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -327,16 +343,20 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("localStorage persistence", () => {
     it("persists global filter state to localStorage and retrieves it", () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "table-filter",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "localStorage",
           },
-        })
+          localStorageKey: "table-filter",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -373,7 +393,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
       // Should filter to only Alice Smith
       const filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         "table-filter",
@@ -387,19 +407,23 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
         JSON.stringify({ globalFilter: "manager" })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "admin",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "filter-store",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "admin",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "filter-store",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should read from localStorage instead of initial state
@@ -409,16 +433,20 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("global filter behaviors", () => {
     it("filters data across all columns correctly", () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -452,7 +480,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       // Filter by email domain
       act(() => {
@@ -483,16 +511,20 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
     });
 
     it("handles case-insensitive filtering", () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -547,16 +579,20 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("function updaters", () => {
     it("handles function-based global filter updates", async () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -585,7 +621,9 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       // Use function updater
       act(() => {
-        tableHook.current.table.setGlobalFilter((prev) => prev + "Sales");
+        tableHook.current.table.setGlobalFilter(
+          (prev: string) => prev + "Sales"
+        );
       });
 
       expect(tableHook.current.globalFilter).toBe("Sales");
@@ -610,18 +648,22 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("initial state persistence", () => {
     it("persists initial state when no existing persisted values", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "admin",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "localStorage",
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "admin",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "localStorage",
-            },
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should use initial state
@@ -629,7 +671,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       // Should persist the initial state
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "globalFilter",
+        "data-table",
         expect.stringContaining('"globalFilter":"admin"')
       );
     });
@@ -641,19 +683,23 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
         JSON.stringify({ globalFilter: "Marketing" })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "Engineering",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "existing-filter",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "Engineering",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "existing-filter",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should use existing values instead of initial state
@@ -677,19 +723,23 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
         `https://example.com/?table.globalFilter=${encodedObject}`
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "fallback",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "fallback",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when URL value is not a string
@@ -702,19 +752,23 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
         JSON.stringify({ globalFilter: { search: "object" } })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "fallback",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "filter-store",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "fallback",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "filter-store",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage value is not a string
@@ -724,19 +778,23 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
     it("handles localStorage JSON parse errors gracefully", () => {
       mockLocalStorage.setItem("broken-filter", "invalid json");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "fallback",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "broken-filter",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "fallback",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "broken-filter",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage values are invalid
@@ -746,13 +804,17 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("no persistence configuration", () => {
     it("returns handler even when persistence is not configured", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "test",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "test",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       // Unlike other hooks, global filter always returns a handler
@@ -763,20 +825,24 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
   describe("real-world global filter scenarios", () => {
     it("simulates user searching and filtering data in a complex workflow", async () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          globalFilter: "",
+        },
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
+            key: "search",
+          },
+          urlNamespace: "users",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          initialState: {
-            globalFilter: "",
-          },
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-              key: "search",
-            },
-            urlNamespace: "users",
-          },
-        })
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -847,7 +913,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       // Search by partial email
       act(() => {
@@ -856,7 +922,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.email).toBe("bob@example.com");
+      expect(filteredRows[0]?.original.email).toBe("bob@example.com");
 
       // Clear search
       act(() => {
@@ -879,16 +945,20 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
     });
 
     it("handles complex search patterns and special characters", () => {
-      const { result: globalFilterHook } = renderHook(() =>
-        usePersistingGlobalFilterLogic({
-          columns: testColumns,
-          persistence: {
-            globalFilter: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          globalFilter: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: globalFilterHook } = renderHook(() =>
+        usePersistingGlobalFilterLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -922,7 +992,7 @@ describe("usePersistingGlobalFilterLogic Integration Tests", () => {
 
       let filteredRows = tableHook.current.table.getFilteredRowModel().rows;
       expect(filteredRows).toHaveLength(1);
-      expect(filteredRows[0].original.name).toBe("Alice Smith");
+      expect(filteredRows[0]?.original.name).toBe("Alice Smith");
 
       // Search with special characters
       act(() => {

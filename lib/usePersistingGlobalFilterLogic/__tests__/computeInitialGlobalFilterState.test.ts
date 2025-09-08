@@ -8,14 +8,14 @@ describe("computeInitialGlobalFilterState", () => {
       const urlBucket = { globalFilter: "persisted search" };
       const localBucket = { globalFilter: "local search" };
 
-      const result = computeInitialGlobalFilterState(
-        false,
-        "url",
-        "globalFilter",
+      const result = computeInitialGlobalFilterState({
+        shouldPersist: false,
+        target: "url",
+        key: "globalFilter",
         urlBucket,
         localBucket,
         initialState
-      );
+      });
 
       expect(result).toBe(initialState);
     });
@@ -24,13 +24,13 @@ describe("computeInitialGlobalFilterState", () => {
       const urlBucket = { globalFilter: "persisted search" };
       const localBucket = { globalFilter: "local search" };
 
-      const result = computeInitialGlobalFilterState(
-        false,
-        "url",
-        "globalFilter",
+      const result = computeInitialGlobalFilterState({
+        shouldPersist: false,
+        target: "url",
+        key: "globalFilter",
         urlBucket,
         localBucket
-      );
+      });
 
       expect(result).toBe("");
     });
@@ -40,14 +40,14 @@ describe("computeInitialGlobalFilterState", () => {
       const urlBucket = { globalFilter: "url data" };
       const localBucket = { globalFilter: "local data" };
 
-      const result = computeInitialGlobalFilterState(
-        false,
-        "localStorage",
-        "globalFilter",
+      const result = computeInitialGlobalFilterState({
+        shouldPersist: false,
+        target: "localStorage",
+        key: "globalFilter",
         urlBucket,
         localBucket,
         initialState
-      );
+      });
 
       expect(result).toBe(initialState);
     });
@@ -61,14 +61,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: persistedSearch };
         const localBucket = { globalFilter: "local search" };
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(persistedSearch);
       });
@@ -78,14 +78,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: 123 }; // non-string
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -95,14 +95,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = {};
         const localBucket = { globalFilter: "local search" };
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -111,13 +111,13 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = {};
         const localBucket = { globalFilter: "local search" };
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe("");
       });
@@ -130,13 +130,13 @@ describe("computeInitialGlobalFilterState", () => {
         };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "customSearchKey",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "customSearchKey",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe(persistedSearch);
       });
@@ -146,14 +146,14 @@ describe("computeInitialGlobalFilterState", () => {
         const localBucket = {};
         const initialState = "default search";
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe("");
       });
@@ -166,14 +166,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: "url search" };
         const localBucket = { globalFilter: persistedSearch };
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "localStorage",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "localStorage",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(persistedSearch);
       });
@@ -183,14 +183,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = {};
         const localBucket = { globalFilter: null }; // non-string
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "localStorage",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "localStorage",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -200,14 +200,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: "url search" };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "localStorage",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "localStorage",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -220,13 +220,13 @@ describe("computeInitialGlobalFilterState", () => {
           globalFilter: "default search",
         };
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "localStorage",
-          "customLocalKey",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "localStorage",
+          key: "customLocalKey",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe(persistedSearch);
       });
@@ -239,14 +239,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: "url search" };
         const localBucket = { globalFilter: persistedSearch };
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          undefined,
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: undefined,
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(persistedSearch);
       });
@@ -256,14 +256,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: "url search" };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          undefined,
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: undefined,
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -275,14 +275,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: 42 };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -292,14 +292,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: true };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -309,14 +309,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: { search: "nested" } };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -326,14 +326,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: ["search", "terms"] };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -343,14 +343,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: null };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -360,14 +360,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: undefined };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(initialState);
       });
@@ -377,13 +377,13 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: specialString };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe(specialString);
       });
@@ -393,13 +393,13 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: unicodeString };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe(unicodeString);
       });
@@ -411,13 +411,13 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: longString };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe(longString);
         expect(result?.length).toBe(10000);
@@ -428,13 +428,13 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: whitespaceString };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket
-        );
+        });
 
         expect(result).toBe(whitespaceString);
       });
@@ -445,14 +445,14 @@ describe("computeInitialGlobalFilterState", () => {
         const urlBucket = { globalFilter: persistedString };
         const localBucket = {};
 
-        const result = computeInitialGlobalFilterState(
-          true,
-          "url",
-          "globalFilter",
+        const result = computeInitialGlobalFilterState({
+          shouldPersist: true,
+          target: "url",
+          key: "globalFilter",
           urlBucket,
           localBucket,
           initialState
-        );
+        });
 
         expect(result).toBe(persistedString);
       });

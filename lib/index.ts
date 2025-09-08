@@ -1,8 +1,8 @@
-export type { 
-  FilterVariant, 
-  PersistingTableColumnMeta, 
-  ExtendColumnMeta 
+export type {
+  ExtendColumnMeta,
+  FilterVariant,
+  PersistingTableColumnMeta,
 } from "./types";
-export { useAsyncFiltersManager } from "./useAsyncFiltersManager";
+export { useAsyncFiltersPersistencePostLoading as useAsyncFiltersManager } from "./usePersistingFiltersLogic/useAsyncFiltersPersistencePostLoading";
 export { usePersistingStateForReactTable } from "./usePersistingStateForReactTable";
 export type { PersistingTableOptions } from "./usePersistingStateForReactTable";

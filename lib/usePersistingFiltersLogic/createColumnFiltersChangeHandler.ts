@@ -59,7 +59,6 @@ export function createColumnFiltersChangeHandler<TData extends RowData>(
       const columnId = getColumnIdentifier(col);
       if (!columnId) continue;
 
-      const key = filterMeta.key ?? String(columnId);
       const prevFilter = prev.find((f) => f.id === columnId);
       const nextFilter = next.find((f) => f.id === columnId);
 
@@ -78,10 +77,10 @@ export function createColumnFiltersChangeHandler<TData extends RowData>(
 
         if (nextHasValue) {
           // Filter has a value - set it
-          patch[key] = nextValue;
+          patch[columnId] = nextValue;
         } else {
           // Filter was removed or became empty - clear it
-          patch[key] = undefined;
+          patch[columnId] = undefined;
         }
       }
     }

@@ -21,5 +21,6 @@ export function validatePageSize(
   }
 
   // Fallback to first allowed value
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return allowedPageSizes[0]!;
 }

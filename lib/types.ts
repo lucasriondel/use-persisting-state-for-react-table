@@ -24,7 +24,6 @@ export type PersistenceStorage = "url" | "localStorage";
 
 // Base filter meta interface
 export interface BaseFilterMeta {
-  key?: string;
   isLoading?: boolean;
   persistenceStorage?: PersistenceStorage;
   variant: FilterVariant;
@@ -154,23 +153,6 @@ export interface PersistenceConfig {
   filters?: {
     optimisticAsync?: boolean;
   };
-}
-
-// Main table options interface
-export interface PersistingTableOptions<TData extends RowData> {
-  columns: ColumnDef<TData, unknown>[];
-  initialState?: {
-    columnVisibility?: Record<string, boolean>;
-    columnFilters?: Array<{ id: string; value: unknown }>;
-    globalFilter?: string;
-    rowSelection?: Record<string, boolean>;
-    sorting?: Array<{ id: string; desc: boolean }>;
-    pagination?: {
-      pageIndex: number;
-      pageSize: number;
-    };
-  };
-  persistence?: PersistenceConfig;
 }
 
 // Table state type

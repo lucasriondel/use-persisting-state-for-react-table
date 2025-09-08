@@ -1,21 +1,21 @@
 import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
-import { useEffect } from "react";
-import { getColumnIdentifier } from "./getColumnIdentifier";
-import { MultiSelectMeta, SelectMeta } from "./types";
-import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
-import { sanitizeValue } from "./usePersistingFiltersLogic/sanitizeValues";
-import { useFilterBuckets } from "./usePersistingFiltersLogic/useFilterBuckets";
+import { useEffect, useState } from "react";
+import { getColumnIdentifier } from "../getColumnIdentifier";
+import { MultiSelectMeta, SelectMeta } from "../types";
+import { SharedBuckets } from "../usePersistingStateForReactTable";
+import { flattenColumns } from "./flattenColumns";
+import { sanitizeValue } from "./sanitizeValues";
 
 /**
  * Props for the useAsyncFiltersManager hook.
  *
  * @template TData - The type of data in your table rows
  */
-interface UseAsyncFiltersManagerProps<TData extends RowData> {
+interface UseAsyncFiltersPersistencePostLoadingProps<TData extends RowData> {
   columns: ColumnDef<TData, unknown>[];
-  urlNamespace?: string | undefined;
-  localStorageKey?: string | undefined;
+  sharedBuckets: SharedBuckets;
   setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
+  currentColumnFilters: ColumnFiltersState;
 }
 
 /**
@@ -41,6 +41,7 @@ interface UseAsyncFiltersManagerProps<TData extends RowData> {
  * @param options - Configuration options extending PersistingTableOptions
  * @param options.columns - Column definitions with filter metadata
  * @param options.persistence - Persistence configuration (URL namespace, localStorage key)
+ * @param options.currentColumnFilters - Current column filters state for comparison
  * @param options.setColumnFilters - React state setter for updating column filters
  *
  * @example
@@ -110,21 +111,27 @@ interface UseAsyncFiltersManagerProps<TData extends RowData> {
  * @see {@link PersistingTableOptions} for persistence configuration options
  * @see {@link SelectMeta} and {@link MultiSelectMeta} for filter metadata types
  */
-export function useAsyncFiltersManager<TData extends RowData>({
+export function useAsyncFiltersPersistencePostLoading<TData extends RowData>({
   columns,
-  urlNamespace,
-  localStorageKey,
+  sharedBuckets,
   setColumnFilters,
-}: UseAsyncFiltersManagerProps<TData>) {
+  currentColumnFilters,
+}: UseAsyncFiltersPersistencePostLoadingProps<TData>) {
   const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
-    useFilterBuckets({
-      columns,
-      urlNamespace,
-      localStorageKey,
-    });
+    sharedBuckets;
+
+  const hasColumnsFinishedLoading =
+    columns?.every((col) => (col.meta?.filter?.isLoading ?? false) === false) ??
+    true;
+
+  const [
+    hasFinishedProcessingAsyncFilters,
+    setHasFinishedProcessingAsyncFilters,
+  ] = useState(false);
 
   useEffect(() => {
     if (!columns || columns.length === 0) return;
+    if (!hasColumnsFinishedLoading) return;
 
     const flat = flattenColumns(columns);
     const urlPatch: Record<string, unknown> = {};
@@ -142,16 +149,8 @@ export function useAsyncFiltersManager<TData extends RowData>({
         (filterMeta as SelectMeta | MultiSelectMeta).isLoading === false
       ) {
         // Use the filter key if available, otherwise try to get column identifier
-        let key: string | undefined = filterMeta.key;
 
-        if (!key) {
-          try {
-            key = getColumnIdentifier(col);
-          } catch {
-            continue;
-          }
-        }
-
+        const key = getColumnIdentifier(col);
         if (!key) continue;
 
         const raw =
@@ -163,14 +162,28 @@ export function useAsyncFiltersManager<TData extends RowData>({
           filterMeta.persistenceStorage === "url" ? urlPatch : localPatch;
         const equal = JSON.stringify(sanitized) === JSON.stringify(raw);
 
-        if (!equal) {
+        // Check if values need to be synced from buckets to state
+        const currentStateFilter = currentColumnFilters.find(
+          (f) => f.id === key
+        );
+        const stateValue = currentStateFilter?.value;
+        const stateValueStr = JSON.stringify(stateValue);
+        const sanitizedStr = JSON.stringify(sanitized);
+
+        const needsStateSync =
+          !equal || (sanitized !== undefined && stateValueStr !== sanitizedStr);
+
+        if (needsStateSync) {
           targetPatch[key] = sanitized === undefined ? undefined : sanitized;
           hasAnyPatch = true;
         }
       }
     }
 
-    if (!hasAnyPatch) return;
+    if (!hasAnyPatch) {
+      setHasFinishedProcessingAsyncFilters(true);
+      return;
+    }
 
     // Update the state with the new filter values
     const stateUpdates: ColumnFiltersState = [];
@@ -221,5 +234,8 @@ export function useAsyncFiltersManager<TData extends RowData>({
         return [...filtered, ...newFilters];
       });
     }
-  }, [columns, urlBucket, localBucket, urlBucketApi, localBucketApi]);
+    setHasFinishedProcessingAsyncFilters(true);
+  }, [hasColumnsFinishedLoading]);
+
+  return hasFinishedProcessingAsyncFilters;
 }

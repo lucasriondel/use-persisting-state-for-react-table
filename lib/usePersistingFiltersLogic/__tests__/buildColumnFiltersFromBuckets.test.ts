@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { ColumnDef } from "@tanstack/react-table";
+import { describe, expect, it } from "vitest";
 import { buildColumnFiltersFromBuckets } from "../buildColumnFiltersFromBuckets";
 
 interface TestData {
@@ -108,49 +108,15 @@ describe("buildColumnFiltersFromBuckets", () => {
       ];
       const urlState = { name: "john" };
       const localState = { age: 25 };
-      const result = buildColumnFiltersFromBuckets(columns, urlState, localState);
+      const result = buildColumnFiltersFromBuckets(
+        columns,
+        urlState,
+        localState
+      );
       expect(result).toEqual([
         { id: "name", value: "john" },
         { id: "age", value: 25 },
       ]);
-    });
-  });
-
-  describe("custom keys", () => {
-    it("uses custom key when provided", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-              key: "searchName",
-            },
-          },
-        },
-      ];
-      const urlState = { searchName: "alice" };
-      const result = buildColumnFiltersFromBuckets(columns, urlState, {});
-      expect(result).toEqual([{ id: "name", value: "alice" }]);
-    });
-
-    it("falls back to column identifier when no custom key", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          accessorKey: "name", // No explicit id, will use accessorKey
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-            },
-          },
-        },
-      ];
-      const urlState = { name: "bob" };
-      const result = buildColumnFiltersFromBuckets(columns, urlState, {});
-      expect(result).toEqual([{ id: "name", value: "bob" }]);
     });
   });
 
@@ -200,6 +166,8 @@ describe("buildColumnFiltersFromBuckets", () => {
             filter: {
               variant: "select",
               persistenceStorage: "url",
+              // @ts-expect-error - this is normal, we're testing the type coercion
+              options: undefined,
             },
           },
         },
@@ -218,6 +186,7 @@ describe("buildColumnFiltersFromBuckets", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "url",
+              options: [],
             },
           },
         },
@@ -254,6 +223,13 @@ describe("buildColumnFiltersFromBuckets", () => {
             filter: {
               variant: "select",
               persistenceStorage: "localStorage",
+              options: [
+                {
+                  // @ts-expect-error - this is normal, we're testing the type coercion
+                  value: false,
+                  label: "false",
+                },
+              ],
             },
           },
         },
@@ -297,7 +273,11 @@ describe("buildColumnFiltersFromBuckets", () => {
 
       const urlState = { name: "charlie" };
       const localState = { age: 30 };
-      const result = buildColumnFiltersFromBuckets(groupedColumns, urlState, localState);
+      const result = buildColumnFiltersFromBuckets(
+        groupedColumns,
+        urlState,
+        localState
+      );
       expect(result).toEqual([
         { id: "name", value: "charlie" },
         { id: "age", value: 30 },
@@ -367,7 +347,11 @@ describe("buildColumnFiltersFromBuckets", () => {
 
       const urlState = { id: "123" };
       const localState = { name: "grouped-name" };
-      const result = buildColumnFiltersFromBuckets(mixedColumns, urlState, localState);
+      const result = buildColumnFiltersFromBuckets(
+        mixedColumns,
+        urlState,
+        localState
+      );
       expect(result).toEqual([
         { id: "id", value: "123" },
         { id: "name", value: "grouped-name" },
@@ -427,8 +411,10 @@ describe("buildColumnFiltersFromBuckets", () => {
         },
       ];
       const urlState = { anything: "value" };
-      
-      expect(() => buildColumnFiltersFromBuckets(columns, urlState, {})).toThrow(
+
+      expect(() =>
+        buildColumnFiltersFromBuckets(columns, urlState, {})
+      ).toThrow(
         "Column must have either an 'id' or 'accessorKey' property defined"
       );
     });
@@ -452,6 +438,20 @@ describe("buildColumnFiltersFromBuckets", () => {
             filter: {
               variant: "multiSelect",
               persistenceStorage: "localStorage",
+              options: [
+                {
+                  value: "tag1",
+                  label: "tag1",
+                },
+                {
+                  value: "tag2",
+                  label: "tag2",
+                },
+                {
+                  value: "tag3",
+                  label: "tag3",
+                },
+              ],
             },
           },
         },
@@ -459,7 +459,11 @@ describe("buildColumnFiltersFromBuckets", () => {
 
       const urlState = { range: [18, 65] };
       const localState = { multiSelect: ["tag1", "tag2", "tag3"] };
-      const result = buildColumnFiltersFromBuckets(columns, urlState, localState);
+      const result = buildColumnFiltersFromBuckets(
+        columns,
+        urlState,
+        localState
+      );
       expect(result).toEqual([
         { id: "range", value: [18, 65] },
         { id: "multiSelect", value: ["tag1", "tag2", "tag3"] },
@@ -558,7 +562,11 @@ describe("buildColumnFiltersFromBuckets", () => {
       ];
       const urlState = { name: "url-value" };
       const localState = { name: "local-value" }; // Should be ignored
-      const result = buildColumnFiltersFromBuckets(columns, urlState, localState);
+      const result = buildColumnFiltersFromBuckets(
+        columns,
+        urlState,
+        localState
+      );
       expect(result).toEqual([{ id: "name", value: "url-value" }]);
     });
   });

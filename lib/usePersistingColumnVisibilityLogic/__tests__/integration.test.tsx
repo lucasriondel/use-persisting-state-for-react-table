@@ -1,12 +1,14 @@
-import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
 import {
   ColumnDef,
   getCoreRowModel,
-  VisibilityState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table";
+import { act, renderHook } from "@testing-library/react";
+import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { PersistingTableOptions } from "../../usePersistingStateForReactTable";
 import { usePersistingColumnVisibilityLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -75,22 +77,22 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
   },
 ];
 
@@ -114,29 +116,37 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("URL persistence", () => {
     it("persists column visibility state to URL and retrieves it", () => {
-      const { result: visibilityHook } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: visibilityHook } = renderHook(() =>
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-          visibilityHook.current.initialColumnVisibilityState || {}
-        );
+        const [columnVisibility, setColumnVisibility] =
+          React.useState<VisibilityState>(
+            visibilityHook.current.initialColumnVisibilityState || {}
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnVisibility },
           onColumnVisibilityChange: (updater) => {
-            visibilityHook.current.handleColumnVisibilityChange?.(updater, columnVisibility);
+            visibilityHook.current.handleColumnVisibilityChange?.(
+              updater,
+              columnVisibility
+            );
             setColumnVisibility(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -162,23 +172,29 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
       // Set up URL with column visibility parameters
       const visibilityState = { email: false, role: false };
       const encodedState = encodeURIComponent(JSON.stringify(visibilityState));
-      setWindowLocation(`https://example.com/?table.columnVisibility=${encodedState}`);
+      setWindowLocation(
+        `https://example.com/?table.columnVisibility=${encodedState}`
+      );
+
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            name: false,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
 
       const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              name: false,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       // Should read from URL instead of initial state
@@ -189,30 +205,38 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
     });
 
     it("uses custom key for URL parameters", () => {
-      const { result: visibilityHook } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "url",
-              key: "cols",
-            },
-            urlNamespace: "custom",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "url",
+            key: "cols",
           },
-        })
+          urlNamespace: "custom",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: visibilityHook } = renderHook(() =>
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-          visibilityHook.current.initialColumnVisibilityState || {}
-        );
+        const [columnVisibility, setColumnVisibility] =
+          React.useState<VisibilityState>(
+            visibilityHook.current.initialColumnVisibilityState || {}
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnVisibility },
           onColumnVisibilityChange: (updater) => {
-            visibilityHook.current.handleColumnVisibilityChange?.(updater, columnVisibility);
+            visibilityHook.current.handleColumnVisibilityChange?.(
+              updater,
+              columnVisibility
+            );
             setColumnVisibility(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -237,29 +261,37 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("localStorage persistence", () => {
     it("persists column visibility state to localStorage and retrieves it", () => {
-      const { result: visibilityHook } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "table-visibility",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "localStorage",
           },
-        })
+          localStorageKey: "table-visibility",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: visibilityHook } = renderHook(() =>
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-          visibilityHook.current.initialColumnVisibilityState || {}
-        );
+        const [columnVisibility, setColumnVisibility] =
+          React.useState<VisibilityState>(
+            visibilityHook.current.initialColumnVisibilityState || {}
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnVisibility },
           onColumnVisibilityChange: (updater) => {
-            visibilityHook.current.handleColumnVisibilityChange?.(updater, columnVisibility);
+            visibilityHook.current.handleColumnVisibilityChange?.(
+              updater,
+              columnVisibility
+            );
             setColumnVisibility(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -284,23 +316,30 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
     it("reads initial state from localStorage", () => {
       const visibilityState = { name: false, status: false };
-      mockLocalStorage.setItem("visibility-store", JSON.stringify({ columnVisibility: visibilityState }));
+      mockLocalStorage.setItem(
+        "visibility-store",
+        JSON.stringify({ columnVisibility: visibilityState })
+      );
+
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            email: false,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "visibility-store",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
 
       const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              email: false,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "visibility-store",
-          },
-        })
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       // Should read from localStorage instead of initial state
@@ -313,29 +352,37 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("function updaters", () => {
     it("handles function-based column visibility updates", () => {
-      const { result: visibilityHook } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result: visibilityHook } = renderHook(() =>
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-          visibilityHook.current.initialColumnVisibilityState || {}
-        );
+        const [columnVisibility, setColumnVisibility] =
+          React.useState<VisibilityState>(
+            visibilityHook.current.initialColumnVisibilityState || {}
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnVisibility },
           onColumnVisibilityChange: (updater) => {
-            visibilityHook.current.handleColumnVisibilityChange?.(updater, columnVisibility);
+            visibilityHook.current.handleColumnVisibilityChange?.(
+              updater,
+              columnVisibility
+            );
             setColumnVisibility(updater);
           },
           getCoreRowModel: getCoreRowModel(),
@@ -365,21 +412,25 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("initial state persistence", () => {
     it("persists initial state when no existing persisted values", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            email: false,
+            status: false,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "localStorage",
+          },
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              email: false,
-              status: false,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "localStorage",
-            },
-          },
-        })
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       // Should use initial state
@@ -390,7 +441,7 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
       // Should persist the initial state
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-        "columnVisibility",
+        "data-table",
         expect.stringContaining('"email":false')
       );
     });
@@ -398,24 +449,31 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
     it("does not persist initial state when persisted values already exist", () => {
       // Pre-existing values
       const existingVisibility = { name: false, role: false };
-      mockLocalStorage.setItem("existing-visibility", JSON.stringify({ columnVisibility: existingVisibility }));
+      mockLocalStorage.setItem(
+        "existing-visibility",
+        JSON.stringify({ columnVisibility: existingVisibility })
+      );
+
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            email: false,
+            status: false,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "existing-visibility",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
 
       const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              email: false,
-              status: false,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "existing-visibility",
-          },
-        })
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       // Should use existing values instead of initial state
@@ -434,48 +492,59 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("error handling", () => {
     it("handles malformed URL parameters gracefully", () => {
-      setWindowLocation("https://example.com/?table.columnVisibility=invalidjson");
-
-      const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              email: false,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+      setWindowLocation(
+        "https://example.com/?table.columnVisibility=invalidjson"
       );
 
-      // The hook returns the raw value as-is (current behavior)
-      // This is consistent with how the URL deserializer works
-      expect(result.current.initialColumnVisibilityState).toBe("invalidjson");
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            email: false,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result } = renderHook(() =>
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
+      );
+
+      // Should fall back to initial state when URL values are invalid
+      expect(result.current.initialColumnVisibilityState).toEqual({
+        email: false,
+      });
     });
 
     it("handles localStorage JSON parse errors gracefully", () => {
       mockLocalStorage.setItem("broken-visibility", "invalid json");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            role: false,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "broken-visibility",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              role: false,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "broken-visibility",
-          },
-        })
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage values are invalid
@@ -487,15 +556,19 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("no persistence configuration", () => {
     it("returns undefined handler when persistence is not configured", () => {
-      const { result } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              email: false,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            email: false,
           },
-        })
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
+      const { result } = renderHook(() =>
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       expect(result.current.handleColumnVisibilityChange).toBeUndefined();
@@ -507,36 +580,44 @@ describe("usePersistingColumnVisibilityLogic Integration Tests", () => {
 
   describe("real-world column visibility scenarios", () => {
     it("simulates user toggling columns in a data table", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          columnVisibility: {
+            email: true,
+            role: true,
+            status: true,
+          },
+        },
+        persistence: {
+          columnVisibility: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "users",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+
       const { result: visibilityHook } = renderHook(() =>
-        usePersistingColumnVisibilityLogic({
-          columns: testColumns,
-          initialState: {
-            columnVisibility: {
-              email: true,
-              role: true,
-              status: true,
-            },
-          },
-          persistence: {
-            columnVisibility: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "users",
-          },
-        })
+        usePersistingColumnVisibilityLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
-        const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
-          visibilityHook.current.initialColumnVisibilityState || {}
-        );
+        const [columnVisibility, setColumnVisibility] =
+          React.useState<VisibilityState>(
+            visibilityHook.current.initialColumnVisibilityState || {}
+          );
 
         const table = useReactTable({
           data: mockUsers,
           columns: testColumns,
           state: { columnVisibility },
           onColumnVisibilityChange: (updater) => {
-            visibilityHook.current.handleColumnVisibilityChange?.(updater, columnVisibility);
+            visibilityHook.current.handleColumnVisibilityChange?.(
+              updater,
+              columnVisibility
+            );
             setColumnVisibility(updater);
           },
           getCoreRowModel: getCoreRowModel(),

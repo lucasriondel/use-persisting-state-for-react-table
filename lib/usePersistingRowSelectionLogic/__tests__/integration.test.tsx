@@ -7,6 +7,8 @@ import {
 import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { PersistingTableOptions } from "../../usePersistingStateForReactTable";
 import { usePersistingRowSelectionLogic } from "../index";
 
 // Use a proper URL mock similar to the useUrlState tests
@@ -42,6 +44,8 @@ Object.defineProperty(window, "localStorage", {
   value: mockLocalStorage,
   writable: true,
 });
+
+// Helper function to create mock shared buckets
 
 // Mock history
 const mockHistory = {
@@ -88,22 +92,22 @@ const testColumns: ColumnDef<TestUser>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => row.getValue("name"),
+    cell: ({ row }) => row.getValue<string>("name"),
   },
   {
     accessorKey: "email",
     header: "Email",
-    cell: ({ row }) => row.getValue("email"),
+    cell: ({ row }) => row.getValue<string>("email"),
   },
   {
     accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => row.getValue("role"),
+    cell: ({ row }) => row.getValue<string>("role"),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => row.getValue("status"),
+    cell: ({ row }) => row.getValue<string>("status"),
   },
 ];
 
@@ -127,16 +131,19 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("URL persistence", () => {
     it("persists row selection state to URL and retrieves it", () => {
-      const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: rowSelectionHook } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -198,21 +205,24 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
         `https://example.com/?table.rowSelection=${encodedState}`
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "1": true,
+          },
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "1": true,
-            },
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       // Should read from URL instead of initial state
@@ -223,17 +233,20 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
     });
 
     it("uses custom key for URL parameters", () => {
-      const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-              key: "selected",
-            },
-            urlNamespace: "custom",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
+            key: "selected",
           },
-        })
+          urlNamespace: "custom",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: rowSelectionHook } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -276,16 +289,19 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("localStorage persistence", () => {
     it("persists row selection state to localStorage and retrieves it", () => {
-      const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "table-selection",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "localStorage",
           },
-        })
+          localStorageKey: "table-selection",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: rowSelectionHook } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -335,21 +351,24 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
         JSON.stringify({ rowSelection: selectionState })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "2": true,
+          },
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "selection-store",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "2": true,
-            },
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "selection-store",
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       // Should read from localStorage instead of initial state
@@ -362,16 +381,19 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("row selection behaviors", () => {
     it("handles select all and deselect all operations", () => {
-      const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: rowSelectionHook } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -426,16 +448,19 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
     });
 
     it("handles individual row toggle operations", () => {
-      const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: rowSelectionHook } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -488,16 +513,19 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("function updaters", () => {
     it("handles function-based row selection updates", () => {
-      const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
           },
-        })
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result: rowSelectionHook } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {
@@ -547,21 +575,25 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("initial state persistence", () => {
     it("persists initial state when no existing persisted values", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "0": true,
+            "2": true,
+          },
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "rowSelection",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "0": true,
-              "2": true,
-            },
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "localStorage",
-            },
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       // Should use initial state
@@ -585,22 +617,25 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
         JSON.stringify({ rowSelection: existingSelection })
       );
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "0": true,
+            "4": true,
+          },
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "existing-selection",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "0": true,
-              "4": true,
-            },
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "existing-selection",
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       // Should use existing values instead of initial state
@@ -621,45 +656,53 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
     it("handles malformed URL parameters gracefully", () => {
       setWindowLocation("https://example.com/?table.rowSelection=invalidjson");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "1": true,
+          },
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "table",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "1": true,
-            },
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "table",
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
-      // The hook returns the raw value as-is (current behavior)
-      expect(result.current.initialRowSelectionState).toBe("invalidjson");
+      // Should fall back to initial state when URL values are invalid
+      expect(result.current.initialRowSelectionState).toEqual({
+        "1": true,
+      });
     });
 
     it("handles localStorage JSON parse errors gracefully", () => {
       mockLocalStorage.setItem("broken-selection", "invalid json");
 
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "2": true,
+          },
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "localStorage",
+          },
+          localStorageKey: "broken-selection",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "2": true,
-            },
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "localStorage",
-            },
-            localStorageKey: "broken-selection",
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       // Should fall back to initial state when localStorage values are invalid
@@ -671,15 +714,18 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("no persistence configuration", () => {
     it("returns undefined handler when persistence is not configured", () => {
-      const { result } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {
-              "1": true,
-            },
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {
+            "1": true,
           },
-        })
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
+      const { result } = renderHook(() =>
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       expect(result.current.handleRowSelectionChange).toBeUndefined();
@@ -691,19 +737,22 @@ describe("usePersistingRowSelectionLogic Integration Tests", () => {
 
   describe("real-world row selection scenarios", () => {
     it("simulates user selecting rows in a data table with filtering behavior", () => {
+      const options: PersistingTableOptions<TestUser> = {
+        columns: testColumns,
+        initialState: {
+          rowSelection: {},
+        },
+        persistence: {
+          rowSelection: {
+            persistenceStorage: "url",
+          },
+          urlNamespace: "users",
+        },
+      };
+
+      const sharedBuckets = createMockSharedBuckets(options);
       const { result: rowSelectionHook } = renderHook(() =>
-        usePersistingRowSelectionLogic({
-          columns: testColumns,
-          initialState: {
-            rowSelection: {},
-          },
-          persistence: {
-            rowSelection: {
-              persistenceStorage: "url",
-            },
-            urlNamespace: "users",
-          },
-        })
+        usePersistingRowSelectionLogic(options, sharedBuckets)
       );
 
       const { result: tableHook } = renderHook(() => {

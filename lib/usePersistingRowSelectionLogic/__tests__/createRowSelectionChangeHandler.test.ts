@@ -1,6 +1,7 @@
+import { LocalStorageApiActions } from "@lucasriondel/use-local-storage-reacthook";
+import { RowSelectionState } from "@tanstack/react-table";
+import { UrlApiActions } from "use-url-state-reacthook";
 import { describe, expect, it, vi } from "vitest";
-import { UrlApiActions } from "../../useUrlState";
-import { LocalStorageApiActions } from "../@lucasriondel/use-local-storage-reacthook";
 import { createRowSelectionChangeHandler } from "../createRowSelectionChangeHandler";
 
 describe("createRowSelectionChangeHandler", () => {
@@ -59,7 +60,11 @@ describe("createRowSelectionChangeHandler", () => {
 
       const handler = createRowSelectionChangeHandler("rowSelection", mockApi);
       const currentState = { "0": false, "1": true };
-      const updater = vi.fn((old) => ({ ...old, "0": true, "2": true }));
+      const updater = vi.fn((old: RowSelectionState) => ({
+        ...old,
+        "0": true,
+        "2": true,
+      }));
 
       handler(updater, currentState);
 

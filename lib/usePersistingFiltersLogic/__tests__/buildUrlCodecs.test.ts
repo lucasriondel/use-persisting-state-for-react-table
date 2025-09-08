@@ -49,8 +49,8 @@ describe("buildUrlCodecs", () => {
   describe("codec extraction", () => {
     it("extracts codec for URL persistence column", () => {
       const testCodec = {
-        parse: (s: string) => JSON.parse(s),
-        format: (v: unknown) => JSON.stringify(v),
+        parse: (s: string) => JSON.parse(s) as string,
+        format: (v: string) => JSON.stringify(v),
       };
 
       const columns: ColumnDef<TestData, unknown>[] = [
@@ -69,31 +69,6 @@ describe("buildUrlCodecs", () => {
 
       const result = buildUrlCodecs(columns);
       expect(result).toEqual({ name: testCodec });
-    });
-
-    it("uses custom key when provided", () => {
-      const testCodec = {
-        parse: (s: string) => s.toLowerCase(),
-        format: (v: unknown) => String(v).toUpperCase(),
-      };
-
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-              key: "customKey",
-              codec: testCodec,
-            },
-          },
-        },
-      ];
-
-      const result = buildUrlCodecs(columns);
-      expect(result).toEqual({ customKey: testCodec });
     });
 
     it("extracts multiple codecs", () => {
@@ -454,7 +429,7 @@ describe("buildUrlCodecs", () => {
       const complexCodec = {
         parse: (s: string) => {
           try {
-            return JSON.parse(s);
+            return JSON.parse(s) as string;
           } catch {
             return s;
           }
@@ -463,6 +438,7 @@ describe("buildUrlCodecs", () => {
           if (typeof v === "object") {
             return JSON.stringify(v);
           }
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           return String(v);
         },
         metadata: { type: "complex" },

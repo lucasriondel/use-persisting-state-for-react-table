@@ -1,8 +1,9 @@
-import { useLocalStorageState } from "@lucasriondel/use-local-storage-reacthook";
 import { RowData } from "@tanstack/react-table";
 import { useEffect, useMemo, useRef } from "react";
-import { useUrlState } from "use-url-state-reacthook";
-import { PersistingTableOptions } from "../usePersistingStateForReactTable";
+import {
+  PersistingTableOptions,
+  SharedBuckets,
+} from "../usePersistingStateForReactTable";
 
 // Import utility functions
 import { computeInitialPaginationState } from "./computeInitialPaginationState";
@@ -48,7 +49,8 @@ import { createPaginationChangeHandler } from "./createPaginationChangeHandler";
  * ```
  */
 export function usePersistingPaginationLogic<TData extends RowData>(
-  options: PersistingTableOptions<TData>
+  options: PersistingTableOptions<TData>,
+  sharedBuckets: SharedBuckets
 ) {
   const paginationConfig = options.persistence?.pagination;
 
@@ -64,38 +66,21 @@ export function usePersistingPaginationLogic<TData extends RowData>(
   const shouldPersistPageIndex = Boolean(pageIndexTarget);
   const shouldPersistPageSize = Boolean(pageSizeTarget);
 
-  const [urlBucket, urlBucketApi] = useUrlState<Record<string, unknown>>(
-    {},
-    {
-      ...(options.persistence?.urlNamespace && {
-        namespace: options.persistence.urlNamespace,
-      }),
-      history: "replace",
-      debounceMs: 0,
-    }
-  );
-
-  const [localBucket, localBucketApi] = useLocalStorageState<
-    Record<string, unknown>
-  >(
-    {},
-    {
-      key: options.persistence?.localStorageKey ?? "pagination",
-    }
-  );
+  const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
+    sharedBuckets;
 
   const handlePaginationChange = useMemo(() => {
-    return createPaginationChangeHandler(
+    return createPaginationChangeHandler({
       shouldPersistPageIndex,
       shouldPersistPageSize,
-      pageIndexTarget ?? "url",
+      pageIndexTarget: pageIndexTarget ?? "url",
       pageIndexKey,
-      pageSizeTarget ?? "url",
+      pageSizeTarget: pageSizeTarget ?? "url",
       pageSizeKey,
       urlBucketApi,
       localBucketApi,
-      allowedPageSizes
-    );
+      allowedPageSizes,
+    });
   }, [
     shouldPersistPageIndex,
     shouldPersistPageSize,
