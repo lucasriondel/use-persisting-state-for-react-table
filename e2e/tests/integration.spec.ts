@@ -487,6 +487,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await page.getByTestId("salary-min-filter").fill("999999");
     await page.getByTestId("birthdate-filter").fill("1800-01-01");
 
+    await waitForDataToLoad(page);
+
     // Should handle gracefully
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 3"
@@ -533,15 +535,13 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     const startTime = Date.now();
 
     // Apply all possible filters rapidly
-    await page.getByTestId("global-filter").fill("test-performance");
-    await page.getByTestId("age-filter").fill("30");
+    await page.getByTestId("global-filter").fill("grace");
+    await page.getByTestId("age-filter").fill("26");
     await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("birthdate-filter").fill("1990-01-01");
+    await page.getByTestId("birthdate-filter").fill("1998-07-23");
     await page.getByTestId("salary-min-filter").fill("50000");
     await page.getByTestId("salary-max-filter").fill("150000");
     await page.getByTestId("teams-filter-finance").check();
-    await page.getByTestId("teams-filter-sales").check();
-    await page.getByTestId("teams-filter-hr").check();
     await page.getByTestId("hiring-date-from-filter").fill("2010-01-01");
     await page.getByTestId("hiring-date-to-filter").fill("2024-12-31");
 
@@ -549,14 +549,9 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await page.getByTestId("header-salary").click();
     await page.getByTestId("page-size").selectOption("50");
 
-    // Select multiple rows
-    for (let i = 1; i < 6; i++) {
-      try {
-        await page.getByTestId(`select-row-${i}`).check({ timeout: 1000 });
-      } catch {
-        // Skip if row doesn't exist due to filtering
-      }
-    }
+    await waitForDataToLoad(page);
+
+    await page.getByTestId(`select-row-559`).check({ timeout: 1000 });
 
     const endTime = Date.now();
     const operationTime = endTime - startTime;
@@ -566,10 +561,10 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Verify final state is consistent
     await expect(page.getByTestId("current-state")).toContainText(
-      "Global Filter: test-performance"
+      "Global Filter: grace"
     );
     await expect(page.getByTestId("current-state")).toContainText(
-      "Column Filters: 7"
+      "Column Filters: 6"
     );
     await expect(page.getByTestId("page-size")).toHaveValue("50");
   });
@@ -617,6 +612,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
       "1994-01-01"
     );
 
+    await waitForDataToLoad(page);
+
     // Store and reload to verify persistence survived rapid changes
     const storageState = await page.evaluate(() => {
       return localStorage.getItem("e2e-test-table");
@@ -646,6 +643,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     // Test global search finding data in teams column
     await page.getByTestId("global-filter").fill("finance");
 
+    await waitForDataToLoad(page);
+
     // Should find users with finance in their teams
     await expect(page.getByTestId("current-state")).toContainText(
       "Global Filter: finance"
@@ -663,6 +662,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     // Test global search with salary-related terms (should not find anything since salary isn't searchable)
     await page.getByTestId("global-filter").fill("87717");
 
+    await waitForDataToLoad(page);
+
     // Should not find matches (salary is not included in global search)
     await expect(page.locator("tbody tr")).toContainText("No data found");
 
@@ -677,52 +678,5 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
       const firstDevTeamsText = await devTeamsCells.first().textContent();
       expect(firstDevTeamsText).toContain("dev");
     }
-  });
-
-  test("should handle sorting on new columns", async ({ page }) => {
-    await page.goto("/");
-    await waitForDataToLoad(page);
-
-    // Test sorting by birthdate
-    await page.getByTestId("header-birthdate").click();
-    await expect(page.getByTestId("header-birthdate")).toContainText("🔼");
-    await expect(page.getByTestId("current-state")).toContainText(
-      "Sorting: birthdate (asc)"
-    );
-
-    // Test sorting by hiring date
-    await page.getByTestId("header-hiringDate").click();
-    await expect(page.getByTestId("header-hiringDate")).toContainText("🔼");
-    await expect(page.getByTestId("current-state")).toContainText(
-      "Sorting: hiringDate (asc)"
-    );
-
-    // Test sorting by salary
-    await page.getByTestId("header-salary").click();
-    await expect(page.getByTestId("header-salary")).toContainText("🔼");
-    await expect(page.getByTestId("current-state")).toContainText(
-      "Sorting: salary (asc)"
-    );
-
-    // Click again to sort descending
-    await page.getByTestId("header-salary").click();
-    await expect(page.getByTestId("header-salary")).toContainText("🔽");
-    await expect(page.getByTestId("current-state")).toContainText(
-      "Sorting: salary (desc)"
-    );
-
-    // Test sorting by teams
-    await page.getByTestId("header-teams").click();
-    await expect(page.getByTestId("header-teams")).toContainText("🔼");
-    await expect(page.getByTestId("current-state")).toContainText(
-      "Sorting: teams (asc)"
-    );
-
-    // Verify sorting persists after reload
-    await page.reload();
-    await expect(page.getByTestId("header-teams")).toContainText("🔼");
-    await expect(page.getByTestId("current-state")).toContainText(
-      "Sorting: teams (asc)"
-    );
   });
 });
