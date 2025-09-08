@@ -13,10 +13,10 @@ import { useCallback, useReducer } from "react";
 import { UrlApiActions } from "use-url-state-reacthook";
 import { TableState, tableStateReducer } from "./tableStateReducer";
 import { PersistenceConfig } from "./types";
-import { useAsyncFiltersManager } from "./useAsyncFiltersManager";
 import { useLocalStorageKeyValidation } from "./useLocalStorageKeyValidation";
 import { usePersistingColumnVisibilityLogic } from "./usePersistingColumnVisibilityLogic";
 import { usePersistingFiltersLogic } from "./usePersistingFiltersLogic";
+import { useAsyncFiltersPersistencePostLoading } from "./usePersistingFiltersLogic/useAsyncFiltersPersistencePostLoading";
 import { usePersistingGlobalFilterLogic } from "./usePersistingGlobalFilterLogic";
 import { usePersistingPaginationLogic } from "./usePersistingPaginationLogic";
 import { usePersistingRowSelectionLogic } from "./usePersistingRowSelectionLogic";
@@ -322,14 +322,15 @@ export function usePersistingStateForReactTable<TData extends RowData>(
     [rowSelection, handleRowSelectionChange]
   );
 
-  const hasFinishedProcessingAsyncFilters = useAsyncFiltersManager({
-    columns: validOptions.columns,
-    sharedBuckets,
-    currentColumnFilters: state.columnFilters,
-    setColumnFilters: (updater) => {
-      dispatch({ type: "SET_COLUMN_FILTERS", updater });
-    },
-  });
+  const hasFinishedProcessingAsyncFilters =
+    useAsyncFiltersPersistencePostLoading({
+      columns: validOptions.columns,
+      sharedBuckets,
+      currentColumnFilters: state.columnFilters,
+      setColumnFilters: (updater) => {
+        dispatch({ type: "SET_COLUMN_FILTERS", updater });
+      },
+    });
 
   return {
     state,

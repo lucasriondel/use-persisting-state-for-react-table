@@ -1,17 +1,17 @@
 import { ColumnDef, ColumnFiltersState, RowData } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
-import { getColumnIdentifier } from "./getColumnIdentifier";
-import { MultiSelectMeta, SelectMeta } from "./types";
-import { flattenColumns } from "./usePersistingFiltersLogic/flattenColumns";
-import { sanitizeValue } from "./usePersistingFiltersLogic/sanitizeValues";
-import { SharedBuckets } from "./usePersistingStateForReactTable";
+import { getColumnIdentifier } from "../getColumnIdentifier";
+import { MultiSelectMeta, SelectMeta } from "../types";
+import { SharedBuckets } from "../usePersistingStateForReactTable";
+import { flattenColumns } from "./flattenColumns";
+import { sanitizeValue } from "./sanitizeValues";
 
 /**
  * Props for the useAsyncFiltersManager hook.
  *
  * @template TData - The type of data in your table rows
  */
-interface UseAsyncFiltersManagerProps<TData extends RowData> {
+interface UseAsyncFiltersPersistencePostLoadingProps<TData extends RowData> {
   columns: ColumnDef<TData, unknown>[];
   sharedBuckets: SharedBuckets;
   setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
@@ -111,13 +111,14 @@ interface UseAsyncFiltersManagerProps<TData extends RowData> {
  * @see {@link PersistingTableOptions} for persistence configuration options
  * @see {@link SelectMeta} and {@link MultiSelectMeta} for filter metadata types
  */
-export function useAsyncFiltersManager<TData extends RowData>({
+export function useAsyncFiltersPersistencePostLoading<TData extends RowData>({
   columns,
   sharedBuckets,
   setColumnFilters,
   currentColumnFilters,
-}: UseAsyncFiltersManagerProps<TData>) {
-  const { urlBucket, urlBucketApi, localBucket, localBucketApi } = sharedBuckets;
+}: UseAsyncFiltersPersistencePostLoadingProps<TData>) {
+  const { urlBucket, urlBucketApi, localBucket, localBucketApi } =
+    sharedBuckets;
 
   const hasColumnsFinishedLoading =
     columns?.every((col) => (col.meta?.filter?.isLoading ?? false) === false) ??

@@ -1,17 +1,17 @@
 import { ColumnDef, ColumnFiltersState } from "@tanstack/react-table";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, MockContext, vi } from "vitest";
-import { MultiSelectMeta, SelectMeta } from "../types";
-import { useAsyncFiltersManager } from "../useAsyncFiltersManager";
+import { MultiSelectMeta, SelectMeta } from "../../types";
+import { useAsyncFiltersPersistencePostLoading } from "../useAsyncFiltersPersistencePostLoading";
 
 // Mock the dependencies
-vi.mock("../usePersistingFiltersLogic/sanitizeValues");
-vi.mock("../getColumnIdentifier");
+vi.mock("../sanitizeValues");
+vi.mock("../../getColumnIdentifier");
 
 // Import the mocked modules for type support
-import { getColumnIdentifier } from "../getColumnIdentifier";
-import { sanitizeValue } from "../usePersistingFiltersLogic/sanitizeValues";
-import { createMockSharedBuckets } from "./createMockSharedBuckets";
+import { createMockSharedBuckets } from "../../__tests__/createMockSharedBuckets";
+import { getColumnIdentifier } from "../../getColumnIdentifier";
+import { sanitizeValue } from "../sanitizeValues";
 
 // Type the mocked functions
 const mockSanitizeValue = vi.mocked(sanitizeValue);
@@ -25,7 +25,7 @@ interface TestUser {
   department: string;
 }
 
-describe("useAsyncFiltersManager", () => {
+describe("useAsyncFiltersPersistencePostLoading", () => {
   // Mock setColumnFilters function
   const mockSetColumnFilters = vi.fn();
 
@@ -51,7 +51,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: [],
           sharedBuckets,
           currentColumnFilters: [],
@@ -68,7 +68,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           // @ts-expect-error - this is normal, we're testing the type coercion
           columns: undefined,
           sharedBuckets,
@@ -97,7 +97,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -128,7 +128,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -160,7 +160,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -190,7 +190,7 @@ describe("useAsyncFiltersManager", () => {
       const sharedBuckets = createMockSharedBuckets();
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -232,7 +232,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -277,7 +277,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [{ id: "role", value: "admin" }], // State already matches bucket
@@ -318,7 +318,7 @@ describe("useAsyncFiltersManager", () => {
       mockSanitizeValue.mockReturnValue(undefined);
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -365,7 +365,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -411,7 +411,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -451,7 +451,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -505,7 +505,7 @@ describe("useAsyncFiltersManager", () => {
       );
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -547,7 +547,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -635,7 +635,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -702,7 +702,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [], // Empty state but bucket has value
@@ -741,7 +741,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [{ id: "role", value: "admin" }], // State already matches
@@ -781,7 +781,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [
@@ -824,7 +824,7 @@ describe("useAsyncFiltersManager", () => {
       });
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -863,7 +863,7 @@ describe("useAsyncFiltersManager", () => {
       mockGetColumnIdentifier.mockReturnValue("role");
 
       renderHook(() =>
-        useAsyncFiltersManager({
+        useAsyncFiltersPersistencePostLoading({
           columns: columns,
           sharedBuckets,
           currentColumnFilters: [],
@@ -904,7 +904,7 @@ describe("useAsyncFiltersManager", () => {
 
       const { rerender } = renderHook(
         ({ columns }) =>
-          useAsyncFiltersManager({
+          useAsyncFiltersPersistencePostLoading({
             columns: columns,
             sharedBuckets,
             currentColumnFilters: [],
