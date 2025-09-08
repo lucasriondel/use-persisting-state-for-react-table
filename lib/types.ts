@@ -24,7 +24,6 @@ export type PersistenceStorage = "url" | "localStorage";
 
 // Base filter meta interface
 export interface BaseFilterMeta {
-  key?: string;
   isLoading?: boolean;
   persistenceStorage?: PersistenceStorage;
   variant: FilterVariant;

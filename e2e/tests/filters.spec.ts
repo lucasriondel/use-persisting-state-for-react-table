@@ -24,22 +24,22 @@ test.describe("Filters Persistence", () => {
     );
 
     // Apply age filter
-    await page.getByTestId("age-filter").fill("25");
-    await page.getByTestId("age-filter").blur();
+    await page.getByTestId("age").fill("25");
+    await page.getByTestId("age").blur();
 
     // Check URL contains age filter
-    expect(page.url()).toContain("test-table.age-filter=25");
+    expect(page.url()).toContain("test-table.age=25");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
 
     // Reload page and verify persistence
     await page.reload();
-    await expect(page.getByTestId("age-filter")).toHaveValue("25");
+    await expect(page.getByTestId("age")).toHaveValue("25");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
-    expect(page.url()).toContain("test-table.age-filter=25");
+    expect(page.url()).toContain("test-table.age=25");
   });
 
   test("should persist status filter in URL", async ({ page }) => {
@@ -49,10 +49,10 @@ test.describe("Filters Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply status filter
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
 
     // Check URL contains the filter
-    expect(page.url()).toContain("test-table.status-filter=active");
+    expect(page.url()).toContain("test-table.status=active");
 
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
@@ -60,7 +60,7 @@ test.describe("Filters Persistence", () => {
 
     // Reload page and verify persistence
     await page.reload();
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("status")).toHaveValue("active");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -102,7 +102,7 @@ test.describe("Filters Persistence", () => {
     expect(initialRows).toContain("Column Filters: 0");
 
     // Apply status filter to 'active'
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
 
     // Should show 50 rows (every other user is active)
     await expect(page.getByTestId("current-state")).toContainText(
@@ -129,8 +129,8 @@ test.describe("Filters Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply multiple filters
-    await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("age-filter").fill("25");
+    await page.getByTestId("status").selectOption("active");
+    await page.getByTestId("age").fill("25");
     await page.getByTestId("global-filter").fill("john");
 
     // Check all filters are applied
@@ -142,14 +142,14 @@ test.describe("Filters Persistence", () => {
     );
 
     // Check URL contains URL-persisted filters
-    expect(page.url()).toContain("test-table.age-filter=25");
+    expect(page.url()).toContain("test-table.age=25");
     expect(page.url()).toContain("test-table.search=john");
-    expect(page.url()).toContain("test-table.status-filter=active");
+    expect(page.url()).toContain("test-table.status=active");
 
     // Reload and verify all filters persist
     await page.reload();
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
-    await expect(page.getByTestId("age-filter")).toHaveValue("25");
+    await expect(page.getByTestId("status")).toHaveValue("active");
+    await expect(page.getByTestId("age")).toHaveValue("25");
     await expect(page.getByTestId("global-filter")).toHaveValue("john");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 2"
@@ -171,7 +171,7 @@ test.describe("Filters Persistence", () => {
     await expect(page.getByTestId("page-info")).toHaveText("3 of 100");
 
     // Apply a filter
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
 
     // Should reset to page 1
     await expect(page.getByTestId("page-info")).toHaveText("1 of 34");
@@ -185,8 +185,8 @@ test.describe("Filters Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply filters
-    await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("age-filter").fill("30");
+    await page.getByTestId("status").selectOption("active");
+    await page.getByTestId("age").fill("30");
     await page.getByTestId("global-filter").fill("alice");
 
     // Verify filters are applied
@@ -204,19 +204,19 @@ test.describe("Filters Persistence", () => {
     );
     expect(page.url()).not.toContain("test-table.search");
 
-    await page.getByTestId("age-filter").clear();
+    await page.getByTestId("age").clear();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
-    expect(page.url()).not.toContain("test-table.age-filter");
+    expect(page.url()).not.toContain("test-table.age");
 
-    await page.getByTestId("status-filter").selectOption("");
+    await page.getByTestId("status").selectOption("");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 0"
     );
 
     // Check URL is cleared (status filter is now in URL)
-    expect(page.url()).not.toContain("test-table.status-filter");
+    expect(page.url()).not.toContain("test-table.status");
   });
 
   test("should handle async filter processing", async ({ page }) => {
@@ -229,7 +229,7 @@ test.describe("Filters Persistence", () => {
     await expect(page.getByTestId("loading-filters")).not.toBeVisible();
 
     // Apply a filter that might trigger async processing
-    await page.getByTestId("age-filter").fill("25");
+    await page.getByTestId("age").fill("25");
 
     // The loading indicator might appear briefly but should disappear
     // We can't reliably test for its appearance due to timing, but we can ensure it's gone
@@ -246,7 +246,7 @@ test.describe("Filters Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply complex state
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
     await page.getByTestId("global-filter").fill("alice");
     await page.getByTestId("header-age").click(); // Sort by age
     await page.getByTestId("next-page").click();
@@ -254,18 +254,20 @@ test.describe("Filters Persistence", () => {
     // Reload and verify everything persists
     await page.reload();
 
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("status")).toHaveValue("active");
     await expect(page.getByTestId("global-filter")).toHaveValue("alice");
     await expect(page.getByTestId("header-age")).toContainText("Age 🔽");
 
     // Verify URL contains all relevant parameters
     expect(page.url()).toContain("test-table.search=alice");
-    expect(page.url()).toContain("test-table.status-filter=active");
+    expect(page.url()).toContain("test-table.status=active");
     expect(page.url()).toContain("test-table.sort-col=age");
     expect(page.url()).toContain("test-table.page=1");
   });
 
-  test("should persist birthdate filter in URL (date variant)", async ({ page }) => {
+  test("should persist birthdate filter in URL (date variant)", async ({
+    page,
+  }) => {
     await page.goto("/");
     await waitForDataToLoad(page);
 
@@ -275,22 +277,22 @@ test.describe("Filters Persistence", () => {
     );
 
     // Apply birthdate filter for July 3, 2006 (first user's birthdate)
-    await page.getByTestId("birthdate-filter").fill("2006-07-03");
-    await page.getByTestId("birthdate-filter").blur();
+    await page.getByTestId("birthdate").fill("2006-07-03");
+    await page.getByTestId("birthdate").blur();
 
     // Check URL contains birthdate filter
-    expect(page.url()).toContain("test-table.birthdate-filter=2006-07-03");
+    expect(page.url()).toContain("test-table.birthdate=2006-07-03");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
 
     // Reload page and verify persistence
     await page.reload();
-    await expect(page.getByTestId("birthdate-filter")).toHaveValue("2006-07-03");
+    await expect(page.getByTestId("birthdate")).toHaveValue("2006-07-03");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
-    expect(page.url()).toContain("test-table.birthdate-filter=2006-07-03");
+    expect(page.url()).toContain("test-table.birthdate=2006-07-03");
 
     // Verify filtering works - should show only users with that birthdate
     const birthdateCells = page.locator('[data-testid^="cell-birthdate-"]');
@@ -298,7 +300,9 @@ test.describe("Filters Persistence", () => {
     expect(firstCellText).toBe("7/3/2006");
   });
 
-  test("should persist hiring date range filter in URL (dateRange variant)", async ({ page }) => {
+  test("should persist hiring date range filter in URL (dateRange variant)", async ({
+    page,
+  }) => {
     await page.goto("/");
     await waitForDataToLoad(page);
 
@@ -308,15 +312,19 @@ test.describe("Filters Persistence", () => {
     await page.getByTestId("hiring-date-from-filter").blur();
 
     // Check URL contains hiring date range filter
-    expect(page.url()).toContain("test-table.hiring-date-filter");
+    expect(page.url()).toContain("test-table.hiringDate");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
 
     // Reload page and verify persistence
     await page.reload();
-    await expect(page.getByTestId("hiring-date-from-filter")).toHaveValue("2020-01-01");
-    await expect(page.getByTestId("hiring-date-to-filter")).toHaveValue("2021-12-31");
+    await expect(page.getByTestId("hiring-date-from-filter")).toHaveValue(
+      "2020-01-01"
+    );
+    await expect(page.getByTestId("hiring-date-to-filter")).toHaveValue(
+      "2021-12-31"
+    );
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -324,7 +332,7 @@ test.describe("Filters Persistence", () => {
     // Test single-sided range (only from date)
     await page.getByTestId("hiring-date-to-filter").clear();
     await page.getByTestId("hiring-date-to-filter").blur();
-    
+
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -339,7 +347,9 @@ test.describe("Filters Persistence", () => {
     );
   });
 
-  test("should persist salary range filter in URL (numberRange variant)", async ({ page }) => {
+  test("should persist salary range filter in URL (numberRange variant)", async ({
+    page,
+  }) => {
     await page.goto("/");
     await waitForDataToLoad(page);
 
@@ -349,7 +359,7 @@ test.describe("Filters Persistence", () => {
     await page.getByTestId("salary-min-filter").blur();
 
     // Check URL contains salary range filter
-    expect(page.url()).toContain("test-table.salary-filter");
+    expect(page.url()).toContain("test-table.salary");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -365,7 +375,7 @@ test.describe("Filters Persistence", () => {
     // Verify filtering works - check that visible salaries are within range
     const salaryCells = page.locator('[data-testid^="cell-salary-"]');
     const count = await salaryCells.count();
-    
+
     for (let i = 0; i < Math.min(count, 5); i++) {
       const salaryText = await salaryCells.nth(i).textContent();
       const salaryValue = parseInt(salaryText?.replace(/[$,]/g, "") || "0");
@@ -376,7 +386,7 @@ test.describe("Filters Persistence", () => {
     // Test single-sided range (only min)
     await page.getByTestId("salary-max-filter").clear();
     await page.getByTestId("salary-max-filter").blur();
-    
+
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -391,26 +401,28 @@ test.describe("Filters Persistence", () => {
     );
   });
 
-  test("should persist teams multiselect filter in URL (multiSelect variant)", async ({ page }) => {
+  test("should persist teams multiselect filter in URL (multiSelect variant)", async ({
+    page,
+  }) => {
     await page.goto("/");
     await waitForDataToLoad(page);
 
     // Apply teams filter - select multiple teams
-    await page.getByTestId("teams-filter-finance").check();
-    await page.getByTestId("teams-filter-sales").check();
+    await page.getByTestId("teams-finance").check();
+    await page.getByTestId("teams-sales").check();
 
     // Check URL contains teams filter
-    expect(page.url()).toContain("test-table.teams-filter");
+    expect(page.url()).toContain("test-table.teams");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
 
     // Reload page and verify persistence
     await page.reload();
-    await expect(page.getByTestId("teams-filter-finance")).toBeChecked();
-    await expect(page.getByTestId("teams-filter-sales")).toBeChecked();
-    await expect(page.getByTestId("teams-filter-hr")).not.toBeChecked();
-    await expect(page.getByTestId("teams-filter-dev")).not.toBeChecked();
+    await expect(page.getByTestId("teams-finance")).toBeChecked();
+    await expect(page.getByTestId("teams-sales")).toBeChecked();
+    await expect(page.getByTestId("teams-hr")).not.toBeChecked();
+    await expect(page.getByTestId("teams-dev")).not.toBeChecked();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -418,7 +430,7 @@ test.describe("Filters Persistence", () => {
     // Verify filtering works - check that visible teams contain selected values
     const teamsCells = page.locator('[data-testid^="cell-teams-"]');
     const count = await teamsCells.count();
-    
+
     for (let i = 0; i < Math.min(count, 5); i++) {
       const teamsText = await teamsCells.nth(i).textContent();
       expect(
@@ -427,15 +439,15 @@ test.describe("Filters Persistence", () => {
     }
 
     // Test adding/removing selections
-    await page.getByTestId("teams-filter-hr").check();
+    await page.getByTestId("teams-hr").check();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
 
     // Test unchecking all
-    await page.getByTestId("teams-filter-finance").uncheck();
-    await page.getByTestId("teams-filter-sales").uncheck();
-    await page.getByTestId("teams-filter-hr").uncheck();
+    await page.getByTestId("teams-finance").uncheck();
+    await page.getByTestId("teams-sales").uncheck();
+    await page.getByTestId("teams-hr").uncheck();
 
     // Should clear the filter when no teams selected
     await expect(page.getByTestId("current-state")).toContainText(
@@ -443,16 +455,18 @@ test.describe("Filters Persistence", () => {
     );
   });
 
-  test("should handle multiple new filters simultaneously", async ({ page }) => {
+  test("should handle multiple new filters simultaneously", async ({
+    page,
+  }) => {
     await page.goto("/");
     await waitForDataToLoad(page);
 
     // Apply multiple new filters
-    await page.getByTestId("birthdate-filter").fill("2000-01-01");
+    await page.getByTestId("birthdate").fill("2000-01-01");
     await page.getByTestId("salary-min-filter").fill("60000");
     await page.getByTestId("salary-max-filter").fill("150000");
-    await page.getByTestId("teams-filter-finance").check();
-    await page.getByTestId("teams-filter-dev").check();
+    await page.getByTestId("teams-finance").check();
+    await page.getByTestId("teams-dev").check();
     await page.getByTestId("hiring-date-from-filter").fill("2015-01-01");
 
     // Check all filters are applied
@@ -461,19 +475,21 @@ test.describe("Filters Persistence", () => {
     );
 
     // Check URL contains all filters
-    expect(page.url()).toContain("test-table.birthdate-filter");
-    expect(page.url()).toContain("test-table.salary-filter");
-    expect(page.url()).toContain("test-table.teams-filter");
-    expect(page.url()).toContain("test-table.hiring-date-filter");
+    expect(page.url()).toContain("test-table.birthdate");
+    expect(page.url()).toContain("test-table.salary");
+    expect(page.url()).toContain("test-table.teams");
+    expect(page.url()).toContain("test-table.hiringDate");
 
     // Reload and verify all filters persist
     await page.reload();
-    await expect(page.getByTestId("birthdate-filter")).toHaveValue("2000-01-01");
+    await expect(page.getByTestId("birthdate")).toHaveValue("2000-01-01");
     await expect(page.getByTestId("salary-min-filter")).toHaveValue("60000");
     await expect(page.getByTestId("salary-max-filter")).toHaveValue("150000");
-    await expect(page.getByTestId("teams-filter-finance")).toBeChecked();
-    await expect(page.getByTestId("teams-filter-dev")).toBeChecked();
-    await expect(page.getByTestId("hiring-date-from-filter")).toHaveValue("2015-01-01");
+    await expect(page.getByTestId("teams-finance")).toBeChecked();
+    await expect(page.getByTestId("teams-dev")).toBeChecked();
+    await expect(page.getByTestId("hiring-date-from-filter")).toHaveValue(
+      "2015-01-01"
+    );
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 4"
     );
@@ -484,9 +500,9 @@ test.describe("Filters Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply multiple new filters
-    await page.getByTestId("birthdate-filter").fill("2000-01-01");
+    await page.getByTestId("birthdate").fill("2000-01-01");
     await page.getByTestId("salary-min-filter").fill("50000");
-    await page.getByTestId("teams-filter-finance").check();
+    await page.getByTestId("teams-finance").check();
     await page.getByTestId("hiring-date-from-filter").fill("2020-01-01");
 
     // Verify filters are applied
@@ -495,28 +511,28 @@ test.describe("Filters Persistence", () => {
     );
 
     // Clear filters one by one
-    await page.getByTestId("birthdate-filter").clear();
+    await page.getByTestId("birthdate").clear();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 3"
     );
-    expect(page.url()).not.toContain("test-table.birthdate-filter");
+    expect(page.url()).not.toContain("test-table.birthdate");
 
     await page.getByTestId("salary-min-filter").clear();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 2"
     );
 
-    await page.getByTestId("teams-filter-finance").uncheck();
+    await page.getByTestId("teams-finance").uncheck();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
-    expect(page.url()).not.toContain("test-table.teams-filter");
+    expect(page.url()).not.toContain("test-table.teams");
 
     await page.getByTestId("hiring-date-from-filter").clear();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 0"
     );
-    expect(page.url()).not.toContain("test-table.hiring-date-filter");
+    expect(page.url()).not.toContain("test-table.hiringDate");
   });
 
   test("should reset pagination when new filters change", async ({ page }) => {
@@ -542,11 +558,11 @@ test.describe("Filters Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply both old and new filters
-    await page.getByTestId("age-filter").fill("25");
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("age").fill("25");
+    await page.getByTestId("status").selectOption("active");
     await page.getByTestId("global-filter").fill("john");
     await page.getByTestId("salary-min-filter").fill("70000");
-    await page.getByTestId("teams-filter-finance").check();
+    await page.getByTestId("teams-finance").check();
 
     // Check all filters are applied
     await expect(page.getByTestId("current-state")).toContainText(
@@ -558,11 +574,11 @@ test.describe("Filters Persistence", () => {
 
     // Reload and verify all filters persist
     await page.reload();
-    await expect(page.getByTestId("age-filter")).toHaveValue("25");
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("age")).toHaveValue("25");
+    await expect(page.getByTestId("status")).toHaveValue("active");
     await expect(page.getByTestId("global-filter")).toHaveValue("john");
     await expect(page.getByTestId("salary-min-filter")).toHaveValue("70000");
-    await expect(page.getByTestId("teams-filter-finance")).toBeChecked();
+    await expect(page.getByTestId("teams-finance")).toBeChecked();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 4"
     );

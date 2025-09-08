@@ -73,7 +73,6 @@ const columns = [
       filter: {
         variant: "select" as const,
         persistenceStorage: "url" as const,
-        key: "status-filter",
         options: [
           { value: "active", label: "Active" },
           { value: "inactive", label: "Inactive" },
@@ -87,7 +86,6 @@ const columns = [
       filter: {
         variant: "number" as const,
         persistenceStorage: "url" as const,
-        key: "age-filter",
       },
     },
   }),
@@ -141,7 +139,7 @@ describe("urlNamespace filter behavior", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall?.[2]).toContain("status-filter=active");
+      expect(lastCall?.[2]).toContain("status=active");
     });
 
     it("should handle multiple column filters without urlNamespace", () => {
@@ -181,8 +179,8 @@ describe("urlNamespace filter behavior", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall?.[2]).toContain("status-filter=active");
-      expect(lastCall?.[2]).toContain("age-filter=25");
+      expect(lastCall?.[2]).toContain("status=active");
+      expect(lastCall?.[2]).toContain("age=25");
     });
   });
 
@@ -225,7 +223,7 @@ describe("urlNamespace filter behavior", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall?.[2]).toContain("test-table.status-filter=active");
+      expect(lastCall?.[2]).toContain("test-table.status=active");
     });
 
     it("should handle multiple column filters WITH urlNamespace", () => {
@@ -265,13 +263,13 @@ describe("urlNamespace filter behavior", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall?.[2]).toContain("test-table.status-filter=active");
-      expect(lastCall?.[2]).toContain("test-table.age-filter=25");
+      expect(lastCall?.[2]).toContain("test-table.status=active");
+      expect(lastCall?.[2]).toContain("test-table.age=25");
     });
 
     it("should load initial state from URL with urlNamespace", () => {
       setWindowLocation(
-        "https://example.com/?test-table.status-filter=inactive&test-table.age-filter=30"
+        "https://example.com/?test-table.status=inactive&test-table.age=30"
       );
 
       const options: PersistingTableOptions<TestData> = {
@@ -295,7 +293,7 @@ describe("urlNamespace filter behavior", () => {
 
     it("should handle filter clearing WITH urlNamespace", () => {
       setWindowLocation(
-        "https://example.com/?test-table.status-filter=active&test-table.age-filter=25"
+        "https://example.com/?test-table.status=active&test-table.age=25"
       );
 
       const options: PersistingTableOptions<TestData> = {
@@ -335,12 +333,12 @@ describe("urlNamespace filter behavior", () => {
           mockHistory.replaceState.mock.calls.length - 1
         ];
 
-      // The URL should not contain status-filter anymore
-      expect(lastCall?.[2]).not.toContain("status-filter");
+      // The URL should not contain status anymore
+      expect(lastCall?.[2]).not.toContain("status");
       // The URL should still contain the age filter
       // Note: This might be failing due to a bug in filter removal logic
       if (lastCall?.[2] !== "https://example.com/") {
-        expect(lastCall?.[2]).toContain("test-table.age-filter=25");
+        expect(lastCall?.[2]).toContain("test-table.age=25");
       } else {
         console.warn(
           "URL was completely cleared when it should have retained age filter"
@@ -360,7 +358,6 @@ describe("urlNamespace filter behavior", () => {
             filter: {
               variant: "select" as const,
               persistenceStorage: "url" as const,
-              key: "status-filter",
               options: [
                 { value: "active", label: "Active" },
                 { value: "inactive", label: "Inactive" },
@@ -374,7 +371,6 @@ describe("urlNamespace filter behavior", () => {
             filter: {
               variant: "number" as const,
               persistenceStorage: "localStorage" as const,
-              key: "age-filter",
             },
           },
         }),
@@ -412,8 +408,8 @@ describe("urlNamespace filter behavior", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall?.[2]).toContain("test-table.status-filter=active");
-      expect(lastCall?.[2]).not.toContain("age-filter"); // age is in localStorage
+      expect(lastCall?.[2]).toContain("test-table.status=active");
+      expect(lastCall?.[2]).not.toContain("age"); // age is in localStorage
 
       // localStorage should have age filter
       // Filter out the test calls from isLocalStorageAvailable
@@ -422,7 +418,7 @@ describe("urlNamespace filter behavior", () => {
       );
 
       if (testTableCalls.length > 0) {
-        expect(testTableCalls[0]?.[1]).toContain('"age-filter":25');
+        expect(testTableCalls[0]?.[1]).toContain('"age":25');
       } else {
         console.warn(
           "No localStorage calls found for test-table key. This might indicate a bug in localStorage persistence for mixed storage types."
@@ -595,8 +591,8 @@ describe("urlNamespace filter behavior", () => {
         mockHistory.replaceState.mock.calls[
           mockHistory.replaceState.mock.calls.length - 1
         ];
-      expect(lastCall?.[2]).not.toContain("status-filter");
-      expect(lastCall?.[2]).not.toContain("age-filter");
+      expect(lastCall?.[2]).not.toContain("status");
+      expect(lastCall?.[2]).not.toContain("age");
     });
 
     it("should handle filter updates that trigger other state changes", () => {
@@ -650,8 +646,8 @@ describe("urlNamespace filter behavior", () => {
       // Check for filter first with defensive coding
       // @ts-expect-error - TODO need to fix this
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      if (lastCall?.[2]?.includes("test-table.status-filter=active")) {
-        expect(lastCall[2]).toContain("test-table.status-filter=active");
+      if (lastCall?.[2]?.includes("test-table.status=active")) {
+        expect(lastCall[2]).toContain("test-table.status=active");
       } else {
         console.warn(
           "Filter not found in final URL. Checking if it was persisted earlier and then lost..."
@@ -662,7 +658,7 @@ describe("urlNamespace filter behavior", () => {
         allUrls.filter((url) =>
           // @ts-expect-error - TODO need to fix this
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          url?.includes("test-table.status-filter=active")
+          url?.includes("test-table.status=active")
         );
 
         // For now, just verify state is correct since URL might have timing issues

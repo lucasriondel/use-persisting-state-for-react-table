@@ -120,44 +120,6 @@ describe("buildColumnFiltersFromBuckets", () => {
     });
   });
 
-  describe("custom keys", () => {
-    it("uses custom key when provided", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-              key: "searchName",
-            },
-          },
-        },
-      ];
-      const urlState = { searchName: "alice" };
-      const result = buildColumnFiltersFromBuckets(columns, urlState, {});
-      expect(result).toEqual([{ id: "name", value: "alice" }]);
-    });
-
-    it("falls back to column identifier when no custom key", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          accessorKey: "name", // No explicit id, will use accessorKey
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-            },
-          },
-        },
-      ];
-      const urlState = { name: "bob" };
-      const result = buildColumnFiltersFromBuckets(columns, urlState, {});
-      expect(result).toEqual([{ id: "name", value: "bob" }]);
-    });
-  });
-
   describe("empty value filtering", () => {
     it("filters out empty string values", () => {
       const columns: ColumnDef<TestData, unknown>[] = [

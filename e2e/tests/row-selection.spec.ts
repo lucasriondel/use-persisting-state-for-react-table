@@ -281,7 +281,7 @@ test.describe("Row Selection Persistence", () => {
     );
 
     // Apply a filter
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
 
     // Selected count should be maintained (even if some selected rows are now filtered out)
     // The behavior depends on how the hook handles filtered selections
@@ -291,7 +291,7 @@ test.describe("Row Selection Persistence", () => {
     );
 
     // Remove filter
-    await page.getByTestId("status-filter").selectOption("");
+    await page.getByTestId("status").selectOption("");
 
     // All selections should still be there
     await expect(page.getByTestId("select-row-1")).toBeChecked();
@@ -309,7 +309,7 @@ test.describe("Row Selection Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply a filter first
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -321,7 +321,7 @@ test.describe("Row Selection Persistence", () => {
     );
 
     // Remove filter
-    await page.getByTestId("status-filter").selectOption("");
+    await page.getByTestId("status").selectOption("");
 
     // Should still show 10 selected rows, but now we can see all 100 rows
     await expect(page.getByTestId("current-state")).toContainText(
@@ -344,7 +344,7 @@ test.describe("Row Selection Persistence", () => {
     // Apply complex state
     await page.getByTestId("select-row-1").check();
     await page.getByTestId("select-row-5").check();
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
     await page.getByTestId("header-firstName").click(); // Sort
     await page.getByTestId("page-size").selectOption("20");
     await page.getByTestId("global-filter").fill("alice");
@@ -377,7 +377,7 @@ test.describe("Row Selection Persistence", () => {
     await expect(page.getByTestId("current-state")).toContainText(
       "Selected Rows: 2"
     );
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("status")).toHaveValue("active");
     await expect(page.getByTestId("header-firstName")).toContainText("🔼");
     await expect(page.getByTestId("page-size")).toHaveValue("20");
     await expect(page.getByTestId("global-filter")).toHaveValue("alice");

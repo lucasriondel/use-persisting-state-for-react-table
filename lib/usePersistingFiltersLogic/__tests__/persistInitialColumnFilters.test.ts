@@ -388,67 +388,6 @@ describe("persistInitialColumnFilters", () => {
     });
   });
 
-  describe("custom keys", () => {
-    it("uses custom key when provided", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-              key: "searchName",
-            },
-          },
-        },
-      ];
-
-      const initialFilters: ColumnFiltersState = [
-        { id: "name", value: "alice" },
-      ];
-
-      persistInitialColumnFilters(
-        columns,
-        {},
-        {},
-        mockUrlApi,
-        mockLocalApi,
-        initialFilters
-      );
-
-      expect(mockUrlApi.patch).toHaveBeenCalledWith({ searchName: "alice" });
-    });
-
-    it("falls back to column ID when no custom key", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-            },
-          },
-        },
-      ];
-
-      const initialFilters: ColumnFiltersState = [{ id: "name", value: "bob" }];
-
-      persistInitialColumnFilters(
-        columns,
-        {},
-        {},
-        mockUrlApi,
-        mockLocalApi,
-        initialFilters
-      );
-
-      expect(mockUrlApi.patch).toHaveBeenCalledWith({ name: "bob" });
-    });
-  });
-
   describe("multiple filters", () => {
     it("persists to both URL and localStorage in separate calls", () => {
       const columns: ColumnDef<TestData, unknown>[] = [

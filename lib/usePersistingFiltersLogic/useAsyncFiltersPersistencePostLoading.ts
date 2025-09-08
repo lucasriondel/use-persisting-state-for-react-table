@@ -149,16 +149,8 @@ export function useAsyncFiltersPersistencePostLoading<TData extends RowData>({
         (filterMeta as SelectMeta | MultiSelectMeta).isLoading === false
       ) {
         // Use the filter key if available, otherwise try to get column identifier
-        let key: string | undefined = filterMeta.key;
 
-        if (!key) {
-          try {
-            key = getColumnIdentifier(col);
-          } catch {
-            continue;
-          }
-        }
-
+        const key = getColumnIdentifier(col);
         if (!key) continue;
 
         const raw =

@@ -457,7 +457,6 @@ describe("createColumnFiltersChangeHandler", () => {
             filter: {
               variant: "text",
               persistenceStorage: "url",
-              key: "searchName",
             },
           },
         },
@@ -473,10 +472,10 @@ describe("createColumnFiltersChangeHandler", () => {
 
       handler(nextState, prevState);
 
-      expect(mockUrlApi.patch).toHaveBeenCalledWith({ searchName: "alice" });
+      expect(mockUrlApi.patch).toHaveBeenCalledWith({ name: "alice" });
     });
 
-    it("falls back to column identifier when no custom key", () => {
+    it("falls back to column identifier", () => {
       const columns: ColumnDef<TestData, unknown>[] = [
         {
           accessorKey: "name", // No explicit id

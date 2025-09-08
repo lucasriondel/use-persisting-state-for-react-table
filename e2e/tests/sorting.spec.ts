@@ -153,7 +153,7 @@ test.describe("Sorting Persistence", () => {
     );
 
     // Apply a filter
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
 
     // Sorting should be maintained
     await expect(page.getByTestId("current-state")).toContainText(
@@ -177,7 +177,7 @@ test.describe("Sorting Persistence", () => {
     // Apply multiple operations
     await page.getByTestId("header-lastName").click(); // Sort by lastName
     await page.getByTestId("next-page").click(); // Go to page 2
-    await page.getByTestId("status-filter").selectOption("inactive"); // Filter
+    await page.getByTestId("status").selectOption("inactive"); // Filter
 
     // Check state before reload
     await expect(page.getByTestId("current-state")).toContainText(
@@ -193,7 +193,7 @@ test.describe("Sorting Persistence", () => {
       "Sorting: lastName (asc)"
     );
     await expect(page.getByTestId("header-lastName")).toContainText("🔼");
-    await expect(page.getByTestId("status-filter")).toHaveValue("inactive");
+    await expect(page.getByTestId("status")).toHaveValue("inactive");
     await expect(page.getByTestId("page-info")).toContainText("1 of"); // Page reset due to filter
   });
 });

@@ -509,54 +509,6 @@ describe("computeInitialColumnFiltersState", () => {
     });
   });
 
-  describe("custom keys", () => {
-    it("uses custom key when provided", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-              key: "searchName",
-            },
-          },
-        },
-      ];
-      const urlBucket = { searchName: "alice" };
-      const result = computeInitialColumnFiltersState({
-        columns: columns,
-        urlBucket: urlBucket,
-        localBucket: {},
-        optimisticAsync: false,
-      });
-      expect(result).toEqual([{ id: "name", value: "alice" }]);
-    });
-
-    it("falls back to column identifier when no custom key", () => {
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          accessorKey: "name", // No explicit id, will use accessorKey
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-            },
-          },
-        },
-      ];
-      const urlBucket = { name: "bob" };
-      const result = computeInitialColumnFiltersState({
-        columns: columns,
-        urlBucket: urlBucket,
-        localBucket: {},
-        optimisticAsync: false,
-      });
-      expect(result).toEqual([{ id: "name", value: "bob" }]);
-    });
-  });
-
   describe("mixed scenarios", () => {
     it("handles mixed column types and storage locations", () => {
       const columns: ColumnDef<TestData, unknown>[] = [

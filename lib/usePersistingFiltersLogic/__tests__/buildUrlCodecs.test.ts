@@ -71,31 +71,6 @@ describe("buildUrlCodecs", () => {
       expect(result).toEqual({ name: testCodec });
     });
 
-    it("uses custom key when provided", () => {
-      const testCodec = {
-        parse: (s: string) => s.toLowerCase(),
-        format: (v: unknown) => String(v).toUpperCase(),
-      };
-
-      const columns: ColumnDef<TestData, unknown>[] = [
-        {
-          id: "name",
-          accessorKey: "name",
-          meta: {
-            filter: {
-              variant: "text",
-              persistenceStorage: "url",
-              key: "customKey",
-              codec: testCodec,
-            },
-          },
-        },
-      ];
-
-      const result = buildUrlCodecs(columns);
-      expect(result).toEqual({ customKey: testCodec });
-    });
-
     it("extracts multiple codecs", () => {
       const nameCodec = {
         parse: (s: string) => s,

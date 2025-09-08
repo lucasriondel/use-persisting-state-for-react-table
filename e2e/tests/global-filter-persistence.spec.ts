@@ -262,7 +262,7 @@ test.describe("Global Filter Persistence - Extended Tests", () => {
 
     // Simultaneously interact with other table features while typing
     await Promise.all([
-      page.getByTestId("status-filter").selectOption("active"),
+      page.getByTestId("status").selectOption("active"),
       page.getByTestId("header-firstName").click(),
       page.getByTestId("global-filter").blur(),
     ]);
@@ -270,12 +270,12 @@ test.describe("Global Filter Persistence - Extended Tests", () => {
     // Verify all states are correctly applied
     await expect(page.getByTestId("global-filter")).toHaveValue("concurrent");
     expect(page.url()).toContain("test-table.search=concurrent");
-    expect(page.url()).toContain("test-table.status-filter=active");
+    expect(page.url()).toContain("test-table.status=active");
 
     // Reload and verify all state persists
     await page.reload();
     await expect(page.getByTestId("global-filter")).toHaveValue("concurrent");
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("status")).toHaveValue("active");
   });
 
   test("should handle global filter persistence with URL manipulation", async ({

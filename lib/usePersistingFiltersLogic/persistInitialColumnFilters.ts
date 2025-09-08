@@ -21,7 +21,7 @@ export function persistInitialColumnFilters<TData extends RowData>(
     const filterMeta = col.meta?.filter;
     if (!filterMeta?.persistenceStorage) return false;
 
-    const key = filterMeta.key ?? getColumnIdentifier(col);
+    const key = getColumnIdentifier(col);
     if (!key) return false;
 
     const raw =
@@ -46,7 +46,9 @@ export function persistInitialColumnFilters<TData extends RowData>(
       if (col) {
         const filterMeta = col.meta?.filter;
         if (filterMeta?.persistenceStorage && !isEmptyValue(filter.value)) {
-          const key = filterMeta.key ?? String(filter.id);
+          const key = getColumnIdentifier(col);
+          if (!key) return;
+
           const patch =
             filterMeta.persistenceStorage === "url" ? urlPatch : localPatch;
           patch[key] = filter.value;

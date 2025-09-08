@@ -19,9 +19,10 @@ export function buildColumnFiltersFromBuckets<TData extends RowData>(
     const columnId = getColumnIdentifier(col);
     if (!columnId) continue;
 
-    const key = filterMeta.key ?? String(columnId);
     const raw =
-      filterMeta.persistenceStorage === "url" ? urlState[key] : localState[key];
+      filterMeta.persistenceStorage === "url"
+        ? urlState[columnId]
+        : localState[columnId];
 
     if (isEmptyValue(raw)) continue;
     out.push({ id: columnId, value: raw });

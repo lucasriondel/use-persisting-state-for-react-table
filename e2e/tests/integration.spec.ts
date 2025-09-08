@@ -23,8 +23,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Step 1: Apply filters
     await page.getByTestId("global-filter").fill("john");
-    await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("age-filter").fill("25");
+    await page.getByTestId("status").selectOption("active");
+    await page.getByTestId("age").fill("25");
 
     // Verify filters applied
     await expect(page.getByTestId("current-state")).toContainText(
@@ -64,7 +64,7 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Verify URL contains relevant parameters
     expect(page.url()).toContain("test-table.search=john");
-    expect(page.url()).toContain("test-table.age-filter=25");
+    expect(page.url()).toContain("test-table.age=25");
     expect(page.url()).toContain("test-table.sort-col=firstName");
     expect(page.url()).toContain("test-table.sort-dir=asc");
 
@@ -100,8 +100,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Verify all state is restored
     await expect(page.getByTestId("global-filter")).toHaveValue("john");
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
-    await expect(page.getByTestId("age-filter")).toHaveValue("25");
+    await expect(page.getByTestId("status")).toHaveValue("active");
+    await expect(page.getByTestId("age")).toHaveValue("25");
     await expect(page.getByTestId("header-firstName")).toContainText("🔼");
     await expect(page.getByTestId("header-email")).not.toBeVisible();
     await expect(page.getByTestId("select-row-73")).toBeChecked();
@@ -136,15 +136,15 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     expect(pageInfo).toMatch(/\d+ of \d+/);
 
     // Test empty filter values
-    await page.getByTestId("age-filter").fill("");
-    await page.getByTestId("age-filter").blur();
+    await page.getByTestId("age").fill("");
+    await page.getByTestId("age").blur();
 
     // Should clear the filter
-    expect(page.url()).not.toContain("test-table.age-filter");
+    expect(page.url()).not.toContain("test-table.age");
 
     // Test very large numbers
-    await page.getByTestId("age-filter").fill("999");
-    await page.getByTestId("age-filter").blur();
+    await page.getByTestId("age").fill("999");
+    await page.getByTestId("age").blur();
 
     // Should handle gracefully (likely no results)
     await expect(page.getByTestId("current-state")).toContainText(
@@ -152,8 +152,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     );
 
     // Clear filter and verify recovery
-    await page.getByTestId("age-filter").clear();
-    await page.getByTestId("age-filter").blur();
+    await page.getByTestId("age").clear();
+    await page.getByTestId("age").blur();
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 0"
     );
@@ -169,7 +169,7 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Apply some state in first tab
     await page1.getByTestId("global-filter").fill("alice");
-    await page1.getByTestId("status-filter").selectOption("active");
+    await page1.getByTestId("status").selectOption("active");
     await page1.getByTestId("header-age").click();
 
     // Create second tab and navigate to same URL
@@ -183,7 +183,7 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // But localStorage state might be different (status filter)
     // This tests the mixed persistence strategy
-    await expect(page2.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page2.getByTestId("status")).toHaveValue("active");
 
     // Make changes in second tab
     await page2.getByTestId("page-size").selectOption("20");
@@ -235,7 +235,7 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     );
 
     // Should be able to continue working normally
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -253,7 +253,7 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     expect(pageInfo).toMatch(/\d+ of \d+/);
 
     // Table should be functional
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
     await expect(page.getByTestId("current-state")).toContainText(
       "Column Filters: 1"
     );
@@ -268,8 +268,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Perform multiple operations quickly
     await page.getByTestId("global-filter").fill("test-search");
-    await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("age-filter").fill("30");
+    await page.getByTestId("status").selectOption("active");
+    await page.getByTestId("age").fill("30");
     await page.getByTestId("header-firstName").click();
     await page.getByTestId("page-size").selectOption("50");
 
@@ -303,8 +303,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await waitForDataToLoad(page);
 
     await page.getByTestId("global-filter").fill("John");
-    await page.getByTestId("age-filter").fill("25");
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("age").fill("25");
+    await page.getByTestId("status").selectOption("active");
 
     // Click sort multiple times rapidly
     for (let i = 0; i < 3; i++) {
@@ -319,8 +319,8 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Final state should be consistent
     await expect(page.getByTestId("global-filter")).toHaveValue("John");
-    await expect(page.getByTestId("age-filter")).toHaveValue("25");
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("age")).toHaveValue("25");
+    await expect(page.getByTestId("status")).toHaveValue("active");
     await expect(page.getByTestId("page-size")).toHaveValue("20");
 
     await waitForDataToLoad(page);
@@ -345,7 +345,7 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await page.reload(); // Second reload to ensure localStorage is loaded
 
     await expect(page.getByTestId("global-filter")).toHaveValue("John");
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
+    await expect(page.getByTestId("status")).toHaveValue("active");
     await expect(page.getByTestId("select-row-61")).toBeChecked();
   });
 
@@ -358,15 +358,15 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Step 1: Apply complex filter combinations
     await page.getByTestId("global-filter").fill("alice");
-    await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("age-filter").fill("61");
+    await page.getByTestId("status").selectOption("active");
+    await page.getByTestId("age").fill("61");
 
     // Apply new filters
-    await page.getByTestId("birthdate-filter").fill("1963-04-01");
+    await page.getByTestId("birthdate").fill("1963-04-01");
     await page.getByTestId("salary-min-filter").fill("60000");
     await page.getByTestId("salary-max-filter").fill("120000");
-    await page.getByTestId("teams-filter-finance").check();
-    await page.getByTestId("teams-filter-hr").check();
+    await page.getByTestId("teams-finance").check();
+    await page.getByTestId("teams-hr").check();
     await page.getByTestId("hiring-date-from-filter").fill("2015-01-01");
     await page.getByTestId("hiring-date-to-filter").fill("2022-12-31");
 
@@ -403,17 +403,15 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Step 6: Verify URL contains all filter parameters
     expect(page.url()).toContain("test-table.search=alice");
-    expect(page.url()).toContain("test-table.status-filter=active");
-    expect(page.url()).toContain("test-table.age-filter=61");
-    expect(page.url()).toContain("test-table.birthdate-filter=1963-04-01");
+    expect(page.url()).toContain("test-table.status=active");
+    expect(page.url()).toContain("test-table.age=61");
+    expect(page.url()).toContain("test-table.birthdate=1963-04-01");
+    expect(page.url()).toContain("test-table.salary=%5B60000%2C120000%5D");
     expect(page.url()).toContain(
-      "test-table.salary-filter=%5B60000%2C120000%5D"
+      "test-table.teams=%5B%22finance%22%2C%22hr%22%5D"
     );
     expect(page.url()).toContain(
-      "test-table.teams-filter=%5B%22finance%22%2C%22hr%22%5D"
-    );
-    expect(page.url()).toContain(
-      "test-table.hiring-date-filter=%5B%222015-01-01%22%2C%222022-12-31%22%5D"
+      "test-table.hiringDate=%5B%222015-01-01%22%2C%222022-12-31%22%5D"
     );
     expect(page.url()).toContain("test-table.sort-col=teams");
     expect(page.url()).toContain("test-table.sort-dir=desc");
@@ -433,17 +431,15 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Step 8: Verify complete state restoration
     await expect(page.getByTestId("global-filter")).toHaveValue("alice");
-    await expect(page.getByTestId("status-filter")).toHaveValue("active");
-    await expect(page.getByTestId("age-filter")).toHaveValue("61");
-    await expect(page.getByTestId("birthdate-filter")).toHaveValue(
-      "1963-04-01"
-    );
+    await expect(page.getByTestId("status")).toHaveValue("active");
+    await expect(page.getByTestId("age")).toHaveValue("61");
+    await expect(page.getByTestId("birthdate")).toHaveValue("1963-04-01");
     await expect(page.getByTestId("salary-min-filter")).toHaveValue("60000");
     await expect(page.getByTestId("salary-max-filter")).toHaveValue("120000");
-    await expect(page.getByTestId("teams-filter-finance")).toBeChecked();
-    await expect(page.getByTestId("teams-filter-hr")).toBeChecked();
-    await expect(page.getByTestId("teams-filter-sales")).not.toBeChecked();
-    await expect(page.getByTestId("teams-filter-dev")).not.toBeChecked();
+    await expect(page.getByTestId("teams-finance")).toBeChecked();
+    await expect(page.getByTestId("teams-hr")).toBeChecked();
+    await expect(page.getByTestId("teams-sales")).not.toBeChecked();
+    await expect(page.getByTestId("teams-dev")).not.toBeChecked();
     await expect(page.getByTestId("hiring-date-from-filter")).toHaveValue(
       "2015-01-01"
     );
@@ -483,9 +479,9 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await waitForDataToLoad(page);
 
     // Test edge case: filters that result in no data
-    await page.getByTestId("age-filter").fill("999");
+    await page.getByTestId("age").fill("999");
     await page.getByTestId("salary-min-filter").fill("999999");
-    await page.getByTestId("birthdate-filter").fill("1800-01-01");
+    await page.getByTestId("birthdate").fill("1800-01-01");
 
     await waitForDataToLoad(page);
 
@@ -496,9 +492,9 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await expect(page.locator("tbody tr")).toContainText("No data found");
 
     // Clear problematic filters
-    await page.getByTestId("age-filter").clear();
+    await page.getByTestId("age").clear();
     await page.getByTestId("salary-min-filter").clear();
-    await page.getByTestId("birthdate-filter").clear();
+    await page.getByTestId("birthdate").clear();
 
     // Should recover
     await expect(page.getByTestId("current-state")).toContainText(
@@ -536,12 +532,12 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Apply all possible filters rapidly
     await page.getByTestId("global-filter").fill("grace");
-    await page.getByTestId("age-filter").fill("26");
-    await page.getByTestId("status-filter").selectOption("active");
-    await page.getByTestId("birthdate-filter").fill("1998-07-23");
+    await page.getByTestId("age").fill("26");
+    await page.getByTestId("status").selectOption("active");
+    await page.getByTestId("birthdate").fill("1998-07-23");
     await page.getByTestId("salary-min-filter").fill("50000");
     await page.getByTestId("salary-max-filter").fill("150000");
-    await page.getByTestId("teams-filter-finance").check();
+    await page.getByTestId("teams-finance").check();
     await page.getByTestId("hiring-date-from-filter").fill("2010-01-01");
     await page.getByTestId("hiring-date-to-filter").fill("2024-12-31");
 
@@ -577,40 +573,38 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
 
     // Rapidly change multiple filters
     for (let i = 0; i < 5; i++) {
-      await page.getByTestId("age-filter").fill(`${25 + i}`);
+      await page.getByTestId("age").fill(`${25 + i}`);
       await page.getByTestId("salary-min-filter").fill(`${50000 + i * 10000}`);
 
       if (i % 2 === 0) {
-        await page.getByTestId("teams-filter-finance").check();
-        await page.getByTestId("teams-filter-sales").uncheck();
+        await page.getByTestId("teams-finance").check();
+        await page.getByTestId("teams-sales").uncheck();
       } else {
-        await page.getByTestId("teams-filter-finance").uncheck();
-        await page.getByTestId("teams-filter-sales").check();
+        await page.getByTestId("teams-finance").uncheck();
+        await page.getByTestId("teams-sales").check();
       }
 
       await page.waitForTimeout(100);
     }
 
     // Apply final stable state
-    await page.getByTestId("age-filter").fill("30");
+    await page.getByTestId("age").fill("30");
     await page.getByTestId("salary-min-filter").fill("70000");
     await page.getByTestId("salary-max-filter").fill("120000");
-    await page.getByTestId("teams-filter-finance").check();
-    await page.getByTestId("teams-filter-sales").check();
-    await page.getByTestId("birthdate-filter").fill("1994-01-01");
+    await page.getByTestId("teams-finance").check();
+    await page.getByTestId("teams-sales").check();
+    await page.getByTestId("birthdate").fill("1994-01-01");
 
     // Wait for stabilization
     await waitForDataToLoad(page);
 
     // Final state should be consistent
-    await expect(page.getByTestId("age-filter")).toHaveValue("30");
+    await expect(page.getByTestId("age")).toHaveValue("30");
     await expect(page.getByTestId("salary-min-filter")).toHaveValue("70000");
     await expect(page.getByTestId("salary-max-filter")).toHaveValue("120000");
-    await expect(page.getByTestId("teams-filter-finance")).toBeChecked();
-    await expect(page.getByTestId("teams-filter-sales")).toBeChecked();
-    await expect(page.getByTestId("birthdate-filter")).toHaveValue(
-      "1994-01-01"
-    );
+    await expect(page.getByTestId("teams-finance")).toBeChecked();
+    await expect(page.getByTestId("teams-sales")).toBeChecked();
+    await expect(page.getByTestId("birthdate")).toHaveValue("1994-01-01");
 
     await waitForDataToLoad(page);
 
@@ -628,12 +622,10 @@ test.describe("Integration Tests - Full Hook Functionality", () => {
     await page.reload();
 
     // State should persist correctly
-    await expect(page.getByTestId("age-filter")).toHaveValue("30");
+    await expect(page.getByTestId("age")).toHaveValue("30");
     await expect(page.getByTestId("salary-min-filter")).toHaveValue("70000");
-    await expect(page.getByTestId("teams-filter-finance")).toBeChecked();
-    await expect(page.getByTestId("birthdate-filter")).toHaveValue(
-      "1994-01-01"
-    );
+    await expect(page.getByTestId("teams-finance")).toBeChecked();
+    await expect(page.getByTestId("birthdate")).toHaveValue("1994-01-01");
   });
 
   test("should handle global search with new column data", async ({ page }) => {

@@ -135,7 +135,7 @@ test.describe("Pagination Persistence", () => {
     await waitForDataToLoad(page);
 
     // Apply a filter that reduces results
-    await page.getByTestId("status-filter").selectOption("active");
+    await page.getByTestId("status").selectOption("active");
 
     // Wait for filter to take effect
     await page.waitForTimeout(100);
@@ -150,7 +150,7 @@ test.describe("Pagination Persistence", () => {
     await expect(page.getByTestId("page-info")).toHaveText("3 of 34");
 
     // Remove filter - should stay on same page if possible
-    await page.getByTestId("status-filter").selectOption("");
+    await page.getByTestId("status").selectOption("");
     await page.waitForTimeout(100); // Wait for filter removal
     await expect(page.getByTestId("page-info")).toHaveText("1 of 100"); // Reset due to automaticPageReset
   });

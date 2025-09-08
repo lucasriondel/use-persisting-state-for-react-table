@@ -38,11 +38,10 @@ export function computeInitialColumnFiltersState<TData extends RowData>(
     const columnId = getColumnIdentifier(col);
     if (!columnId) continue;
 
-    const key = filterMeta.key ?? String(columnId);
     let raw =
       filterMeta.persistenceStorage === "url"
-        ? urlBucket[key]
-        : localBucket[key];
+        ? urlBucket[columnId]
+        : localBucket[columnId];
 
     if (isEmptyValue(raw)) continue;
 

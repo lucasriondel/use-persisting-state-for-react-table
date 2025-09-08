@@ -44,7 +44,6 @@ const columns = [
       filter: {
         variant: "number" as const,
         persistenceStorage: "url" as const,
-        key: "age-filter",
       },
     },
   }),
@@ -59,7 +58,6 @@ const columns = [
       filter: {
         variant: "select" as const,
         persistenceStorage: "url" as const,
-        key: "status-filter",
         options: [
           { value: "active", label: "Active" },
           { value: "inactive", label: "Inactive" },
@@ -83,7 +81,6 @@ const columns = [
       filter: {
         variant: "date" as const,
         persistenceStorage: "url" as const,
-        key: "birthdate-filter",
       },
     },
   }),
@@ -130,7 +127,6 @@ const columns = [
       filter: {
         variant: "dateRange" as const,
         persistenceStorage: "url" as const,
-        key: "hiring-date-filter",
       },
     },
   }),
@@ -148,7 +144,7 @@ const columns = [
         // Always use [min, max] order
         min = filterValue[0];
         max = filterValue[1];
-        
+
         // Convert -1 placeholders to undefined
         if (min === -1) min = undefined;
         if (max === -1) max = undefined;
@@ -176,7 +172,6 @@ const columns = [
       filter: {
         variant: "numberRange" as const,
         persistenceStorage: "url" as const,
-        key: "salary-filter",
       },
     },
   }),
@@ -192,7 +187,6 @@ const columns = [
       filter: {
         variant: "multiSelect" as const,
         persistenceStorage: "url" as const,
-        key: "teams-filter",
         options: [
           { value: "finance", label: "Finance" },
           { value: "sales", label: "Sales" },
@@ -405,8 +399,8 @@ function App() {
           <br />
           Sorting:{" "}
           {state.sorting.length > 0
-            ? `${state.sorting[0].id} (${
-                state.sorting[0].desc ? "desc" : "asc"
+            ? `${state.sorting[0]?.id} (${
+                state.sorting[0]?.desc ? "desc" : "asc"
               })`
             : "None"}
           <br />
@@ -427,10 +421,10 @@ function App() {
           }}
         >
           <div>
-            <label htmlFor="age-filter">Age: </label>
+            <label htmlFor="age">Age: </label>
             <input
-              id="age-filter"
-              data-testid="age-filter"
+              id="age"
+              data-testid="age"
               type="number"
               value={
                 (state.columnFilters.find((f: ColumnFilter) => f.id === "age")
@@ -451,10 +445,10 @@ function App() {
           </div>
 
           <div>
-            <label htmlFor="status-filter">Status: </label>
+            <label htmlFor="status">Status: </label>
             <select
-              id="status-filter"
-              data-testid="status-filter"
+              id="status"
+              data-testid="status"
               value={
                 (state.columnFilters.find(
                   (f: ColumnFilter) => f.id === "status"
@@ -477,10 +471,10 @@ function App() {
           </div>
 
           <div>
-            <label htmlFor="birthdate-filter">Birth Date: </label>
+            <label htmlFor="birthdate">Birth Date: </label>
             <input
-              id="birthdate-filter"
-              data-testid="birthdate-filter"
+              id="birthdate"
+              data-testid="birthdate"
               type="date"
               value={(() => {
                 const filterValue = state.columnFilters.find(
@@ -698,7 +692,11 @@ function App() {
                       .min;
                   }
 
-                  if (minValue === undefined || minValue === null || minValue === -1)
+                  if (
+                    minValue === undefined ||
+                    minValue === null ||
+                    minValue === -1
+                  )
                     return "";
 
                   // Convert to string, handling both number and string types
@@ -779,7 +777,11 @@ function App() {
                       .max;
                   }
 
-                  if (maxValue === undefined || maxValue === null || maxValue === -1)
+                  if (
+                    maxValue === undefined ||
+                    maxValue === null ||
+                    maxValue === -1
+                  )
                     return "";
 
                   // Convert to string, handling both number and string types
@@ -856,7 +858,7 @@ function App() {
                   >
                     <input
                       type="checkbox"
-                      data-testid={`teams-filter-${team}`}
+                      data-testid={`teams-${team}`}
                       checked={isChecked}
                       onChange={(e) => {
                         let newTeams: string[];

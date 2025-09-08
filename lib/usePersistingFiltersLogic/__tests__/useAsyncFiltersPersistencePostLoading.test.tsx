@@ -293,48 +293,6 @@ describe("useAsyncFiltersPersistencePostLoading", () => {
       expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();
     });
-
-    it("should use filter key when available", () => {
-      const columns: ColumnDef<TestUser>[] = [
-        {
-          accessorKey: "role",
-          header: "Role",
-          meta: {
-            filter: {
-              variant: "select",
-              key: "customRoleKey",
-              isLoading: false,
-              persistenceStorage: "url",
-              options: [{ value: "admin", label: "Admin" }],
-            } as SelectMeta,
-          },
-        },
-      ];
-
-      const sharedBuckets = createMockSharedBuckets();
-      // Set up the test data in the URL bucket
-      sharedBuckets.urlBucket.customRoleKey = "invalidRole";
-
-      mockSanitizeValue.mockReturnValue(undefined);
-
-      renderHook(() =>
-        useAsyncFiltersPersistencePostLoading({
-          columns: columns,
-          sharedBuckets,
-          currentColumnFilters: [],
-          setColumnFilters: mockSetColumnFilters,
-        })
-      );
-
-      expect(mockGetColumnIdentifier).not.toHaveBeenCalled(); // Should use filter key instead
-      expect(mockSanitizeValue).toHaveBeenCalledWith(
-        columns[0]?.meta?.filter,
-        "invalidRole"
-      );
-      expect(sharedBuckets.urlBucketApi.patch).toHaveBeenCalledWith({
-        customRoleKey: undefined,
-      });
-    });
   });
 
   describe("MultiSelect filter validation", () => {
@@ -800,7 +758,7 @@ describe("useAsyncFiltersPersistencePostLoading", () => {
   });
 
   describe("Edge cases", () => {
-    it("should handle columns without id or accessorKey gracefully", () => {
+    it("should handle columns without id or accessorKey with error throwing", () => {
       const columns: ColumnDef<TestUser>[] = [
         {
           header: "Custom Column",
@@ -817,21 +775,20 @@ describe("useAsyncFiltersPersistencePostLoading", () => {
 
       const sharedBuckets = createMockSharedBuckets();
 
-      mockGetColumnIdentifier.mockImplementation(() => {
-        throw new Error(
-          "Column must have either an 'id' or 'accessorKey' property defined"
+      expect(() => {
+        renderHook(() =>
+          useAsyncFiltersPersistencePostLoading({
+            columns: columns,
+            sharedBuckets,
+            currentColumnFilters: [],
+            setColumnFilters: mockSetColumnFilters,
+          })
         );
-      });
-
-      renderHook(() =>
-        useAsyncFiltersPersistencePostLoading({
-          columns: columns,
-          sharedBuckets,
-          currentColumnFilters: [],
-          setColumnFilters: mockSetColumnFilters,
-        })
+      }).toThrow(
+        "Column must have either an 'id' or 'accessorKey' property defined"
       );
 
+      expect(mockGetColumnIdentifier).toHaveBeenCalledWith(columns[0]);
       expect(sharedBuckets.urlBucketApi.patch).not.toHaveBeenCalled();
       expect(sharedBuckets.localBucketApi.patch).not.toHaveBeenCalled();
       expect(mockSetColumnFilters).not.toHaveBeenCalled();

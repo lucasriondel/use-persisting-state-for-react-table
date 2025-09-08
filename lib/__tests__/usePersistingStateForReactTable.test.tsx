@@ -86,7 +86,6 @@ const testColumns: ColumnDef<TestUser>[] = [
       filter: {
         variant: "text",
         persistenceStorage: "url",
-        key: "name-filter",
       },
     },
   },
@@ -103,7 +102,6 @@ const testColumns: ColumnDef<TestUser>[] = [
       filter: {
         variant: "select",
         persistenceStorage: "localStorage",
-        key: "role-filter",
         options: [
           { value: "admin", label: "Admin" },
           { value: "user", label: "User" },

@@ -12,7 +12,7 @@ export function buildUrlCodecs<TData extends RowData>(
   for (const col of flat) {
     const filterMeta = col.meta?.filter;
     if (filterMeta?.persistenceStorage === "url" && filterMeta.codec) {
-      const key = filterMeta.key ?? getColumnIdentifier(col);
+      const key = getColumnIdentifier(col);
       if (key) {
         codecs[key] = filterMeta.codec as Codec<unknown>;
       }
