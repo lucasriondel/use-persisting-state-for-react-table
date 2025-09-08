@@ -102,7 +102,26 @@ export const fetchPersons = async (
     }
 
     if (filter.id === "hiringDate") {
-      const { from, to } = filter.value as { from?: string; to?: string };
+      // Handle both tuple [from, to] and object {from, to} formats
+      let from: string | undefined;
+      let to: string | undefined;
+      
+      if (Array.isArray(filter.value)) {
+        [from, to] = filter.value;
+        // Convert empty string placeholders back to undefined
+        if (from === "") from = undefined;
+        if (to === "") to = undefined;
+        
+        // Skip processing if both values are placeholders (effectively empty filter)
+        if (from === undefined && to === undefined) {
+          return;
+        }
+      } else if (filter.value && typeof filter.value === 'object') {
+        const obj = filter.value as { from?: string; to?: string };
+        from = obj.from;
+        to = obj.to;
+      }
+      
       filteredPersons = filteredPersons.filter((person) => {
         const hiringDate = new Date(person.hiringDate);
         
@@ -122,7 +141,24 @@ export const fetchPersons = async (
     }
 
     if (filter.id === "salary") {
-      const { min, max } = filter.value as { min?: number; max?: number };
+      // Handle both tuple [min, max] and object {min, max} formats
+      let min: number | undefined;
+      let max: number | undefined;
+      
+      if (Array.isArray(filter.value)) {
+        [min, max] = filter.value;
+        // Convert -1 placeholders back to undefined
+        if (min === -1) min = undefined;
+        if (max === -1) max = undefined;
+        
+        // Skip processing if both values are placeholders (effectively empty filter)
+        if (min === undefined && max === undefined) {
+          return;
+        }
+      } else if (filter.value && typeof filter.value === 'object') {
+        ({ min, max } = filter.value as { min?: number; max?: number });
+      }
+      
       filteredPersons = filteredPersons.filter((person) => {
         if (min !== undefined && max !== undefined) {
           return person.salary >= min && person.salary <= max;
