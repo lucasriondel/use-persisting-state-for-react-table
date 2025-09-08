@@ -148,11 +148,14 @@ export function sanitizeNumberRangeValue(
   let n1 = toNum(a);
   let n2 = toNum(b);
   if (n1 === undefined || n2 === undefined) return undefined;
-  if (n1 > n2) {
+
+  const hasPlaceholder = n1 === -1 || n2 === -1;
+  if (!hasPlaceholder && n1 > n2) {
     const tmp = n1;
     n1 = n2;
     n2 = tmp;
   }
+
   const min = cfg.min;
   const max = cfg.max;
   if (min !== undefined) {

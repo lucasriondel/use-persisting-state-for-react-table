@@ -145,9 +145,13 @@ const columns = [
       let max: number | undefined;
 
       if (Array.isArray(filterValue)) {
-        // Array can be [min], [min, max], or [undefined, max]
+        // Always use [min, max] order
         min = filterValue[0];
-        max = filterValue.length > 1 ? filterValue[1] : undefined;
+        max = filterValue[1];
+        
+        // Convert -1 placeholders to undefined
+        if (min === -1) min = undefined;
+        if (max === -1) max = undefined;
 
         // Return true (no filtering) if no valid values
         if (min === undefined && max === undefined) {
@@ -682,7 +686,7 @@ function App() {
 
                   // Handle both array format and object format
                   if (Array.isArray(filterValue)) {
-                    // Array can be [min], [min, max], or [undefined, max]
+                    // Always use [min, max] order
                     minValue = filterValue[0];
                     // Convert -1 placeholders to undefined
                     if (minValue === -1) minValue = undefined;
@@ -710,9 +714,9 @@ function App() {
                   let currentMax: number | undefined;
 
                   if (Array.isArray(currentFilter)) {
-                    // Array can be [min], [min, max], or [undefined, max]
+                    // Always use [min, max] order
                     currentMin = currentFilter[0];
-                    currentMax = currentFilter.length > 1 ? currentFilter[1] : undefined;
+                    currentMax = currentFilter[1];
                     // Convert -1 placeholders to undefined
                     if (currentMin === -1) currentMin = undefined;
                     if (currentMax === -1) currentMax = undefined;
@@ -729,7 +733,7 @@ function App() {
                     ? Number(e.target.value)
                     : undefined;
 
-                  // Always use 2-element arrays with -1 for missing values (for persistence compatibility)
+                  // Always store as [min, max] order
                   if (newMin !== undefined || currentMax !== undefined) {
                     const minVal = newMin !== undefined ? newMin : -1;
                     const maxVal = currentMax !== undefined ? currentMax : -1;
@@ -763,8 +767,8 @@ function App() {
 
                   // Handle both array format and object format
                   if (Array.isArray(filterValue)) {
-                    // Array can be [min], [min, max], or [undefined, max]
-                    maxValue = filterValue.length > 1 ? filterValue[1] : undefined;
+                    // Always use [min, max] order
+                    maxValue = filterValue[1];
                     // Convert -1 placeholders to undefined
                     if (maxValue === -1) maxValue = undefined;
                   } else if (
@@ -791,9 +795,9 @@ function App() {
                   let currentMax: number | undefined;
 
                   if (Array.isArray(currentFilter)) {
-                    // Array can be [min], [min, max], or [undefined, max]
+                    // Always use [min, max] order
                     currentMin = currentFilter[0];
-                    currentMax = currentFilter.length > 1 ? currentFilter[1] : undefined;
+                    currentMax = currentFilter[1];
                     // Convert -1 placeholders to undefined
                     if (currentMin === -1) currentMin = undefined;
                     if (currentMax === -1) currentMax = undefined;
@@ -810,7 +814,7 @@ function App() {
                     ? Number(e.target.value)
                     : undefined;
 
-                  // Always use 2-element arrays with -1 for missing values (for persistence compatibility)
+                  // Always store as [min, max] order
                   if (currentMin !== undefined || newMax !== undefined) {
                     const minVal = currentMin !== undefined ? currentMin : -1;
                     const maxVal = newMax !== undefined ? newMax : -1;

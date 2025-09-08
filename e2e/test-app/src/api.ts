@@ -146,9 +146,9 @@ export const fetchPersons = async (
       let max: number | undefined;
       
       if (Array.isArray(filter.value)) {
-        // Array can be [min], [min, max], or [undefined, max]
+        // Always use [min, max] order
         min = filter.value[0];
-        max = filter.value.length > 1 ? filter.value[1] : undefined;
+        max = filter.value[1];
         
         // Convert -1 placeholders to undefined
         if (min === -1) min = undefined;
