@@ -15,8 +15,8 @@ importers:
         specifier: ^5.85.9
         version: 5.85.9(react@19.1.1)
       use-url-state-reacthook:
-        specifier: file:../use-url-state-reacthook
-        version: file:../use-url-state-reacthook(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^0.0.2
+        version: 0.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.34.0
@@ -1878,8 +1878,8 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  use-url-state-reacthook@file:../use-url-state-reacthook:
-    resolution: {directory: ../use-url-state-reacthook, type: directory}
+  use-url-state-reacthook@0.0.2:
+    resolution: {integrity: sha512-/XHSNsZ2LEsa+KCFupItaiuQMCCwQhRom82+AYcR+/jhoMIVcXfAzKuEuvLqhmYyYd7osBBdwAS+kDiCegHc3w==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       react: '>=16.8.0'
@@ -3770,7 +3770,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  use-url-state-reacthook@file:../use-url-state-reacthook(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  use-url-state-reacthook@0.0.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
