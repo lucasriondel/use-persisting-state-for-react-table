@@ -146,12 +146,15 @@ export const fetchPersons = async (
       let max: number | undefined;
       
       if (Array.isArray(filter.value)) {
-        [min, max] = filter.value;
-        // Convert -1 placeholders back to undefined
+        // Array can be [min], [min, max], or [undefined, max]
+        min = filter.value[0];
+        max = filter.value.length > 1 ? filter.value[1] : undefined;
+        
+        // Convert -1 placeholders to undefined
         if (min === -1) min = undefined;
         if (max === -1) max = undefined;
         
-        // Skip processing if both values are placeholders (effectively empty filter)
+        // Skip processing if no valid values
         if (min === undefined && max === undefined) {
           return;
         }

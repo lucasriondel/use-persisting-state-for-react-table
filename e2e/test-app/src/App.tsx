@@ -137,38 +137,37 @@ const columns = [
   columnHelper.accessor("salary", {
     header: "Salary",
     cell: (info) => `$${info.getValue().toLocaleString()}`,
-    // filterFn: (row, columnId, filterValue) => {
-    //   const salary = row.getValue(columnId) as number;
+    filterFn: (row, columnId, filterValue) => {
+      const salary = row.getValue(columnId) as number;
 
-    //   // Handle both array format [min, max] and object format {min, max}
-    //   let min: number | undefined;
-    //   let max: number | undefined;
+      // Handle both array format and object format
+      let min: number | undefined;
+      let max: number | undefined;
 
-    //   if (Array.isArray(filterValue)) {
-    //     [min, max] = filterValue;
-    //     // Convert -1 placeholders back to undefined
-    //     if (min === -1) min = undefined;
-    //     if (max === -1) max = undefined;
+      if (Array.isArray(filterValue)) {
+        // Array can be [min], [min, max], or [undefined, max]
+        min = filterValue[0];
+        max = filterValue.length > 1 ? filterValue[1] : undefined;
 
-    //     // Return true (no filtering) if both values are placeholders
-    //     if (min === undefined && max === undefined) {
-    //       return true;
-    //     }
-    //   } else if (filterValue && typeof filterValue === "object") {
-    //     const obj = filterValue as { min?: number; max?: number };
-    //     min = obj.min;
-    //     max = obj.max;
-    //   }
+        // Return true (no filtering) if no valid values
+        if (min === undefined && max === undefined) {
+          return true;
+        }
+      } else if (filterValue && typeof filterValue === "object") {
+        const obj = filterValue as { min?: number; max?: number };
+        min = obj.min;
+        max = obj.max;
+      }
 
-    //   if (min !== undefined && max !== undefined) {
-    //     return salary >= min && salary <= max;
-    //   } else if (min !== undefined) {
-    //     return salary >= min;
-    //   } else if (max !== undefined) {
-    //     return salary <= max;
-    //   }
-    //   return true;
-    // },
+      if (min !== undefined && max !== undefined) {
+        return salary >= min && salary <= max;
+      } else if (min !== undefined) {
+        return salary >= min;
+      } else if (max !== undefined) {
+        return salary <= max;
+      }
+      return true;
+    },
     meta: {
       filter: {
         variant: "numberRange" as const,
@@ -681,9 +680,12 @@ function App() {
 
                   let minValue: number | undefined;
 
-                  // Handle both array format [min, max] and object format {min, max}
+                  // Handle both array format and object format
                   if (Array.isArray(filterValue)) {
+                    // Array can be [min], [min, max], or [undefined, max]
                     minValue = filterValue[0];
+                    // Convert -1 placeholders to undefined
+                    if (minValue === -1) minValue = undefined;
                   } else if (
                     typeof filterValue === "object" &&
                     filterValue !== null
@@ -692,11 +694,7 @@ function App() {
                       .min;
                   }
 
-                  if (
-                    minValue === undefined ||
-                    minValue === null ||
-                    minValue === -1
-                  )
+                  if (minValue === undefined || minValue === null || minValue === -1)
                     return "";
 
                   // Convert to string, handling both number and string types
@@ -712,8 +710,10 @@ function App() {
                   let currentMax: number | undefined;
 
                   if (Array.isArray(currentFilter)) {
-                    [currentMin, currentMax] = currentFilter;
-                    // Convert -1 placeholders back to undefined
+                    // Array can be [min], [min, max], or [undefined, max]
+                    currentMin = currentFilter[0];
+                    currentMax = currentFilter.length > 1 ? currentFilter[1] : undefined;
+                    // Convert -1 placeholders to undefined
                     if (currentMin === -1) currentMin = undefined;
                     if (currentMax === -1) currentMax = undefined;
                   } else if (
@@ -729,12 +729,10 @@ function App() {
                     ? Number(e.target.value)
                     : undefined;
 
-                  // Store values in array format, using -1 as placeholder for undefined
-                  const minVal = newMin !== undefined ? newMin : -1;
-                  const maxVal = currentMax !== undefined ? currentMax : -1;
-
-                  // Only apply filter if at least one real value is provided
+                  // Always use 2-element arrays with -1 for missing values (for persistence compatibility)
                   if (newMin !== undefined || currentMax !== undefined) {
+                    const minVal = newMin !== undefined ? newMin : -1;
+                    const maxVal = currentMax !== undefined ? currentMax : -1;
                     table.setColumnFilters((prev) =>
                       prev
                         .filter((f) => f.id !== "salary")
@@ -763,9 +761,12 @@ function App() {
 
                   let maxValue: number | undefined;
 
-                  // Handle both array format [min, max] and object format {min, max}
+                  // Handle both array format and object format
                   if (Array.isArray(filterValue)) {
-                    maxValue = filterValue[1];
+                    // Array can be [min], [min, max], or [undefined, max]
+                    maxValue = filterValue.length > 1 ? filterValue[1] : undefined;
+                    // Convert -1 placeholders to undefined
+                    if (maxValue === -1) maxValue = undefined;
                   } else if (
                     typeof filterValue === "object" &&
                     filterValue !== null
@@ -774,11 +775,7 @@ function App() {
                       .max;
                   }
 
-                  if (
-                    maxValue === undefined ||
-                    maxValue === null ||
-                    maxValue === -1
-                  )
+                  if (maxValue === undefined || maxValue === null || maxValue === -1)
                     return "";
 
                   // Convert to string, handling both number and string types
@@ -794,8 +791,10 @@ function App() {
                   let currentMax: number | undefined;
 
                   if (Array.isArray(currentFilter)) {
-                    [currentMin, currentMax] = currentFilter;
-                    // Convert -1 placeholders back to undefined
+                    // Array can be [min], [min, max], or [undefined, max]
+                    currentMin = currentFilter[0];
+                    currentMax = currentFilter.length > 1 ? currentFilter[1] : undefined;
+                    // Convert -1 placeholders to undefined
                     if (currentMin === -1) currentMin = undefined;
                     if (currentMax === -1) currentMax = undefined;
                   } else if (
@@ -811,12 +810,10 @@ function App() {
                     ? Number(e.target.value)
                     : undefined;
 
-                  // Store values in array format, using -1 as placeholder for undefined
-                  const minVal = currentMin !== undefined ? currentMin : -1;
-                  const maxVal = newMax !== undefined ? newMax : -1;
-
-                  // Only apply filter if at least one real value is provided
+                  // Always use 2-element arrays with -1 for missing values (for persistence compatibility)
                   if (currentMin !== undefined || newMax !== undefined) {
+                    const minVal = currentMin !== undefined ? currentMin : -1;
+                    const maxVal = newMax !== undefined ? newMax : -1;
                     table.setColumnFilters((prev) =>
                       prev
                         .filter((f) => f.id !== "salary")
