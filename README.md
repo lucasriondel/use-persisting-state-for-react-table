@@ -43,6 +43,7 @@ npm install @tanstack/react-table react react-dom
 ## 🚀 Quick Start
 
 ```tsx
+import { useState } from "react";
 import { usePersistingStateForReactTable } from "use-persisting-state-for-react-table";
 import {
   useReactTable,
@@ -84,7 +85,12 @@ const columns: ColumnDef<User>[] = [
 ];
 
 function UsersTable() {
-  const { state, handlers, resetPagination } = usePersistingStateForReactTable({
+  const {
+    state,
+    handlers,
+    resetPagination,
+    hasFinishedProcessingAsyncFilters,
+  } = usePersistingStateForReactTable({
     columns,
     persistence: {
       urlNamespace: "users-table",
@@ -119,11 +125,12 @@ Your table state will automatically persist across page reloads!
 
 ### `usePersistingStateForReactTable(options)`
 
-Returns an object with state values, their setters, and utility functions:
+Returns an object with state values, handlers, and utility functions:
 
-- State values: `pagination`, `sorting`, `columnFilters`, `columnVisibility`, `globalFilter`, `rowSelection`
-- State setters: `setPagination`, `setSorting`, `setColumnFilters`, `setColumnVisibility`, `setGlobalFilter`, `setRowSelection`
-- Utility functions: `resetPagination`
+- **State object**: Contains all current table state (`pagination`, `sorting`, `columnFilters`, `columnVisibility`, `globalFilter`, `rowSelection`)
+- **Handlers object**: Contains event handlers for React Table integration (`onPaginationChange`, `onSortingChange`, `onColumnFiltersChange`, `onColumnVisibilityChange`, `onGlobalFilterChange`, `onRowSelectionChange`)
+- **Utility functions**: `resetPagination` for resetting pagination
+- **Async completion indicator**: `hasFinishedProcessingAsyncFilters` boolean for tracking filter validation
 
 #### Parameters
 
@@ -222,6 +229,7 @@ Returns an object with state values, their setters, and utility functions:
 | `handlers.onGlobalFilterChange`     | `(updater: string) => void` | Handler for global filter changes with automatic persistence          |
 | `handlers.onRowSelectionChange`     | `(updater) => void`         | Handler for row selection changes with automatic persistence          |
 | `resetPagination`                   | `() => void`                | Function to reset pagination to first page while preserving page size |
+| `hasFinishedProcessingAsyncFilters` | `boolean`                   | Indicates whether async filter validation and cleanup has completed   |
 
 ## 🎯 Examples
 
@@ -232,18 +240,19 @@ import { usePersistingStateForReactTable } from "use-persisting-state-for-react-
 import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 
 function BasicTable() {
-  const { state, handlers } = usePersistingStateForReactTable({
-    columns,
-    persistence: {
-      urlNamespace: "products",
-      pagination: {
-        pageIndex: { persistenceStorage: "url", key: "page" },
-        pageSize: { persistenceStorage: "url", key: "size" },
+  const { state, handlers, hasFinishedProcessingAsyncFilters } =
+    usePersistingStateForReactTable({
+      columns,
+      persistence: {
+        urlNamespace: "products",
+        pagination: {
+          pageIndex: { persistenceStorage: "url", key: "page" },
+          pageSize: { persistenceStorage: "url", key: "size" },
+        },
+        sorting: { persistenceStorage: "url" },
+        globalFilter: { persistenceStorage: "url", key: "search" },
       },
-      sorting: { persistenceStorage: "url" },
-      globalFilter: { persistenceStorage: "url", key: "search" },
-    },
-  });
+    });
 
   const table = useReactTable({
     data,
@@ -266,7 +275,6 @@ const columns: ColumnDef<Product>[] = [
       filter: {
         variant: "text",
         persistenceStorage: "url",
-        key: "product-name",
       },
     },
   },
@@ -277,7 +285,6 @@ const columns: ColumnDef<Product>[] = [
       filter: {
         variant: "multiSelect",
         persistenceStorage: "localStorage",
-        key: "categories",
         options: [
           { value: "electronics", label: "Electronics" },
           { value: "clothing", label: "Clothing" },
@@ -360,20 +367,21 @@ You can restrict the allowed page sizes to prevent users from setting arbitrary 
 import { usePersistingStateForReactTable } from "use-persisting-state-for-react-table";
 
 function TableWithValidatedPageSize() {
-  const { state, handlers } = usePersistingStateForReactTable({
-    columns,
-    persistence: {
-      urlNamespace: "products",
-      pagination: {
-        pageIndex: { persistenceStorage: "url" },
-        pageSize: {
-          persistenceStorage: "url",
-          // Only allow these specific page sizes
-          allowedPageSizes: [10, 25, 50, 100],
+  const { state, handlers, hasFinishedProcessingAsyncFilters } =
+    usePersistingStateForReactTable({
+      columns,
+      persistence: {
+        urlNamespace: "products",
+        pagination: {
+          pageIndex: { persistenceStorage: "url" },
+          pageSize: {
+            persistenceStorage: "url",
+            // Only allow these specific page sizes
+            allowedPageSizes: [10, 25, 50, 100],
+          },
         },
       },
-    },
-  });
+    });
 
   const table = useReactTable({
     data,
@@ -414,7 +422,9 @@ function TableWithValidatedPageSize() {
 
 ### Async Filters
 
-The hook provides a way to automatically validate filters values for `multi-select` or `select` variants based on values defined on the `columns` array. Those values can come asynchronously from an API and be validated after the first render:
+The hook provides a way to automatically validate filters values for `multi-select` or `select` variants based on values defined on the `columns` array. Those values can come asynchronously from an API and be validated after the first render.
+
+The `hasFinishedProcessingAsyncFilters` return value helps you know when all async filter validation and cleanup has completed:
 
 ```tsx
   const { data: filtersFromApi, isLoading: isFiltersLoading } = useQuery({
@@ -445,7 +455,7 @@ The hook provides a way to automatically validate filters values for `multi-sele
       ...
   , [filtersFromApi, filtersLoading])
 
-  const { state, handlers } = usePersistingStateForReactTable({
+  const { state, handlers, hasFinishedProcessingAsyncFilters } = usePersistingStateForReactTable({
     columns,
     ...
   });
@@ -479,6 +489,12 @@ console.log({ columnFilters: state.columnFilters });
 // }
 
 // query params are now: `?role=admin`
+
+// You can also check if async processing is complete
+if (hasFinishedProcessingAsyncFilters) {
+  // All filters have been validated and synced
+  console.log("Filters are ready for use");
+}
 ```
 
 #### With `optimisticAsync` = true
@@ -486,15 +502,16 @@ console.log({ columnFilters: state.columnFilters });
 Enable optimistic updates for filters that trigger async operations to trust the parameter we get first hand
 
 ```tsx
-const { state, handlers } = usePersistingStateForReactTable({
-  columns,
-  persistence: {
-    filters: {
-      optimisticAsync: true, // Enable optimistic updates
+const { state, handlers, hasFinishedProcessingAsyncFilters } =
+  usePersistingStateForReactTable({
+    columns,
+    persistence: {
+      filters: {
+        optimisticAsync: true, // Enable optimistic updates
+      },
+      // ... other persistence config
     },
-    // ... other persistence config
-  },
-});
+  });
 
 console.log({ columnFilters: state.columnFilters });
 // {
@@ -534,33 +551,31 @@ const productsTableState = usePersistingStateForReactTable({
 Customize storage keys for better organization:
 
 ```tsx
-const { state, handlers } = usePersistingStateForReactTable({
-  setGlobalFilter,
-  // ... other state and setters
-} = usePersistingStateForReactTable({
-  columns,
-  persistence: {
-    localStorageKey: "admin-dashboard-table", // Custom localStorage key
-    columnVisibility: {
-      persistenceStorage: "localStorage",
-      key: "column-prefs", // Custom key within localStorage object
-    },
-    globalFilter: {
-      persistenceStorage: "url",
-      key: "q", // Short URL parameter for search
-    },
-    pagination: {
-      pageIndex: {
-        persistenceStorage: "url",
-        key: "p", // Short URL parameter for page
-      },
-      pageSize: {
+const { state, handlers, hasFinishedProcessingAsyncFilters } =
+  usePersistingStateForReactTable({
+    columns,
+    persistence: {
+      localStorageKey: "admin-dashboard-table", // Custom localStorage key
+      columnVisibility: {
         persistenceStorage: "localStorage",
-        key: "page-size",
+        key: "column-prefs", // Custom key within localStorage object
+      },
+      globalFilter: {
+        persistenceStorage: "url",
+        key: "q", // Short URL parameter for search
+      },
+      pagination: {
+        pageIndex: {
+          persistenceStorage: "url",
+          key: "p", // Short URL parameter for page
+        },
+        pageSize: {
+          persistenceStorage: "localStorage",
+          key: "page-size",
+        },
       },
     },
-  },
-});
+  });
 ```
 
 ## 🎨 Filter Variants
@@ -701,21 +716,18 @@ interface User {
 }
 
 // Full type safety for table data
-const { state, handlers } = usePersistingStateForReactTable({
-  setColumnFilters,
-  columnVisibility,
-  setColumnVisibility,
-} = usePersistingStateForReactTable<User>({
-  columns: userColumns,
-  initialState: {
-    sorting: [{ id: "name", desc: false }], // ✅ Valid column ID
-    columnFilters: [{ id: "role", value: "admin" }], // ✅ Valid
-    pagination: { pageIndex: 0, pageSize: 25 }, // ✅ Valid
-  },
-  persistence: {
-    columnVisibility: { persistenceStorage: "localStorage" }, // ✅ Valid
-  },
-});
+const { state, handlers, hasFinishedProcessingAsyncFilters } =
+  usePersistingStateForReactTable<User>({
+    columns: userColumns,
+    initialState: {
+      sorting: [{ id: "name", desc: false }], // ✅ Valid column ID
+      columnFilters: [{ id: "role", value: "admin" }], // ✅ Valid
+      pagination: { pageIndex: 0, pageSize: 25 }, // ✅ Valid
+    },
+    persistence: {
+      columnVisibility: { persistenceStorage: "localStorage" }, // ✅ Valid
+    },
+  });
 
 // TypeScript will catch errors
 const invalidConfig = usePersistingStateForReactTable<User>({
