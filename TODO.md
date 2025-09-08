@@ -1,0 +1,3 @@
+- allow a custom filter variant
+- values of select and multi select should infer
+- tests can be simplified with helpers
