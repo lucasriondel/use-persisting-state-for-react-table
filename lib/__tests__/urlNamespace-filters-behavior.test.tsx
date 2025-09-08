@@ -93,7 +93,7 @@ const columns = [
   }),
 ];
 
-describe("urlNamespace filter behavior bug investigation", () => {
+describe("urlNamespace filter behavior", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocalStorage.clear();
@@ -335,11 +335,6 @@ describe("urlNamespace filter behavior bug investigation", () => {
           mockHistory.replaceState.mock.calls.length - 1
         ];
 
-      console.log(
-        "Filter clearing test - URL after removing status filter:",
-        lastCall?.[2]
-      );
-
       // The URL should not contain status-filter anymore
       expect(lastCall?.[2]).not.toContain("status-filter");
       // The URL should still contain the age filter
@@ -421,27 +416,16 @@ describe("urlNamespace filter behavior bug investigation", () => {
       expect(lastCall?.[2]).not.toContain("age-filter"); // age is in localStorage
 
       // localStorage should have age filter
-      console.log(
-        "All localStorage setItem calls:",
-        mockLocalStorage.setItem.mock.calls
-      );
-
       // Filter out the test calls from isLocalStorageAvailable
       const testTableCalls = mockLocalStorage.setItem.mock.calls.filter(
         (call) => call[0] === "test-table"
       );
-
-      console.log("Filtered test-table localStorage calls:", testTableCalls);
 
       if (testTableCalls.length > 0) {
         expect(testTableCalls[0]?.[1]).toContain('"age-filter":25');
       } else {
         console.warn(
           "No localStorage calls found for test-table key. This might indicate a bug in localStorage persistence for mixed storage types."
-        );
-        console.log(
-          "Current state columnFilters:",
-          result.current.state.columnFilters
         );
 
         // Check if the localStorage filter is in the state at all
@@ -537,17 +521,6 @@ describe("urlNamespace filter behavior bug investigation", () => {
       });
 
       // Check if URL was actually updated
-      console.log(
-        "WITHOUT urlNamespace - URL calls:",
-        mockHistory.replaceState.mock.calls.length
-      );
-      if (mockHistory.replaceState.mock.calls.length > 0) {
-        const lastCall =
-          mockHistory.replaceState.mock.calls[
-            mockHistory.replaceState.mock.calls.length - 1
-          ];
-        console.log("WITHOUT urlNamespace - Last URL:", lastCall?.[2]);
-      }
     });
 
     it("should reveal codec issues - WITH urlNamespace", () => {
@@ -573,17 +546,6 @@ describe("urlNamespace filter behavior bug investigation", () => {
       });
 
       // Check if URL was actually updated
-      console.log(
-        "WITH urlNamespace - URL calls:",
-        mockHistory.replaceState.mock.calls.length
-      );
-      if (mockHistory.replaceState.mock.calls.length > 0) {
-        const lastCall =
-          mockHistory.replaceState.mock.calls[
-            mockHistory.replaceState.mock.calls.length - 1
-          ];
-        console.log("WITH urlNamespace - Last URL:", lastCall?.[2]);
-      }
     });
   });
 
@@ -685,15 +647,6 @@ describe("urlNamespace filter behavior bug investigation", () => {
           mockHistory.replaceState.mock.calls.length - 1
         ];
 
-      console.log(
-        "Edge case test - Final URL after filter update and pagination reset:",
-        lastCall?.[2]
-      );
-      console.log(
-        "Edge case test - All URL calls:",
-        mockHistory.replaceState.mock.calls.map((call) => call?.[2])
-      );
-
       // Check for filter first with defensive coding
       // @ts-expect-error - TODO need to fix this
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -706,12 +659,11 @@ describe("urlNamespace filter behavior bug investigation", () => {
         const allUrls = mockHistory.replaceState.mock.calls.map(
           (call) => call?.[2]
         );
-        const filterUrls = allUrls.filter((url) =>
+        allUrls.filter((url) =>
           // @ts-expect-error - TODO need to fix this
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           url?.includes("test-table.status-filter=active")
         );
-        console.log("URLs containing filter:", filterUrls);
 
         // For now, just verify state is correct since URL might have timing issues
         expect(result.current.state.columnFilters).toEqual([
