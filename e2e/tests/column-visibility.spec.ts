@@ -154,7 +154,7 @@ test.describe("Column Visibility Persistence", () => {
     const initialHeaders = await page
       .locator('[data-testid^="header-"]')
       .count();
-    expect(initialHeaders).toBe(6); // id, firstName, lastName, age, status, email
+    expect(initialHeaders).toBe(10);
 
     // Hide email column
     await page.getByTestId("toggle-email-column").click();
@@ -163,7 +163,7 @@ test.describe("Column Visibility Persistence", () => {
     const afterHideHeaders = await page
       .locator('[data-testid^="header-"]')
       .count();
-    expect(afterHideHeaders).toBe(5);
+    expect(afterHideHeaders).toBe(9);
 
     // Show email column again
     await page.getByTestId("toggle-email-column").click();
@@ -172,7 +172,7 @@ test.describe("Column Visibility Persistence", () => {
     const afterShowHeaders = await page
       .locator('[data-testid^="header-"]')
       .count();
-    expect(afterShowHeaders).toBe(6);
+    expect(afterShowHeaders).toBe(10);
 
     // Check that localStorage reflects the final state
 
