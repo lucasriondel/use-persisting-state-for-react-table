@@ -90,23 +90,42 @@ const columns = [
   columnHelper.accessor("hiringDate", {
     header: "Hiring Date",
     cell: (info) => new Date(info.getValue()).toLocaleDateString(),
-    filterFn: (row, columnId, filterValue) => {
-      const hiringDate = new Date(row.getValue(columnId));
-      const { from, to } = filterValue as { from?: string; to?: string };
+    // filterFn: (row, columnId, filterValue) => {
+    //   const hiringDate = new Date(row.getValue(columnId));
 
-      if (from && to) {
-        const fromDate = new Date(from);
-        const toDate = new Date(to);
-        return hiringDate >= fromDate && hiringDate <= toDate;
-      } else if (from) {
-        const fromDate = new Date(from);
-        return hiringDate >= fromDate;
-      } else if (to) {
-        const toDate = new Date(to);
-        return hiringDate <= toDate;
-      }
-      return true;
-    },
+    //   // Handle both array format [from, to] and object format {from, to}
+    //   let from: string | undefined;
+    //   let to: string | undefined;
+
+    //   if (Array.isArray(filterValue)) {
+    //     [from, to] = filterValue;
+    //     // Convert empty string placeholders back to undefined
+    //     if (from === "") from = undefined;
+    //     if (to === "") to = undefined;
+
+    //     // Return true (no filtering) if both values are placeholders
+    //     if (from === undefined && to === undefined) {
+    //       return true;
+    //     }
+    //   } else if (filterValue && typeof filterValue === 'object') {
+    //     const obj = filterValue as { from?: string; to?: string };
+    //     from = obj.from;
+    //     to = obj.to;
+    //   }
+
+    //   if (from && to) {
+    //     const fromDate = new Date(from);
+    //     const toDate = new Date(to);
+    //     return hiringDate >= fromDate && hiringDate <= toDate;
+    //   } else if (from) {
+    //     const fromDate = new Date(from);
+    //     return hiringDate >= fromDate;
+    //   } else if (to) {
+    //     const toDate = new Date(to);
+    //     return hiringDate <= toDate;
+    //   }
+    //   return true;
+    // },
     meta: {
       filter: {
         variant: "dateRange" as const,
@@ -118,19 +137,38 @@ const columns = [
   columnHelper.accessor("salary", {
     header: "Salary",
     cell: (info) => `$${info.getValue().toLocaleString()}`,
-    filterFn: (row, columnId, filterValue) => {
-      const salary = row.getValue(columnId) as number;
-      const { min, max } = filterValue as { min?: number; max?: number };
+    // filterFn: (row, columnId, filterValue) => {
+    //   const salary = row.getValue(columnId) as number;
 
-      if (min !== undefined && max !== undefined) {
-        return salary >= min && salary <= max;
-      } else if (min !== undefined) {
-        return salary >= min;
-      } else if (max !== undefined) {
-        return salary <= max;
-      }
-      return true;
-    },
+    //   // Handle both array format [min, max] and object format {min, max}
+    //   let min: number | undefined;
+    //   let max: number | undefined;
+
+    //   if (Array.isArray(filterValue)) {
+    //     [min, max] = filterValue;
+    //     // Convert -1 placeholders back to undefined
+    //     if (min === -1) min = undefined;
+    //     if (max === -1) max = undefined;
+
+    //     // Return true (no filtering) if both values are placeholders
+    //     if (min === undefined && max === undefined) {
+    //       return true;
+    //     }
+    //   } else if (filterValue && typeof filterValue === "object") {
+    //     const obj = filterValue as { min?: number; max?: number };
+    //     min = obj.min;
+    //     max = obj.max;
+    //   }
+
+    //   if (min !== undefined && max !== undefined) {
+    //     return salary >= min && salary <= max;
+    //   } else if (min !== undefined) {
+    //     return salary >= min;
+    //   } else if (max !== undefined) {
+    //     return salary <= max;
+    //   }
+    //   return true;
+    // },
     meta: {
       filter: {
         variant: "numberRange" as const,
@@ -441,20 +479,18 @@ function App() {
               id="birthdate-filter"
               data-testid="birthdate-filter"
               type="date"
-              value={
-                (() => {
-                  const filterValue = state.columnFilters.find(
-                    (f: ColumnFilter) => f.id === "birthdate"
-                  )?.value;
-                  if (!filterValue) return "";
-                  
-                  // Convert to YYYY-MM-DD format for HTML date input
-                  const date = new Date(filterValue as string);
-                  if (isNaN(date.getTime())) return "";
-                  
-                  return date.toISOString().split('T')[0];
-                })()
-              }
+              value={(() => {
+                const filterValue = state.columnFilters.find(
+                  (f: ColumnFilter) => f.id === "birthdate"
+                )?.value;
+                if (!filterValue) return "";
+
+                // Convert to YYYY-MM-DD format for HTML date input
+                const date = new Date(filterValue as string);
+                if (isNaN(date.getTime())) return "";
+
+                return date.toISOString().split("T")[0];
+              })()}
               onChange={(e) => {
                 const value = e.target.value || undefined;
                 table.setColumnFilters((prev) =>
@@ -475,50 +511,75 @@ function App() {
                 data-testid="hiring-date-from-filter"
                 type="date"
                 placeholder="From"
-                value={
-                  (() => {
-                    const filterValue = state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "hiringDate"
-                    )?.value;
-                    
-                    if (!filterValue) return "";
-                    
-                    let fromValue: string | undefined;
-                    
-                    // Handle both object format {from, to} and array format [from, to]
-                    if (Array.isArray(filterValue)) {
-                      fromValue = filterValue[0];
-                    } else if (typeof filterValue === 'object' && filterValue !== null) {
-                      fromValue = (filterValue as { from?: string; to?: string }).from;
-                    }
-                    
-                    if (!fromValue) return "";
-                    
-                    // Convert to YYYY-MM-DD format for HTML date input
-                    const date = new Date(fromValue);
-                    if (isNaN(date.getTime())) return "";
-                    
-                    return date.toISOString().split('T')[0];
-                  })()
-                }
-                onChange={(e) => {
-                  const currentFilter =
-                    (state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "hiringDate"
-                    )?.value as { from?: string; to?: string }) || {};
-                  const value = e.target.value
-                    ? { ...currentFilter, from: e.target.value }
-                    : { ...currentFilter, from: undefined };
+                value={(() => {
+                  const filterValue = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "hiringDate"
+                  )?.value;
 
-                  table.setColumnFilters((prev) =>
-                    prev
-                      .filter((f) => f.id !== "hiringDate")
-                      .concat(
-                        value.from || value.to
-                          ? [{ id: "hiringDate", value }]
-                          : []
-                      )
-                  );
+                  if (!filterValue) return "";
+
+                  let fromValue: string | undefined;
+
+                  // Handle both array format [from, to] and object format {from, to}
+                  if (Array.isArray(filterValue)) {
+                    fromValue = filterValue[0];
+                  } else if (
+                    typeof filterValue === "object" &&
+                    filterValue !== null
+                  ) {
+                    fromValue = (filterValue as { from?: string; to?: string })
+                      .from;
+                  }
+
+                  if (!fromValue || fromValue === "") return "";
+
+                  // Convert to YYYY-MM-DD format for HTML date input
+                  const date = new Date(fromValue);
+                  if (isNaN(date.getTime())) return "";
+
+                  return date.toISOString().split("T")[0];
+                })()}
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "hiringDate"
+                  )?.value;
+
+                  // Get current values from both array and object formats
+                  let currentFrom: string | undefined;
+                  let currentTo: string | undefined;
+
+                  if (Array.isArray(currentFilter)) {
+                    [currentFrom, currentTo] = currentFilter;
+                    // Convert empty string placeholders back to undefined
+                    if (currentFrom === "") currentFrom = undefined;
+                    if (currentTo === "") currentTo = undefined;
+                  } else if (
+                    currentFilter &&
+                    typeof currentFilter === "object"
+                  ) {
+                    const obj = currentFilter as { from?: string; to?: string };
+                    currentFrom = obj.from;
+                    currentTo = obj.to;
+                  }
+
+                  const newFrom = e.target.value || undefined;
+
+                  // Only apply filter if at least one value is provided
+                  if (newFrom !== undefined || currentTo !== undefined) {
+                    // Store values in array format, using empty string as placeholder for undefined
+                    const fromVal = newFrom !== undefined ? newFrom : "";
+                    const toVal = currentTo !== undefined ? currentTo : "";
+                    table.setColumnFilters((prev) =>
+                      prev
+                        .filter((f) => f.id !== "hiringDate")
+                        .concat([{ id: "hiringDate", value: [fromVal, toVal] }])
+                    );
+                  } else {
+                    // Remove filter if both values are undefined
+                    table.setColumnFilters((prev) =>
+                      prev.filter((f) => f.id !== "hiringDate")
+                    );
+                  }
                 }}
                 style={{ padding: "5px", fontSize: "12px" }}
               />
@@ -527,50 +588,76 @@ function App() {
                 data-testid="hiring-date-to-filter"
                 type="date"
                 placeholder="To"
-                value={
-                  (() => {
-                    const filterValue = state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "hiringDate"
-                    )?.value;
-                    
-                    if (!filterValue) return "";
-                    
-                    let toValue: string | undefined;
-                    
-                    // Handle both object format {from, to} and array format [from, to]
-                    if (Array.isArray(filterValue)) {
-                      toValue = filterValue[1];
-                    } else if (typeof filterValue === 'object' && filterValue !== null) {
-                      toValue = (filterValue as { from?: string; to?: string }).to;
-                    }
-                    
-                    if (!toValue) return "";
-                    
-                    // Convert to YYYY-MM-DD format for HTML date input
-                    const date = new Date(toValue);
-                    if (isNaN(date.getTime())) return "";
-                    
-                    return date.toISOString().split('T')[0];
-                  })()
-                }
-                onChange={(e) => {
-                  const currentFilter =
-                    (state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "hiringDate"
-                    )?.value as { from?: string; to?: string }) || {};
-                  const value = e.target.value
-                    ? { ...currentFilter, to: e.target.value }
-                    : { ...currentFilter, to: undefined };
+                value={(() => {
+                  const filterValue = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "hiringDate"
+                  )?.value;
 
-                  table.setColumnFilters((prev) =>
-                    prev
-                      .filter((f) => f.id !== "hiringDate")
-                      .concat(
-                        value.from || value.to
-                          ? [{ id: "hiringDate", value }]
-                          : []
-                      )
-                  );
+                  if (!filterValue) return "";
+
+                  let toValue: string | undefined;
+
+                  // Handle both array format [from, to] and object format {from, to}
+                  if (Array.isArray(filterValue)) {
+                    toValue = filterValue[1];
+                  } else if (
+                    typeof filterValue === "object" &&
+                    filterValue !== null
+                  ) {
+                    toValue = (filterValue as { from?: string; to?: string })
+                      .to;
+                  }
+
+                  if (!toValue || toValue === "") return "";
+
+                  // Convert to YYYY-MM-DD format for HTML date input
+                  const date = new Date(toValue);
+                  if (isNaN(date.getTime())) return "";
+
+                  return date.toISOString().split("T")[0];
+                })()}
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "hiringDate"
+                  )?.value;
+
+                  // Get current values from both array and object formats
+                  let currentFrom: string | undefined;
+                  let currentTo: string | undefined;
+
+                  if (Array.isArray(currentFilter)) {
+                    [currentFrom, currentTo] = currentFilter;
+                    // Convert empty string placeholders back to undefined
+                    if (currentFrom === "") currentFrom = undefined;
+                    if (currentTo === "") currentTo = undefined;
+                  } else if (
+                    currentFilter &&
+                    typeof currentFilter === "object"
+                  ) {
+                    const obj = currentFilter as { from?: string; to?: string };
+                    currentFrom = obj.from;
+                    currentTo = obj.to;
+                  }
+
+                  const newTo = e.target.value || undefined;
+
+                  // Only apply filter if at least one value is provided
+                  if (currentFrom !== undefined || newTo !== undefined) {
+                    // Store values in array format, using empty string as placeholder for undefined
+                    const fromVal =
+                      currentFrom !== undefined ? currentFrom : "";
+                    const toVal = newTo !== undefined ? newTo : "";
+                    table.setColumnFilters((prev) =>
+                      prev
+                        .filter((f) => f.id !== "hiringDate")
+                        .concat([{ id: "hiringDate", value: [fromVal, toVal] }])
+                    );
+                  } else {
+                    // Remove filter if both values are undefined
+                    table.setColumnFilters((prev) =>
+                      prev.filter((f) => f.id !== "hiringDate")
+                    );
+                  }
                 }}
                 style={{ padding: "5px", fontSize: "12px" }}
               />
@@ -585,36 +672,80 @@ function App() {
                 data-testid="salary-min-filter"
                 type="number"
                 placeholder="Min"
-                value={
-                  (() => {
-                    const filterValue = state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "salary"
-                    )?.value as { min?: number; max?: number } | undefined;
-                    
-                    if (!filterValue || filterValue.min === undefined) return "";
-                    
-                    // Convert to string, handling both number and string types
-                    return String(filterValue.min);
-                  })()
-                }
-                onChange={(e) => {
-                  const currentFilter =
-                    (state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "salary"
-                    )?.value as { min?: number; max?: number }) || {};
-                  const value = e.target.value
-                    ? { ...currentFilter, min: Number(e.target.value) }
-                    : { ...currentFilter, min: undefined };
+                value={(() => {
+                  const filterValue = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "salary"
+                  )?.value;
 
-                  table.setColumnFilters((prev) =>
-                    prev
-                      .filter((f) => f.id !== "salary")
-                      .concat(
-                        value.min !== undefined || value.max !== undefined
-                          ? [{ id: "salary", value }]
-                          : []
-                      )
-                  );
+                  if (!filterValue) return "";
+
+                  let minValue: number | undefined;
+
+                  // Handle both array format [min, max] and object format {min, max}
+                  if (Array.isArray(filterValue)) {
+                    minValue = filterValue[0];
+                  } else if (
+                    typeof filterValue === "object" &&
+                    filterValue !== null
+                  ) {
+                    minValue = (filterValue as { min?: number; max?: number })
+                      .min;
+                  }
+
+                  if (
+                    minValue === undefined ||
+                    minValue === null ||
+                    minValue === -1
+                  )
+                    return "";
+
+                  // Convert to string, handling both number and string types
+                  return String(minValue);
+                })()}
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "salary"
+                  )?.value;
+
+                  // Get current values from both array and object formats
+                  let currentMin: number | undefined;
+                  let currentMax: number | undefined;
+
+                  if (Array.isArray(currentFilter)) {
+                    [currentMin, currentMax] = currentFilter;
+                    // Convert -1 placeholders back to undefined
+                    if (currentMin === -1) currentMin = undefined;
+                    if (currentMax === -1) currentMax = undefined;
+                  } else if (
+                    currentFilter &&
+                    typeof currentFilter === "object"
+                  ) {
+                    const obj = currentFilter as { min?: number; max?: number };
+                    currentMin = obj.min;
+                    currentMax = obj.max;
+                  }
+
+                  const newMin = e.target.value
+                    ? Number(e.target.value)
+                    : undefined;
+
+                  // Store values in array format, using -1 as placeholder for undefined
+                  const minVal = newMin !== undefined ? newMin : -1;
+                  const maxVal = currentMax !== undefined ? currentMax : -1;
+
+                  // Only apply filter if at least one real value is provided
+                  if (newMin !== undefined || currentMax !== undefined) {
+                    table.setColumnFilters((prev) =>
+                      prev
+                        .filter((f) => f.id !== "salary")
+                        .concat([{ id: "salary", value: [minVal, maxVal] }])
+                    );
+                  } else {
+                    // Remove filter if both values are undefined
+                    table.setColumnFilters((prev) =>
+                      prev.filter((f) => f.id !== "salary")
+                    );
+                  }
                 }}
                 style={{ padding: "5px", width: "80px", fontSize: "12px" }}
               />
@@ -623,36 +754,80 @@ function App() {
                 data-testid="salary-max-filter"
                 type="number"
                 placeholder="Max"
-                value={
-                  (() => {
-                    const filterValue = state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "salary"
-                    )?.value as { min?: number; max?: number } | undefined;
-                    
-                    if (!filterValue || filterValue.max === undefined) return "";
-                    
-                    // Convert to string, handling both number and string types
-                    return String(filterValue.max);
-                  })()
-                }
-                onChange={(e) => {
-                  const currentFilter =
-                    (state.columnFilters.find(
-                      (f: ColumnFilter) => f.id === "salary"
-                    )?.value as { min?: number; max?: number }) || {};
-                  const value = e.target.value
-                    ? { ...currentFilter, max: Number(e.target.value) }
-                    : { ...currentFilter, max: undefined };
+                value={(() => {
+                  const filterValue = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "salary"
+                  )?.value;
 
-                  table.setColumnFilters((prev) =>
-                    prev
-                      .filter((f) => f.id !== "salary")
-                      .concat(
-                        value.min !== undefined || value.max !== undefined
-                          ? [{ id: "salary", value }]
-                          : []
-                      )
-                  );
+                  if (!filterValue) return "";
+
+                  let maxValue: number | undefined;
+
+                  // Handle both array format [min, max] and object format {min, max}
+                  if (Array.isArray(filterValue)) {
+                    maxValue = filterValue[1];
+                  } else if (
+                    typeof filterValue === "object" &&
+                    filterValue !== null
+                  ) {
+                    maxValue = (filterValue as { min?: number; max?: number })
+                      .max;
+                  }
+
+                  if (
+                    maxValue === undefined ||
+                    maxValue === null ||
+                    maxValue === -1
+                  )
+                    return "";
+
+                  // Convert to string, handling both number and string types
+                  return String(maxValue);
+                })()}
+                onChange={(e) => {
+                  const currentFilter = state.columnFilters.find(
+                    (f: ColumnFilter) => f.id === "salary"
+                  )?.value;
+
+                  // Get current values from both array and object formats
+                  let currentMin: number | undefined;
+                  let currentMax: number | undefined;
+
+                  if (Array.isArray(currentFilter)) {
+                    [currentMin, currentMax] = currentFilter;
+                    // Convert -1 placeholders back to undefined
+                    if (currentMin === -1) currentMin = undefined;
+                    if (currentMax === -1) currentMax = undefined;
+                  } else if (
+                    currentFilter &&
+                    typeof currentFilter === "object"
+                  ) {
+                    const obj = currentFilter as { min?: number; max?: number };
+                    currentMin = obj.min;
+                    currentMax = obj.max;
+                  }
+
+                  const newMax = e.target.value
+                    ? Number(e.target.value)
+                    : undefined;
+
+                  // Store values in array format, using -1 as placeholder for undefined
+                  const minVal = currentMin !== undefined ? currentMin : -1;
+                  const maxVal = newMax !== undefined ? newMax : -1;
+
+                  // Only apply filter if at least one real value is provided
+                  if (currentMin !== undefined || newMax !== undefined) {
+                    table.setColumnFilters((prev) =>
+                      prev
+                        .filter((f) => f.id !== "salary")
+                        .concat([{ id: "salary", value: [minVal, maxVal] }])
+                    );
+                  } else {
+                    // Remove filter if both values are undefined
+                    table.setColumnFilters((prev) =>
+                      prev.filter((f) => f.id !== "salary")
+                    );
+                  }
                 }}
                 style={{ padding: "5px", width: "80px", fontSize: "12px" }}
               />
