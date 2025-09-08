@@ -166,7 +166,7 @@ describe("buildColumnFiltersFromBuckets", () => {
             filter: {
               variant: "select",
               persistenceStorage: "url",
-              // @ts-expect-error - this is normal, we're testing the type coercion
+              // @ts-expect-error - Testing undefined options behavior
               options: undefined,
             },
           },
@@ -225,7 +225,7 @@ describe("buildColumnFiltersFromBuckets", () => {
               persistenceStorage: "localStorage",
               options: [
                 {
-                  // @ts-expect-error - this is normal, we're testing the type coercion
+                  // @ts-expect-error - Testing boolean value coercion
                   value: false,
                   label: "false",
                 },
@@ -508,7 +508,7 @@ describe("buildColumnFiltersFromBuckets", () => {
         {
           id: "name",
           accessorKey: "name",
-          meta: undefined,
+          // Omit meta property entirely instead of setting to undefined
         },
       ];
       const urlState = { name: "ignored" };

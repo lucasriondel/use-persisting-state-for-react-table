@@ -329,7 +329,6 @@ describe("buildUrlCodecs", () => {
         {
           id: "name",
           accessorKey: "name",
-          meta: undefined,
         },
       ];
 
