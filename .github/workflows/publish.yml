@@ -97,13 +97,31 @@ jobs:
           current_version=$(node -p "require('./package.json').version")
           echo "current_version=$current_version" >> $GITHUB_OUTPUT
 
-          # Skip if this is already a published version
+          # Check if version exists on npm
+          npm_exists=false
           if npm view use-local-storage-reacthook@$current_version version 2>/dev/null; then
+            npm_exists=true
+          fi
+
+          # Check if git tag exists
+          tag_exists=false
+          if git rev-parse "v$current_version" >/dev/null 2>&1; then
+            tag_exists=true
+          fi
+
+          # Determine if we need to bump
+          if [ "$npm_exists" = true ] || [ "$tag_exists" = true ]; then
             echo "needs_bump=true" >> $GITHUB_OUTPUT
-            echo "Version $current_version already exists on npm, will bump version"
+            if [ "$npm_exists" = true ] && [ "$tag_exists" = true ]; then
+              echo "Version $current_version already exists on npm and git tag exists, will bump version"
+            elif [ "$npm_exists" = true ]; then
+              echo "Version $current_version already exists on npm, will bump version"
+            else
+              echo "Git tag v$current_version already exists, will bump version"
+            fi
           else
             echo "needs_bump=false" >> $GITHUB_OUTPUT
-            echo "Version $current_version does not exist on npm, can publish as-is"
+            echo "Version $current_version does not exist on npm and git tag does not exist, can publish as-is"
           fi
 
       - name: Bump version
