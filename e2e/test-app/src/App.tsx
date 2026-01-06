@@ -837,8 +837,11 @@ function App() {
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-            <label>Teams:</label>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "5px" }}
+            data-testid="teams-filter-using-setColumnFilters"
+          >
+            <label>Teams (using setColumnFilters):</label>
             <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
               {["finance", "sales", "hr", "dev"].map((team) => {
                 const currentTeams =
@@ -868,15 +871,65 @@ function App() {
                           newTeams = currentTeams.filter((t) => t !== team);
                         }
 
-                        table.setColumnFilters((prev) =>
-                          prev
+                        table.setColumnFilters((prev) => {
+                          const newValues = prev
                             .filter((f) => f.id !== "teams")
                             .concat(
                               newTeams.length > 0
                                 ? [{ id: "teams", value: newTeams }]
                                 : []
-                            )
-                        );
+                            );
+                          return newValues;
+                        });
+                      }}
+                      style={{ marginRight: "3px" }}
+                    />
+                    {team.charAt(0).toUpperCase() + team.slice(1)}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "5px" }}
+            data-testid="teams-filter-using-column-setFilterValue"
+          >
+            <label>Teams (using column.setFilterValue):</label>
+            <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+              {["finance", "sales", "hr", "dev"].map((team) => {
+                const column = table.getColumn("teams");
+                const currentTeams =
+                  (column?.getFilterValue() as string[]) || [];
+                const isChecked = currentTeams.includes(team);
+
+                return (
+                  <label
+                    key={team}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: "12px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      data-testid={`teams-${team}`}
+                      checked={isChecked}
+                      onChange={(e) => {
+                        let newTeams: string[];
+                        if (e.target.checked) {
+                          newTeams = [...currentTeams, team];
+                        } else {
+                          newTeams = currentTeams.filter((t) => t !== team);
+                        }
+
+                        column?.setFilterValue(() => {
+                          if (newTeams.length === 0) {
+                            // this is needed to ensure the system is removing the filter if empty. not needed if you use setColumnFilters though, I do not know why.
+                            return undefined;
+                          }
+                          return newTeams;
+                        });
                       }}
                       style={{ marginRight: "3px" }}
                     />
