@@ -65,13 +65,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Upgrade npm for OIDC support
+        run: npm install -g npm@latest
 
-      - name: Verify npm version for OIDC support
+      - name: Verify npm version
         run: |
           npm --version
-          echo "npm version must be >= 11.5 for trusted publishing"
+          echo "npm version verified (must be >= 11.5 for trusted publishing)"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Configure Git
         run: |
