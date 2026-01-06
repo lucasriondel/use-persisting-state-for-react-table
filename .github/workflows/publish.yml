@@ -23,6 +23,7 @@ on:
           - prerelease
 
 permissions:
+  id-token: write
   contents: write
   packages: write
   pull-requests: write
