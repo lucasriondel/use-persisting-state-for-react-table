@@ -17,7 +17,9 @@ export type FilterVariant =
   | "date"
   | "number"
   | "dateRange"
-  | "numberRange";
+  | "numberRange"
+  | "boolean"
+  | "custom";
 
 // Persistence storage type
 export type PersistenceStorage = "url" | "localStorage";
