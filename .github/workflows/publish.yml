@@ -181,18 +181,57 @@ jobs:
           draft: false
           prerelease: ${{ contains(steps.version_type.outputs.type, 'prerelease') }}
 
-  # Separate job to notify on failure
-  notify-failure:
+  # Cleanup job to revert changes on failure
+  cleanup-on-failure:
     runs-on: ubuntu-latest
     needs: publish
     if: failure()
 
     steps:
-      - name: Notify on failure
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Configure Git
         run: |
-          echo "❌ Publication failed. Check the logs above for details."
-          echo "Common issues:"
-          echo "- NPM_TOKEN secret not set"
-          echo "- Package name already exists"
-          echo "- Tests or linting failed"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git config --local url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Revert version bump commit and delete tag
+        run: |
+          echo "❌ Publication failed. Cleaning up version bump and tag..."
+
+          # Get the current version from package.json
+          current_version=$(node -p "require('./package.json').version")
+          tag_name="v$current_version"
+
+          # Check if the last commit is a version bump commit
+          last_commit_msg=$(git log -1 --pretty=%B)
+          if [[ $last_commit_msg == "chore: bump version to"* ]]; then
+            echo "Found version bump commit, reverting..."
+            git revert HEAD --no-edit || echo "Revert failed or already reverted"
+            git push origin HEAD:main || echo "Push failed - changes may already be reverted"
+          else
+            echo "Last commit is not a version bump, skipping revert"
+          fi
+
+          # Delete the tag locally and remotely if it exists
+          if git rev-parse "$tag_name" >/dev/null 2>&1; then
+            echo "Deleting tag $tag_name..."
+            git tag -d "$tag_name" || echo "Local tag deletion failed"
+            git push origin ":refs/tags/$tag_name" || echo "Remote tag deletion failed - tag may not exist on remote"
+          else
+            echo "Tag $tag_name does not exist locally, skipping deletion"
+          fi
+
+          echo "Cleanup completed. Please fix the issues and try again."
+
+          echo "Common failure reasons:"
+          echo "- NPM authentication issues (check trusted publisher setup)"
+          echo "- Package name conflicts"
+          echo "- Tests or linting failures"
           echo "- Build errors"
