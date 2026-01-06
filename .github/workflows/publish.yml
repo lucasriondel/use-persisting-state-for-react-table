@@ -9,6 +9,7 @@ on:
       - "package.json"
       - "tsconfig.json"
       - "rollup.config.js"
+      - ".github/workflows/publish.yml"
   workflow_dispatch:
     inputs:
       version_type:
@@ -162,7 +163,7 @@ jobs:
           git push origin "v${{ env.NEW_VERSION }}"
 
       - name: Publish to NPM
-        run: pnpm publish --access public --no-git-checks
+        run: npm publish
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
