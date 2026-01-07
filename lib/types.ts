@@ -32,6 +32,17 @@ export interface BaseFilterMeta {
 }
 
 // Specific filter meta types
+
+export type CustomFilterMeta = BaseFilterMeta & {
+  variant: "custom";
+  codec?: Codec<unknown>;
+};
+
+export type BooleanFilterMeta = BaseFilterMeta & {
+  variant: "boolean";
+  codec?: Codec<boolean>;
+};
+
 export type SelectMeta = BaseFilterMeta & {
   variant: "select";
   codec?: Codec<string>;
