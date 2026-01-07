@@ -1,6 +1,6 @@
 {
   "name": "use-persisting-state-for-react-table",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "type": "module",
   "description": "A helper hook to help persist the state of a Tanstack Table either into the URL or in local storage.",
   "main": "dist/index.js",
