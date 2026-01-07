@@ -117,6 +117,8 @@ export type NumberRangeMeta = BaseFilterMeta & {
 
 // Union type for all filter meta types
 export type FiltersMeta =
+  | CustomFilterMeta
+  | BooleanFilterMeta
   | SelectMeta
   | MultiSelectMeta
   | TextMeta
