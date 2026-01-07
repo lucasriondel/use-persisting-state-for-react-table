@@ -218,6 +218,8 @@ declare module "@tanstack/react-table" {
   }
 
   type FiltersMeta =
+    | CustomFilterMeta
+    | BooleanFilterMeta
     | SelectMeta
     | MultiSelectMeta
     | TextMeta
